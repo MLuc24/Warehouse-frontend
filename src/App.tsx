@@ -1,14 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/ui';
-import { Layout } from '@/components/layout/Layout';
+import { Layout, PublicLayout, WelcomePage } from '@/components/layout';
+import { AuthModals } from '@/components/auth/AuthModals';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ProductsPage } from '@/pages/ProductsPage';
 import { ROUTES } from '@/constants';
 
-// Protected Route Component
+// Public Route Component - cho user chưa login
+const PublicRoute: React.FC = () => {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const handleOpenAuthModal = () => {
+    setIsAuthModalOpen(true);
+  };
+
+  const handleCloseAuthModal = () => {
+    setIsAuthModalOpen(false);
+  };
+
+  return (
+    <>
+      <PublicLayout>
+        <WelcomePage onOpenAuth={handleOpenAuthModal} />
+      </PublicLayout>
+      
+      <AuthModals
+        isOpen={isAuthModalOpen}
+        onClose={handleCloseAuthModal}
+        initialModal="login"
+      />
+    </>
+  );
+};
+
+// Protected Route Component - cho user đã login
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -21,20 +49,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   if (!isAuthenticated) {
-    return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Chào mừng đến với Warehouse Management
-            </h1>
-            <p className="text-gray-600">
-              Vui lòng đăng nhập để tiếp tục
-            </p>
-          </div>
-        </div>
-      </Layout>
-    );
+    return <PublicRoute />;
   }
 
   return <Layout>{children}</Layout>;
