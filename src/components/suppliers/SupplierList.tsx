@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button, Input } from '@/components/ui';
 import type { Supplier } from '@/types';
+
+type StatusFilter = 'all' | 'Active' | 'Expired';
+type DateSort = 'newest' | 'oldest';
 
 interface SupplierListProps {
   suppliers: Supplier[];
@@ -39,12 +42,62 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   // Permission props
   permissions
 }) => {
+  // State for filtering and sorting
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [dateSort, setDateSort] = useState<DateSort>('newest');
+
+  // Handle input change for search
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     onSearchTermChange(value);
     // Tìm kiếm real-time khi nhập
     onSearch(value);
   };
+
+  // Toggle status filter
+  const toggleStatusFilter = () => {
+    setStatusFilter(prev => {
+      switch (prev) {
+        case 'all':
+          return 'Active';
+        case 'Active':
+          return 'Expired';
+        case 'Expired':
+          return 'all';
+        default:
+          return 'all';
+      }
+    });
+  };
+
+  // Toggle date sort
+  const toggleDateSort = () => {
+    setDateSort(prev => prev === 'newest' ? 'oldest' : 'newest');
+  };
+
+  // Filtered and sorted suppliers
+  const filteredAndSortedSuppliers = useMemo(() => {
+    let result = [...suppliers];
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      result = result.filter(supplier => supplier.status === statusFilter);
+    }
+
+    // Apply date sort
+    result.sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      
+      if (dateSort === 'newest') {
+        return dateB - dateA; // Newest first
+      } else {
+        return dateA - dateB; // Oldest first
+      }
+    });
+
+    return result;
+  }, [suppliers, statusFilter, dateSort]);
   return (
     <div className="w-full">
       {/* Header với Search Bar tích hợp */}
@@ -55,7 +108,12 @@ export const SupplierList: React.FC<SupplierListProps> = ({
               Danh sách nhà cung cấp
             </h3>
             <div className="text-sm text-gray-500">
-              {suppliers.length} nhà cung cấp
+              {filteredAndSortedSuppliers.length} nhà cung cấp
+              {statusFilter !== 'all' && (
+                <span className="ml-1">
+                  ({statusFilter === 'Active' ? 'đang hoạt động' : 'hết hạn'})
+                </span>
+              )}
             </div>
           </div>
           {onShowCreate && permissions?.suppliers.canCreate && (
@@ -84,16 +142,31 @@ export const SupplierList: React.FC<SupplierListProps> = ({
               className="w-full"
             />
           </div>
-          {searchTerm && (
-            <Button 
-              onClick={onClearSearch}
-              variant="outline"
-              disabled={loading}
-              className="sm:w-auto"
-            >
-              ✕ Xóa bộ lọc
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {searchTerm && (
+              <Button 
+                onClick={onClearSearch}
+                variant="outline"
+                disabled={loading}
+                className="sm:w-auto"
+              >
+                ✕ Xóa tìm kiếm
+              </Button>
+            )}
+            {(statusFilter !== 'all' || dateSort !== 'newest') && (
+              <Button 
+                onClick={() => {
+                  setStatusFilter('all');
+                  setDateSort('newest');
+                }}
+                variant="outline"
+                disabled={loading}
+                className="sm:w-auto"
+              >
+                ↻ Reset bộ lọc
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -135,7 +208,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
                   Địa chỉ
                 </div>
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-blue-100 transition-colors duration-200" onClick={toggleStatusFilter}>
                 <div className="flex items-center">
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -143,7 +216,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
                   Trạng thái
                 </div>
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-blue-100 transition-colors duration-200" onClick={toggleDateSort}>
                 <div className="flex items-center">
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -154,20 +227,30 @@ export const SupplierList: React.FC<SupplierListProps> = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {suppliers.length === 0 ? (
+            {filteredAndSortedSuppliers.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-16 text-center">
                   <div className="flex flex-col items-center">
                     <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
-                    <p className="text-gray-500 text-lg font-medium">Không có nhà cung cấp nào</p>
-                    <p className="text-gray-400 text-sm mt-1">Hãy thêm nhà cung cấp đầu tiên của bạn</p>
+                    <p className="text-gray-500 text-lg font-medium">
+                      {statusFilter !== 'all' 
+                        ? `Không có nhà cung cấp nào ${statusFilter === 'Active' ? 'đang hoạt động' : 'hết hạn'}`
+                        : 'Không có nhà cung cấp nào'
+                      }
+                    </p>
+                    <p className="text-gray-400 text-sm mt-1">
+                      {statusFilter !== 'all' 
+                        ? 'Thử thay đổi bộ lọc hoặc tìm kiếm khác'
+                        : 'Hãy thêm nhà cung cấp đầu tiên của bạn'
+                      }
+                    </p>
                   </div>
                 </td>
               </tr>
             ) : (
-              suppliers.map((supplier, index) => (
+              filteredAndSortedSuppliers.map((supplier, index) => (
                 <tr
                   key={supplier.supplierId}
                   onClick={() => onSelectSupplier(supplier)}
