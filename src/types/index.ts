@@ -24,12 +24,32 @@ export interface User {
 }
 
 export interface CompleteRegistrationRequest {
+  contact: string;  // Email hoặc phone
+  type: string;     // "Email" hoặc "Phone"
+  fullName: string;
   username: string;
   password: string;
-  fullName: string;
+  confirmPassword: string;
+}
+
+export interface SendVerificationRequest {
+  contact: string;  // Email hoặc phone  
+  type: string;     // "Email" hoặc "Phone"
+  purpose: string;  // "Registration" hoặc "ForgotPassword"
+}
+
+export interface VerifyCodeRequest {
+  contact: string;
+  code: string;
+  type: string;
+  purpose: string;
+}
+
+export interface ResetPasswordRequest {
   email: string;
-  role: string;
-  verificationCode: string;
+  code: string;
+  newPassword: string;
+  confirmNewPassword: string;
 }
 
 // Product types

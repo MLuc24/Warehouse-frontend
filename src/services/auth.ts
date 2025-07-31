@@ -20,7 +20,24 @@ export class AuthService {
   }
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    return apiService.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
+    try {
+      const response = await apiService.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
+      return response;
+    } catch (error: unknown) {
+      // Nếu backend trả về error với format { success: false, message: "..." }
+      if (error instanceof Error && error.message) {
+        return {
+          success: false,
+          message: error.message
+        };
+      }
+      
+      // Default error response
+      return {
+        success: false,
+        message: 'Đăng nhập thất bại'
+      };
+    }
   }
 
   async logout(): Promise<void> {
@@ -35,18 +52,60 @@ export class AuthService {
     return apiService.post<LoginResponse>(API_ENDPOINTS.AUTH.COMPLETE_REGISTRATION, data);
   }
 
-  async sendVerification(email: string, purpose: string): Promise<{ success: boolean; message: string }> {
-    return apiService.post(API_ENDPOINTS.AUTH.SEND_VERIFICATION, { email, purpose });
+  async sendVerification(contact: string, type: string, purpose: string): Promise<{ success: boolean; message: string }> {
+    return apiService.post(API_ENDPOINTS.AUTH.SEND_VERIFICATION, { 
+      contact, 
+      type, 
+      purpose 
+    });
   }
 
-  // Simple registration for modal usage
+  async verifyCode(contact: string, code: string, type: string, purpose: string): Promise<{ success: boolean; message: string }> {
+    return apiService.post(API_ENDPOINTS.AUTH.VERIFY_CODE, { 
+      contact, 
+      code, 
+      type, 
+      purpose 
+    });
+  }
+
+  async resetPassword(email: string, code: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; message: string }> {
+    return apiService.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, { 
+      email, 
+      code, 
+      newPassword, 
+      confirmNewPassword 
+    });
+  }
+
+  // Helper method for registration flow
+  async sendRegistrationVerification(email: string): Promise<{ success: boolean; message: string }> {
+    return this.sendVerification(email, 'Email', 'Registration');
+  }
+
+  // Helper method for forgot password flow  
+  async sendForgotPasswordVerification(email: string): Promise<{ success: boolean; message: string }> {
+    return this.sendVerification(email, 'Email', 'ForgotPassword');
+  }
+
+  // Simple registration for modal usage - now using proper flow
   async register(data: {
     username: string;
     email: string;
     fullName: string;
     password: string;
   }): Promise<{ success: boolean; message: string }> {
-    return apiService.post(API_ENDPOINTS.AUTH.REGISTER, data);
+    // First send verification code
+    const verificationResult = await this.sendRegistrationVerification(data.email);
+    if (!verificationResult.success) {
+      return verificationResult;
+    }
+
+    // Return success with instruction for next step
+    return {
+      success: true,
+      message: 'Mã xác thực đã được gửi đến email của bạn. Vui lòng kiểm tra và nhập mã để hoàn tất đăng ký.'
+    };
   }
 }
 

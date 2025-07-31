@@ -17,12 +17,14 @@ interface ForgotPasswordModalProps {
   isOpen: boolean
   onClose: () => void
   onSwitchToLogin: () => void
+  onSwitchToVerification: (email: string) => void
 }
 
 export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   isOpen,
   onClose,
-  onSwitchToLogin
+  onSwitchToLogin,
+  onSwitchToVerification
 }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,20 +45,20 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     setSuccess(null)
     
     try {
-      const response = await authService.sendVerification(data.email, 'forgot-password')
+      const response = await authService.sendForgotPasswordVerification(data.email)
       
       if (response.success) {
-        setSuccess('Mã khôi phục mật khẩu đã được gửi đến email của bạn!')
+        setSuccess('Mã xác thực đã được gửi đến email của bạn!')
         reset()
         setTimeout(() => {
-          onSwitchToLogin()
-        }, 3000)
+          onSwitchToVerification(data.email)
+        }, 1500)
       } else {
-        setError(response.message || 'Không thể gửi email khôi phục')
+        setError(response.message || 'Không thể gửi mã xác thực')
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } }
-      setError(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi email')
+      setError(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi mã xác thực')
     } finally {
       setIsLoading(false)
     }
@@ -74,6 +76,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Quên mật khẩu"
+      className="max-w-md"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {error && (
@@ -89,7 +92,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         )}
 
         <div className="text-sm text-gray-600 mb-4">
-          Nhập email của bạn để nhận mã khôi phục mật khẩu
+          Nhập email của bạn để nhận mã xác thực khôi phục mật khẩu
         </div>
 
         <div>
@@ -98,7 +101,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
             type="email"
             {...register('email')}
             error={errors.email?.message}
-            placeholder="Nhập email của bạn"
+            placeholder="Nhập địa chỉ email"
+            disabled={isLoading || !!success}
           />
         </div>
 
@@ -109,7 +113,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
           className="w-full"
           disabled={isLoading || !!success}
         >
-          {isLoading ? 'Đang gửi...' : success ? 'Đã gửi!' : 'Gửi mã khôi phục'}
+          {isLoading ? 'Đang gửi mã xác thực...' : success ? 'Đã gửi!' : 'Gửi mã xác thực'}
         </Button>
 
         <div className="text-center">

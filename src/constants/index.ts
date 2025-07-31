@@ -1,5 +1,5 @@
 // API Base URL
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5063/api';
 
 // Local Storage Keys
 export const STORAGE_KEYS = {
@@ -14,9 +14,10 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
     ME: '/auth/me',
-    REGISTER: '/auth/register',
     COMPLETE_REGISTRATION: '/auth/complete-registration',
-    SEND_VERIFICATION: '/auth/send-verification',
+    SEND_VERIFICATION: '/auth/verification/send-code',
+    VERIFY_CODE: '/auth/verification/verify-code',
+    RESET_PASSWORD: '/auth/forgot-password/reset',
   },
   PRODUCTS: {
     LIST: '/product',

@@ -7,6 +7,8 @@ import { Layout, PublicLayout, WelcomePage } from '@/components/layout';
 import { AuthModals } from '@/components/auth/AuthModals';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ProductsPage } from '@/pages/ProductsPage';
+import { SuppliersPage } from '@/pages/SuppliersPage';
+import { AuthTestPage } from '@/pages/AuthTestPage';
 import { ROUTES } from '@/constants';
 
 // Public Route Component - cho user chưa login
@@ -82,6 +84,22 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <ProductsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path={ROUTES.SUPPLIERS.LIST} 
+        element={
+          <ProtectedRoute>
+            <SuppliersPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/auth-test" 
+        element={
+          <ProtectedRoute>
+            <AuthTestPage />
           </ProtectedRoute>
         } 
       />

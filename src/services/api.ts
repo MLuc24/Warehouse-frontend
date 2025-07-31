@@ -32,10 +32,16 @@ apiClient.interceptors.response.use(
   },
   (error: AxiosError) => {
     if (error.response?.status === HTTP_STATUS.UNAUTHORIZED) {
-      // Clear auth data and redirect to login
-      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-      window.location.href = '/login';
+      // Chỉ redirect nếu user đã login trước đó (có token) và không phải là request đăng nhập
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      const hasToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      
+      if (!isLoginRequest && hasToken) {
+        // Token hết hạn hoặc không hợp lệ, clear auth data và redirect
+        localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -92,7 +98,13 @@ export class ApiService {
 
   private handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
-      const message = error.response?.data?.message || error.message || 'An unexpected error occurred';
+      // Nếu backend trả về response với format { success: false, message: "..." }
+      if (error.response?.data?.message) {
+        return new Error(error.response.data.message);
+      }
+      
+      // Fallback to general error messages
+      const message = error.message || 'An unexpected error occurred';
       return new Error(message);
     }
     return new Error('An unexpected error occurred');
