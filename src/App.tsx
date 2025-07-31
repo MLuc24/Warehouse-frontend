@@ -3,10 +3,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/ui';
-import { HomePage } from '@/pages/HomePage';
-import { ProductsPage } from '@/pages/ProductsPage';
-import { SuppliersPage } from '@/pages/SuppliersPage';
-import { AuthTestPage } from '@/pages/AuthTestPage';
+import { 
+  HomePage, 
+  ProductsPage, 
+  SuppliersPage, 
+  CreateSupplierPage, 
+  EditSupplierPage, 
+  ViewSupplierPage, 
+  AuthTestPage 
+} from '@/pages';
 import { ROUTES } from '@/constants';
 
 // Protected Route Component - cho user đã login
@@ -59,6 +64,30 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <SuppliersPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path={ROUTES.SUPPLIERS.CREATE} 
+        element={
+          <ProtectedRoute>
+            <CreateSupplierPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/suppliers/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <EditSupplierPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/suppliers/:id" 
+        element={
+          <ProtectedRoute>
+            <ViewSupplierPage />
           </ProtectedRoute>
         } 
       />

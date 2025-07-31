@@ -1,62 +1,84 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Button, Input, LoadingSpinner } from '@/components/ui';
 import { Layout } from '@/components/layout';
-import { supplierService } from '@/services';
+import { useSupplier } from '@/hooks/useSupplier';
 import { ROUTES } from '@/constants';
-import type { Supplier, SupplierSearch, SupplierListResponse } from '@/types';
+import type { SupplierSearch } from '@/types';
 
 export const SuppliersPage: React.FC = () => {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    suppliers,
+    totalCount,
+    currentPage,
+    totalPages,
+    loading,
+    error,
+    fetchSuppliers,
+    clearError
+  } = useSupplier();
+
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchParams, setSearchParams] = useState<SupplierSearch>({
+    page: 1,
+    pageSize: 10
+  });
 
-  const pageSize = 10;
-
-  const fetchSuppliers = async (page = 1, keyword = '') => {
-    try {
-      setIsLoading(true);
-      const searchParams: SupplierSearch = {
-        page,
-        pageSize,
-        keyword: keyword || undefined,
-      };
-
-      const response: SupplierListResponse = await supplierService.getSuppliers(searchParams);
-      setSuppliers(response.items);
-      setTotalCount(response.totalCount);
-      setCurrentPage(page);
-    } catch (error) {
-      console.error('Error fetching suppliers:', error);
-      setSuppliers([]);
-      setTotalCount(0);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Fetch suppliers on component mount and when searchParams change
   useEffect(() => {
-    fetchSuppliers();
+    fetchSuppliers(searchParams);
+  }, [fetchSuppliers, searchParams]);
+
+  // Handle search
+  const handleSearch = useCallback(() => {
+    const newSearchParams: SupplierSearch = {
+      ...searchParams,
+      keyword: searchKeyword.trim() || undefined,
+      page: 1
+    };
+    setSearchParams(newSearchParams);
+  }, [searchKeyword, searchParams]);
+
+  // Handle page change
+  const handlePageChange = useCallback((page: number) => {
+    setSearchParams(prev => ({ ...prev, page }));
   }, []);
 
-  const handleSearch = () => {
-    setCurrentPage(1);
-    fetchSuppliers(1, searchKeyword);
-  };
-
-  const handlePageChange = (page: number) => {
-    fetchSuppliers(page, searchKeyword);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  // Handle key press for search
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
-  };
+  }, [handleSearch]);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Clear search
+  const handleClearSearch = useCallback(() => {
+    setSearchKeyword('');
+    setSearchParams(prev => ({
+      ...prev,
+      keyword: undefined,
+      page: 1
+    }));
+  }, []);
+
+  // Early return for error state
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="text-red-600 mb-4">
+            <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-lg font-medium">{error}</p>
+          </div>
+          <Button onClick={clearError} variant="outline">
+            Thử lại
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -65,7 +87,9 @@ export const SuppliersPage: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Nhà cung cấp</h1>
-            <p className="text-gray-600">Quản lý danh sách nhà cung cấp</p>
+            <p className="text-gray-600 mt-1">
+              Quản lý danh sách nhà cung cấp ({totalCount} nhà cung cấp)
+            </p>
           </div>
           <Link to={ROUTES.SUPPLIERS.CREATE}>
             <Button>
@@ -85,21 +109,31 @@ export const SuppliersPage: React.FC = () => {
                 placeholder="Tìm kiếm theo tên, email, số điện thoại..."
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
               />
             </div>
-            <Button onClick={handleSearch} variant="outline">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              Tìm kiếm
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleSearch} variant="outline">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Tìm kiếm
+              </Button>
+              {searchKeyword && (
+                <Button onClick={handleClearSearch} variant="outline">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Xóa
+                </Button>
+              )}
+            </div>
           </div>
         </Card>
 
         {/* Suppliers Table */}
         <Card>
-          {isLoading ? (
+          {loading ? (
             <div className="flex justify-center items-center py-12">
               <LoadingSpinner size="lg" />
             </div>
@@ -115,7 +149,7 @@ export const SuppliersPage: React.FC = () => {
                       Liên hệ
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sản phẩm
+                      Thống kê
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ngày tạo
@@ -128,7 +162,7 @@ export const SuppliersPage: React.FC = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {suppliers.length > 0 ? (
                     suppliers.map((supplier) => (
-                      <tr key={supplier.supplierId} className="hover:bg-gray-50">
+                      <tr key={supplier.supplierId} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <div className="text-sm font-medium text-gray-900">
@@ -136,48 +170,71 @@ export const SuppliersPage: React.FC = () => {
                             </div>
                             {supplier.address && (
                               <div className="text-sm text-gray-500 truncate max-w-xs">
-                                {supplier.address}
+                                📍 {supplier.address}
+                              </div>
+                            )}
+                            {supplier.taxCode && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                MST: {supplier.taxCode}
                               </div>
                             )}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
+                          <div className="text-sm space-y-1">
                             {supplier.email && (
-                              <div className="flex items-center">
-                                <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <div className="flex items-center text-gray-900">
+                                <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                                 </svg>
                                 {supplier.email}
                               </div>
                             )}
                             {supplier.phoneNumber && (
-                              <div className="flex items-center mt-1">
-                                <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <div className="flex items-center text-gray-900">
+                                <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                 </svg>
                                 {supplier.phoneNumber}
                               </div>
                             )}
+                            {!supplier.email && !supplier.phoneNumber && (
+                              <span className="text-gray-400 text-sm">Chưa có thông tin liên hệ</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm space-y-1">
+                            <div className="text-gray-900">
+                              📦 {supplier.totalProducts} sản phẩm
+                            </div>
+                            <div className="text-gray-600">
+                              📄 {supplier.totalReceipts} phiếu nhập
+                            </div>
+                            {supplier.totalPurchaseValue && supplier.totalPurchaseValue > 0 && (
+                              <div className="text-green-600 font-medium">
+                                💰 {supplier.totalPurchaseValue.toLocaleString('vi-VN')} ₫
+                              </div>
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {supplier.totalProducts} sản phẩm
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {supplier.createdAt ? new Date(supplier.createdAt).toLocaleDateString('vi-VN') : '-'}
+                          {supplier.createdAt 
+                            ? new Date(supplier.createdAt).toLocaleDateString('vi-VN')
+                            : '-'
+                          }
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex space-x-2">
+                          <div className="flex space-x-2 justify-end">
                             <Link
                               to={ROUTES.SUPPLIERS.VIEW(supplier.supplierId)}
-                              className="text-indigo-600 hover:text-indigo-900"
+                              className="text-blue-600 hover:text-blue-900 transition-colors"
                             >
                               Xem
                             </Link>
                             <Link
                               to={ROUTES.SUPPLIERS.EDIT(supplier.supplierId)}
-                              className="text-indigo-600 hover:text-indigo-900"
+                              className="text-indigo-600 hover:text-indigo-900 transition-colors"
                             >
                               Sửa
                             </Link>
@@ -187,8 +244,20 @@ export const SuppliersPage: React.FC = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                        {searchKeyword ? 'Không tìm thấy nhà cung cấp nào' : 'Chưa có nhà cung cấp nào'}
+                      <td colSpan={5} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center">
+                          <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                          <p className="text-gray-500 text-lg">
+                            {searchKeyword ? 'Không tìm thấy nhà cung cấp nào' : 'Chưa có nhà cung cấp nào'}
+                          </p>
+                          {searchKeyword && (
+                            <Button onClick={handleClearSearch} variant="outline" className="mt-4">
+                              Xóa bộ lọc
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -220,10 +289,10 @@ export const SuppliersPage: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-700">
                     Hiển thị{' '}
-                    <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span>
+                    <span className="font-medium">{(currentPage - 1) * 10 + 1}</span>
                     {' '}-{' '}
                     <span className="font-medium">
-                      {Math.min(currentPage * pageSize, totalCount)}
+                      {Math.min(currentPage * 10, totalCount)}
                     </span>
                     {' '}trong{' '}
                     <span className="font-medium">{totalCount}</span> kết quả
@@ -282,3 +351,5 @@ export const SuppliersPage: React.FC = () => {
     </Layout>
   );
 };
+
+export default SuppliersPage;
