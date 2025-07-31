@@ -7,9 +7,6 @@ import {
   HomePage, 
   ProductsPage, 
   SuppliersPage, 
-  CreateSupplierPage, 
-  EditSupplierPage, 
-  ViewSupplierPage, 
   AuthTestPage 
 } from '@/pages';
 import { ROUTES } from '@/constants';
@@ -64,30 +61,6 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <SuppliersPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path={ROUTES.SUPPLIERS.CREATE} 
-        element={
-          <ProtectedRoute>
-            <CreateSupplierPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/suppliers/:id/edit" 
-        element={
-          <ProtectedRoute>
-            <EditSupplierPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/suppliers/:id" 
-        element={
-          <ProtectedRoute>
-            <ViewSupplierPage />
           </ProtectedRoute>
         } 
       />

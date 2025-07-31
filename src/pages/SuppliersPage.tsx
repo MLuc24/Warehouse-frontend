@@ -1,354 +1,427 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, Button, Input, LoadingSpinner } from '@/components/ui';
-import { Layout } from '@/components/layout';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Button } from '@/components/ui';
+import { Pagination } from '@/components/common';
+import { SupplierStats, SupplierSearchBar } from '@/components/suppliers';
+import { SupplierList } from '@/components/suppliers/SupplierList';
+import { SupplierInlineEdit } from '@/components/suppliers/SupplierInlineEdit';
 import { useSupplier } from '@/hooks/useSupplier';
-import { ROUTES } from '@/constants';
-import type { SupplierSearch } from '@/types';
+import type { Supplier, SupplierSearch, CreateSupplier, UpdateSupplier } from '@/types';
 
+/**
+ * Suppliers Page - Refactored with Inline Editing
+ * Features: Click to edit inline, overlay-style editing over the table
+ */
 export const SuppliersPage: React.FC = () => {
+  // Supplier management hook
   const {
     suppliers,
-    totalCount,
-    currentPage,
-    totalPages,
     loading,
-    error,
+    totalCount,
+    totalPages,
     fetchSuppliers,
-    clearError
+    createSupplier,
+    updateSupplier,
+    deleteSupplier
   } = useSupplier();
 
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searchParams, setSearchParams] = useState<SupplierSearch>({
-    page: 1,
-    pageSize: 10
-  });
+  // State management
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const pageSize = 10;
 
-  // Fetch suppliers on component mount and when searchParams change
+  // Search configuration with useMemo to prevent re-renders
+  const searchConfig: SupplierSearch = useMemo(() => ({
+    keyword: searchTerm,
+    page: currentPage,
+    pageSize
+  }), [searchTerm, currentPage, pageSize]);
+
+  // Fetch suppliers on component mount and when search params change
   useEffect(() => {
-    fetchSuppliers(searchParams);
-  }, [fetchSuppliers, searchParams]);
+    fetchSuppliers(searchConfig);
+  }, [searchConfig, fetchSuppliers]);
 
   // Handle search
-  const handleSearch = useCallback(() => {
-    const newSearchParams: SupplierSearch = {
-      ...searchParams,
-      keyword: searchKeyword.trim() || undefined,
-      page: 1
-    };
-    setSearchParams(newSearchParams);
-  }, [searchKeyword, searchParams]);
+  const handleSearch = useCallback((term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
+    setSelectedSupplier(null); // Close inline edit when searching
+  }, []);
+
+  // Handle search term change
+  const handleSearchTermChange = useCallback((term: string) => {
+    setSearchTerm(term);
+  }, []);
+
+  // Handle clear search
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm('');
+    setCurrentPage(1);
+    setSelectedSupplier(null);
+  }, []);
 
   // Handle page change
   const handlePageChange = useCallback((page: number) => {
-    setSearchParams(prev => ({ ...prev, page }));
+    setCurrentPage(page);
+    setSelectedSupplier(null); // Close inline edit when changing page
   }, []);
 
-  // Handle key press for search
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
+  // Handle supplier selection for inline editing
+  const handleSelectSupplier = useCallback((supplier: Supplier) => {
+    if (selectedSupplier?.supplierId === supplier.supplierId) {
+      setSelectedSupplier(null); // Deselect if already selected
+    } else {
+      setSelectedSupplier(supplier);
+      setShowCreateForm(false); // Close create form if open
     }
-  }, [handleSearch]);
+  }, [selectedSupplier]);
 
-  // Clear search
-  const handleClearSearch = useCallback(() => {
-    setSearchKeyword('');
-    setSearchParams(prev => ({
-      ...prev,
-      keyword: undefined,
-      page: 1
-    }));
+  // Handle supplier update
+  const handleUpdateSupplier = useCallback(async (data: Partial<Supplier>) => {
+    if (!selectedSupplier) return;
+    
+    // Convert to UpdateSupplier format
+    const updateData: UpdateSupplier = {
+      supplierName: data.supplierName || selectedSupplier.supplierName,
+      email: data.email,
+      phoneNumber: data.phoneNumber,
+      address: data.address,
+      taxCode: data.taxCode
+    };
+    
+    setIsSubmitting(true);
+    try {
+      await updateSupplier(selectedSupplier.supplierId, updateData);
+      setSelectedSupplier(null); // Close inline edit after successful update
+      await fetchSuppliers(searchConfig); // Refresh data
+    } catch (error) {
+      console.error('Error updating supplier:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [selectedSupplier, updateSupplier, fetchSuppliers, searchConfig]);
+
+  // Handle supplier deletion
+  const handleDeleteSupplier = useCallback(async (id: number) => {
+    setIsSubmitting(true);
+    try {
+      await deleteSupplier(id);
+      setSelectedSupplier(null); // Close inline edit after successful deletion
+      await fetchSuppliers(searchConfig); // Refresh data
+    } catch (error) {
+      console.error('Error deleting supplier:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [deleteSupplier, fetchSuppliers, searchConfig]);
+
+  // Handle create supplier
+  const handleCreateSupplier = useCallback(async (data: Partial<Supplier>) => {
+    // Convert to CreateSupplier format
+    const createData: CreateSupplier = {
+      supplierName: data.supplierName || '',
+      email: data.email,
+      phoneNumber: data.phoneNumber,
+      address: data.address,
+      taxCode: data.taxCode
+    };
+    
+    setIsSubmitting(true);
+    try {
+      await createSupplier(createData);
+      setShowCreateForm(false); // Close create form after successful creation
+      await fetchSuppliers(searchConfig); // Refresh data
+    } catch (error) {
+      console.error('Error creating supplier:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [createSupplier, fetchSuppliers, searchConfig]);
+
+  // Handle cancel inline edit
+  const handleCancelEdit = useCallback(() => {
+    setSelectedSupplier(null);
   }, []);
 
-  // Early return for error state
-  if (error) {
-    return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="text-red-600 mb-4">
-            <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="text-lg font-medium">{error}</p>
-          </div>
-          <Button onClick={clearError} variant="outline">
-            Thử lại
-          </Button>
-        </div>
-      </Layout>
-    );
-  }
+  // Handle cancel create
+  const handleCancelCreate = useCallback(() => {
+    setShowCreateForm(false);
+  }, []);
+
+  // Show create form
+  const handleShowCreate = useCallback(() => {
+    setShowCreateForm(true);
+    setSelectedSupplier(null); // Close inline edit if open
+  }, []);
 
   return (
-    <Layout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Nhà cung cấp</h1>
-            <p className="text-gray-600 mt-1">
-              Quản lý danh sách nhà cung cấp ({totalCount} nhà cung cấp)
-            </p>
-          </div>
-          <Link to={ROUTES.SUPPLIERS.CREATE}>
-            <Button>
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Thêm nhà cung cấp
-            </Button>
-          </Link>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Quản lý nhà cung cấp
+          </h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Quản lý thông tin nhà cung cấp và theo dõi hoạt động
+          </p>
         </div>
-
-        {/* Search */}
-        <Card>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Tìm kiếm theo tên, email, số điện thoại..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                onKeyDown={handleKeyPress}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSearch} variant="outline">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Tìm kiếm
-              </Button>
-              {searchKeyword && (
-                <Button onClick={handleClearSearch} variant="outline">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Xóa
-                </Button>
-              )}
-            </div>
-          </div>
-        </Card>
-
-        {/* Suppliers Table */}
-        <Card>
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nhà cung cấp
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Liên hệ
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thống kê
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ngày tạo
-                    </th>
-                    <th className="relative px-6 py-3">
-                      <span className="sr-only">Hành động</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {suppliers.length > 0 ? (
-                    suppliers.map((supplier) => (
-                      <tr key={supplier.supplierId} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {supplier.supplierName}
-                            </div>
-                            {supplier.address && (
-                              <div className="text-sm text-gray-500 truncate max-w-xs">
-                                📍 {supplier.address}
-                              </div>
-                            )}
-                            {supplier.taxCode && (
-                              <div className="text-xs text-gray-400 mt-1">
-                                MST: {supplier.taxCode}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm space-y-1">
-                            {supplier.email && (
-                              <div className="flex items-center text-gray-900">
-                                <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                                </svg>
-                                {supplier.email}
-                              </div>
-                            )}
-                            {supplier.phoneNumber && (
-                              <div className="flex items-center text-gray-900">
-                                <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
-                                {supplier.phoneNumber}
-                              </div>
-                            )}
-                            {!supplier.email && !supplier.phoneNumber && (
-                              <span className="text-gray-400 text-sm">Chưa có thông tin liên hệ</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm space-y-1">
-                            <div className="text-gray-900">
-                              📦 {supplier.totalProducts} sản phẩm
-                            </div>
-                            <div className="text-gray-600">
-                              📄 {supplier.totalReceipts} phiếu nhập
-                            </div>
-                            {supplier.totalPurchaseValue && supplier.totalPurchaseValue > 0 && (
-                              <div className="text-green-600 font-medium">
-                                💰 {supplier.totalPurchaseValue.toLocaleString('vi-VN')} ₫
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {supplier.createdAt 
-                            ? new Date(supplier.createdAt).toLocaleDateString('vi-VN')
-                            : '-'
-                          }
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex space-x-2 justify-end">
-                            <Link
-                              to={ROUTES.SUPPLIERS.VIEW(supplier.supplierId)}
-                              className="text-blue-600 hover:text-blue-900 transition-colors"
-                            >
-                              Xem
-                            </Link>
-                            <Link
-                              to={ROUTES.SUPPLIERS.EDIT(supplier.supplierId)}
-                              className="text-indigo-600 hover:text-indigo-900 transition-colors"
-                            >
-                              Sửa
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center">
-                          <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                          </svg>
-                          <p className="text-gray-500 text-lg">
-                            {searchKeyword ? 'Không tìm thấy nhà cung cấp nào' : 'Chưa có nhà cung cấp nào'}
-                          </p>
-                          {searchKeyword && (
-                            <Button onClick={handleClearSearch} variant="outline" className="mt-4">
-                              Xóa bộ lọc
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200">
-              <div className="flex-1 flex justify-between sm:hidden">
-                <Button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  variant="outline"
-                >
-                  Trước
-                </Button>
-                <Button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  variant="outline"
-                >
-                  Sau
-                </Button>
-              </div>
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Hiển thị{' '}
-                    <span className="font-medium">{(currentPage - 1) * 10 + 1}</span>
-                    {' '}-{' '}
-                    <span className="font-medium">
-                      {Math.min(currentPage * 10, totalCount)}
-                    </span>
-                    {' '}trong{' '}
-                    <span className="font-medium">{totalCount}</span> kết quả
-                  </p>
-                </div>
-                <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                    <Button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      variant="outline"
-                      className="rounded-l-md"
-                    >
-                      Trước
-                    </Button>
-                    
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-                      
-                      return (
-                        <Button
-                          key={pageNum}
-                          onClick={() => handlePageChange(pageNum)}
-                          variant={currentPage === pageNum ? 'primary' : 'outline'}
-                          className="-ml-px"
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
-                    
-                    <Button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      variant="outline"
-                      className="rounded-r-md -ml-px"
-                    >
-                      Sau
-                    </Button>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          )}
-        </Card>
+        <div className="mt-4 md:mt-0">
+          <Button
+            onClick={handleShowCreate}
+            variant="primary"
+            disabled={loading || isSubmitting}
+          >
+            Thêm nhà cung cấp
+          </Button>
+        </div>
       </div>
-    </Layout>
+
+      {/* Stats Section */}
+      <SupplierStats
+        totalCount={totalCount}
+        currentCount={suppliers.length}
+        currentPage={currentPage}
+        totalPages={totalPages}
+      />
+
+      {/* Search Bar */}
+      <SupplierSearchBar
+        searchTerm={searchTerm}
+        onSearchTermChange={handleSearchTermChange}
+        onSearch={handleSearch}
+        onClearSearch={handleClearSearch}
+        loading={loading}
+        disabled={isSubmitting}
+      />
+
+      {/* Main Content Area with consistent spacing */}
+      <div className="bg-white shadow-sm rounded-lg p-6">
+        {/* Show either the supplier list or the inline edit form */}
+        {selectedSupplier ? (
+          <SupplierInlineEdit
+            supplier={selectedSupplier}
+            onSave={handleUpdateSupplier}
+            onDelete={handleDeleteSupplier}
+            onCancel={handleCancelEdit}
+          />
+        ) : showCreateForm ? (
+          <CreateSupplierForm
+            onSave={handleCreateSupplier}
+            onCancel={handleCancelCreate}
+            isSubmitting={isSubmitting}
+          />
+        ) : (
+          <SupplierList
+            suppliers={suppliers}
+            selectedSupplier={selectedSupplier}
+            onSelectSupplier={handleSelectSupplier}
+            loading={loading}
+          />
+        )}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            loading={loading}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Create Supplier Form Component
+interface CreateSupplierFormProps {
+  onSave: (data: Partial<Supplier>) => Promise<void>;
+  onCancel: () => void;
+  isSubmitting: boolean;
+}
+
+const CreateSupplierForm: React.FC<CreateSupplierFormProps> = ({
+  onSave,
+  onCancel,
+  isSubmitting
+}) => {
+  const [formData, setFormData] = useState({
+    supplierName: '',
+    email: '',
+    phoneNumber: '',
+    address: ''
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Validation rules
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.supplierName.trim()) {
+      newErrors.supplierName = 'Tên nhà cung cấp là bắt buộc';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email là bắt buộc';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Email không hợp lệ';
+    }
+
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Số điện thoại là bắt buộc';
+    } else if (!/^[0-9]{10,11}$/.test(formData.phoneNumber.replace(/\s/g, ''))) {
+      newErrors.phoneNumber = 'Số điện thoại không hợp lệ';
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = 'Địa chỉ là bắt buộc';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle input changes
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  // Handle save
+  const handleSave = async () => {
+    if (!validateForm()) return;
+    await onSave(formData);
+  };
+
+  return (
+    <div className="w-full">
+      {/* Header */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          Thêm nhà cung cấp mới
+        </h3>
+        <p className="text-sm text-gray-600">
+          Điền thông tin để thêm nhà cung cấp mới vào hệ thống
+        </p>
+      </div>
+
+      {/* Form Content */}
+      <div className="mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Name Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tên nhà cung cấp <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.supplierName}
+              onChange={(e) => handleInputChange('supplierName', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.supplierName ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Nhập tên nhà cung cấp"
+              disabled={isSubmitting}
+            />
+            {errors.supplierName && (
+              <p className="mt-1 text-sm text-red-600">{errors.supplierName}</p>
+            )}
+          </div>
+
+          {/* Email Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Nhập email"
+              disabled={isSubmitting}
+            />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+            )}
+          </div>
+
+          {/* Phone Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Số điện thoại <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="tel"
+              value={formData.phoneNumber}
+              onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Nhập số điện thoại"
+              disabled={isSubmitting}
+            />
+            {errors.phoneNumber && (
+              <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
+            )}
+          </div>
+
+          {/* Address Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Địa chỉ <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) => handleInputChange('address', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.address ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Nhập địa chỉ"
+              disabled={isSubmitting}
+            />
+            {errors.address && (
+              <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+        <Button
+          onClick={onCancel}
+          variant="secondary"
+          disabled={isSubmitting}
+        >
+          ← Quay lại danh sách
+        </Button>
+        <Button
+          onClick={handleSave}
+          variant="primary"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Đang tạo...' : 'Thêm nhà cung cấp'}
+        </Button>
+      </div>
+    </div>
   );
 };
 
