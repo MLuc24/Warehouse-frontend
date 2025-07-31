@@ -283,8 +283,14 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
               <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Trạng thái</div>
               <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                <span className="text-lg font-bold text-green-600">Hoạt động</span>
+                <div className={`w-2 h-2 rounded-full mr-2 ${
+                  supplier.status === 'Active' ? 'bg-green-500' : 'bg-red-500'
+                }`}></div>
+                <span className={`text-lg font-bold ${
+                  supplier.status === 'Active' ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {supplier.status === 'Active' ? 'Hoạt động' : 'Hết hạn'}
+                </span>
               </div>
             </div>
           </div>
@@ -304,7 +310,7 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
       {/* Action Buttons với styling đẹp hơn */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t-2 border-gray-200">
         <div>
-          {permissions?.suppliers.canDelete && (
+          {permissions?.suppliers.canDelete && supplier.status === 'Active' && (
             <Button
               onClick={() => setShowDeleteConfirm(true)}
               variant="danger"
@@ -314,8 +320,16 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              {isSubmitting ? 'Đang xóa...' : 'Xóa nhà cung cấp'}
+              {isSubmitting ? 'Đang chuyển...' : 'Chuyển sang hết hạn'}
             </Button>
+          )}
+          {supplier.status === 'Expired' && (
+            <div className="px-6 py-3 bg-gray-100 text-gray-600 rounded-lg font-medium flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Nhà cung cấp đã hết hạn
+            </div>
           )}
         </div>
         
@@ -348,7 +362,7 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
       </div>
 
       {/* Delete Confirmation Modal với styling đẹp hơn */}
-      {showDeleteConfirm && permissions?.suppliers.canDelete && (
+      {showDeleteConfirm && permissions?.suppliers.canDelete && supplier.status === 'Active' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
             <div className="p-6">
@@ -359,12 +373,13 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
                   </svg>
                 </div>
                 <h4 className="text-xl font-bold text-gray-900">
-                  Xác nhận xóa
+                  Chuyển sang hết hạn
                 </h4>
               </div>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                Bạn có chắc chắn muốn xóa nhà cung cấp <strong className="text-gray-900">{supplier.supplierName}</strong>? 
-                Thao tác này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan.
+                Bạn có chắc chắn muốn chuyển nhà cung cấp <strong className="text-gray-900">{supplier.supplierName}</strong> 
+                sang trạng thái <strong className="text-red-600">"Hết hạn"</strong>? 
+                Nhà cung cấp này sẽ không hiển thị trong danh sách chọn khi thêm sản phẩm.
               </p>
               <div className="flex gap-3">
                 <Button
@@ -381,7 +396,7 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
                   disabled={isSubmitting}
                   className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold"
                 >
-                  {isSubmitting ? 'Đang xóa...' : 'Xóa ngay'}
+                  {isSubmitting ? 'Đang chuyển...' : 'Chuyển sang hết hạn'}
                 </Button>
               </div>
             </div>

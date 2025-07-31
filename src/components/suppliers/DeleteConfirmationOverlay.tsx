@@ -26,7 +26,7 @@ export const DeleteConfirmationOverlay: React.FC<DeleteConfirmationOverlayProps>
   onClose,
   onConfirm,
   loading,
-  title = 'Xác nhận xóa',
+  title = 'Chuyển sang hết hạn',
   itemType = 'mục'
 }) => {
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -57,9 +57,10 @@ export const DeleteConfirmationOverlay: React.FC<DeleteConfirmationOverlayProps>
               {title}
             </h3>
             <p className="text-sm text-gray-500 mb-6">
-              Bạn có chắc chắn muốn xóa {itemType}{' '}
-              <span className="font-medium text-gray-900">"{item.name}"</span>?{' '}
-              Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn chuyển {itemType}{' '}
+              <span className="font-medium text-gray-900">"{item.name}"</span>{' '}
+              sang trạng thái <span className="font-medium text-red-600">"Hết hạn"</span>?{' '}
+              Nhà cung cấp này sẽ không hiển thị trong danh sách chọn khi thêm sản phẩm.
             </p>
           </div>
 
@@ -79,10 +80,10 @@ export const DeleteConfirmationOverlay: React.FC<DeleteConfirmationOverlayProps>
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Đang xóa...</span>
+                  <span>Đang chuyển...</span>
                 </div>
               ) : (
-                'Xóa'
+                'Chuyển sang hết hạn'
               )}
             </Button>
           </div>

@@ -95,6 +95,13 @@ export class SupplierService {
   }
 
   /**
+   * Get active suppliers (for dropdowns and selection)
+   */
+  async getActiveSuppliers(): Promise<Supplier[]> {
+    return apiService.get<Supplier[]>(API_ENDPOINTS.SUPPLIERS.ACTIVE);
+  }
+
+  /**
    * Build search parameters for API call
    * Map frontend parameters to backend DTO format
    */

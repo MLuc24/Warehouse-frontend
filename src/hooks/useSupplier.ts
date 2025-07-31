@@ -197,7 +197,7 @@ export const useSupplier = (): UseSupplierReturn => {
       
       return true;
     } catch (err) {
-      handleError(err, 'Đã xảy ra lỗi khi xóa nhà cung cấp');
+      handleError(err, 'Đã xảy ra lỗi khi chuyển nhà cung cấp sang trạng thái hết hạn');
       return false;
     } finally {
       setDeleting(false);

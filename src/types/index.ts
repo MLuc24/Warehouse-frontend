@@ -151,6 +151,7 @@ export interface Supplier {
   email?: string;
   taxCode?: string;
   createdAt?: string;
+  status: string; // "Active" | "Expired"
   totalProducts: number;
   totalReceipts: number;
   totalPurchaseValue?: number;
