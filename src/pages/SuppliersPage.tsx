@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui';
 import { Pagination } from '@/components/common';
 import { Layout } from '@/components/layout';
-import { SupplierSearchBar } from '@/components/suppliers';
 import { SupplierList } from '@/components/suppliers/SupplierList';
 import { SupplierInlineEdit } from '@/components/suppliers/SupplierInlineEdit';
 import { useSupplier } from '@/hooks/useSupplier';
@@ -179,18 +178,6 @@ export const SuppliersPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Search Bar with enhanced styling */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <SupplierSearchBar
-            searchTerm={searchTerm}
-            onSearchTermChange={handleSearchTermChange}
-            onSearch={handleSearch}
-            onClearSearch={handleClearSearch}
-            loading={loading}
-            disabled={isSubmitting}
-          />
-        </div>
-
         {/* Main Content Area with enhanced styling */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[600px]">
           <div className="p-6">
@@ -215,6 +202,10 @@ export const SuppliersPage: React.FC = () => {
                 onSelectSupplier={handleSelectSupplier}
                 onShowCreate={handleShowCreate}
                 loading={loading}
+                searchTerm={searchTerm}
+                onSearchTermChange={handleSearchTermChange}
+                onSearch={handleSearch}
+                onClearSearch={handleClearSearch}
               />
             )}
 

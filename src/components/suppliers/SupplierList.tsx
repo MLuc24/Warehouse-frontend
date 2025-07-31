@@ -24,35 +24,68 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   selectedSupplier,
   onSelectSupplier,
   onShowCreate,
-  loading
+  loading,
+  // Search props
+  searchTerm,
+  onSearchTermChange,
+  onSearch,
+  onClearSearch
 }) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    onSearchTermChange(value);
+    // Tìm kiếm real-time khi nhập
+    onSearch(value);
+  };
   return (
     <div className="w-full">
-      {/* Header với styling đẹp hơn */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
+      {/* Header với Search Bar tích hợp */}
+      <div className="mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
           <div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
+            <h3 className="text-xl font-bold text-gray-900 mb-1">
               Danh sách nhà cung cấp
             </h3>
-          </div>
-          <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-500">
               {suppliers.length} nhà cung cấp
             </div>
-            {onShowCreate && (
-              <Button
-                onClick={onShowCreate}
-                variant="primary"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200 hover:shadow-md"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Thêm nhà cung cấp
-              </Button>
-            )}
           </div>
+          {onShowCreate && (
+            <Button
+              onClick={onShowCreate}
+              variant="primary"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200 hover:shadow-md lg:w-auto"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Thêm nhà cung cấp
+            </Button>
+          )}
+        </div>
+        
+        {/* Search Bar tích hợp */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <Input
+              type="text"
+              placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+              value={searchTerm}
+              onChange={handleInputChange}
+              disabled={loading}
+              className="w-full"
+            />
+          </div>
+          {searchTerm && (
+            <Button 
+              onClick={onClearSearch}
+              variant="outline"
+              disabled={loading}
+              className="sm:w-auto"
+            >
+              ✕ Xóa bộ lọc
+            </Button>
+          )}
         </div>
       </div>
 
