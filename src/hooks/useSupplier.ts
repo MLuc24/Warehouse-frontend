@@ -38,6 +38,7 @@ interface UseSupplierReturn {
   reactivateSupplier: (id: number) => Promise<boolean>;
   canDeleteSupplier: (id: number) => Promise<boolean>;
   getTopSuppliers: (count?: number) => Promise<Supplier[]>;
+  getActiveSuppliers: () => Promise<Supplier[]>;
   clearError: () => void;
   clearSupplier: () => void;
   clearStats: () => void;
@@ -259,6 +260,17 @@ export const useSupplier = (): UseSupplierReturn => {
     }
   }, [handleError]);
 
+  // Get active suppliers
+  const getActiveSuppliers = useCallback(async (): Promise<Supplier[]> => {
+    try {
+      const activeSuppliers = await supplierService.getActiveSuppliers();
+      return activeSuppliers;
+    } catch (err) {
+      handleError(err, 'Đã xảy ra lỗi khi tải nhà cung cấp đang hoạt động');
+      return [];
+    }
+  }, [handleError]);
+
   // Clear error
   const clearError = useCallback(() => {
     setError(null);
@@ -303,6 +315,7 @@ export const useSupplier = (): UseSupplierReturn => {
     reactivateSupplier,
     canDeleteSupplier,
     getTopSuppliers,
+    getActiveSuppliers,
     clearError,
     clearSupplier,
     clearStats,

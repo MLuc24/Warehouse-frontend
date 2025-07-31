@@ -30,6 +30,9 @@ export const API_ENDPOINTS = {
     TOP_PRODUCTS: '/product/top-products',
     LOW_STOCK: '/product/low-stock',
     BY_SUPPLIER: (supplierId: number) => `/product/by-supplier/${supplierId}`,
+    ACTIVE: '/product/active',
+    CAN_DELETE: (id: number) => `/product/${id}/can-delete`,
+    REACTIVATE: (id: number) => `/product/${id}/reactivate`,
   },
   SUPPLIERS: {
     LIST: '/supplier',

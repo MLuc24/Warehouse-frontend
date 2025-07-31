@@ -1,227 +1,240 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, Button, Input, LoadingSpinner } from '@/components/ui';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Pagination } from '@/components/common';
 import { Layout } from '@/components/layout';
-import { productService } from '@/services';
-import { ROUTES } from '@/constants';
-import type { Product, ProductSearch, ProductListResponse } from '@/types';
+import { ProductList, ProductInlineEdit, CreateProductForm } from '@/components/products';
+import { useProduct, usePermissions } from '@/hooks';
+import type { Product, ProductSearch, CreateProduct, UpdateProduct } from '@/types';
 
+/**
+ * Products Page - Refactored with Inline Editing
+ * Features: Click to edit inline, overlay-style editing over the table
+ */
 export const ProductsPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchKeyword, setSearchKeyword] = useState('');
+  // Product management hook
+  const {
+    products,
+    loading,
+    totalCount,
+    totalPages,
+    fetchProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    reactivateProduct
+  } = useProduct();
 
+  // Permissions hook
+  const permissions = usePermissions();
+
+  // State management
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const pageSize = 10;
 
-  const fetchProducts = async (page = 1, keyword = '') => {
-    try {
-      setIsLoading(true);
-      const searchParams: ProductSearch = {
-        page,
-        pageSize,
-        keyword: keyword || undefined,
-      };
+  // Search configuration with useMemo to prevent re-renders
+  const searchConfig: ProductSearch = useMemo(() => ({
+    keyword: searchTerm,
+    page: currentPage,
+    pageSize
+  }), [searchTerm, currentPage, pageSize]);
 
-      const response: ProductListResponse = await productService.getProducts(searchParams);
-      setProducts(response.items);
-      setTotalCount(response.totalCount);
-      setCurrentPage(page);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Fetch products on component mount and when search params change
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(searchConfig);
+  }, [searchConfig, fetchProducts]);
+
+  // Handle search
+  const handleSearch = useCallback((term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
+    setSelectedProduct(null); // Close inline edit when searching
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchProducts(1, searchKeyword);
-  };
+  // Handle search term change - now triggers immediate search
+  const handleSearchTermChange = useCallback((term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
+    setSelectedProduct(null); // Close inline edit when searching
+  }, []);
 
-  const handlePageChange = (page: number) => {
-    fetchProducts(page, searchKeyword);
-  };
+  // Handle clear search
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm('');
+    setCurrentPage(1);
+    setSelectedProduct(null); // Close inline edit when clearing search
+  }, []);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Handle page change
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    setSelectedProduct(null); // Close inline edit when changing page
+  }, []);
+
+  // Handle product selection for inline editing
+  const handleSelectProduct = useCallback((product: Product) => {
+    setSelectedProduct(product);
+    setShowCreateForm(false); // Close create form when selecting product
+  }, []);
+
+  // Handle update product
+  const handleUpdateProduct = useCallback(async (data: Partial<Product>) => {
+    if (!selectedProduct) return;
+    
+    // Convert to UpdateProduct format
+    const updateData: UpdateProduct = {
+      sku: data.sku || selectedProduct.sku,
+      productName: data.productName || selectedProduct.productName,
+      description: data.description,
+      supplierId: data.supplierId,
+      unit: data.unit,
+      purchasePrice: data.purchasePrice,
+      sellingPrice: data.sellingPrice,
+      imageUrl: data.imageUrl,
+      status: data.status
+    };
+    
+    setIsSubmitting(true);
+    try {
+      await updateProduct(selectedProduct.productId, updateData);
+      setSelectedProduct(null); // Close inline edit after successful update
+      await fetchProducts(searchConfig); // Refresh data
+    } catch (error) {
+      console.error('Error updating product:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [selectedProduct, updateProduct, fetchProducts, searchConfig]);
+
+  // Handle product deletion
+  const handleDeleteProduct = useCallback(async (id: number) => {
+    setIsSubmitting(true);
+    try {
+      await deleteProduct(id);
+      setSelectedProduct(null); // Close inline edit after successful deletion
+      await fetchProducts(searchConfig); // Refresh data
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [deleteProduct, fetchProducts, searchConfig]);
+
+  // Handle product reactivation
+  const handleReactivateProduct = useCallback(async (id: number) => {
+    setIsSubmitting(true);
+    try {
+      await reactivateProduct(id);
+      setSelectedProduct(null); // Close inline edit after successful reactivation
+      await fetchProducts(searchConfig); // Refresh data
+    } catch (error) {
+      console.error('Error reactivating product:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [reactivateProduct, fetchProducts, searchConfig]);
+
+  // Handle create product
+  const handleCreateProduct = useCallback(async (data: Partial<Product>) => {
+    // Convert to CreateProduct format
+    const createData: CreateProduct = {
+      sku: data.sku || '',
+      productName: data.productName || '',
+      description: data.description,
+      supplierId: data.supplierId,
+      unit: data.unit,
+      purchasePrice: data.purchasePrice,
+      sellingPrice: data.sellingPrice,
+      imageUrl: data.imageUrl,
+      status: data.status
+    };
+    
+    setIsSubmitting(true);
+    try {
+      await createProduct(createData);
+      setShowCreateForm(false); // Close create form after successful creation
+      await fetchProducts(searchConfig); // Refresh data
+    } catch (error) {
+      console.error('Error creating product:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [createProduct, fetchProducts, searchConfig]);
+
+  // Handle cancel inline edit
+  const handleCancelEdit = useCallback(() => {
+    setSelectedProduct(null);
+  }, []);
+
+  // Handle cancel create
+  const handleCancelCreate = useCallback(() => {
+    setShowCreateForm(false);
+  }, []);
+
+  // Show create form
+  const handleShowCreate = useCallback(() => {
+    setShowCreateForm(true);
+    setSelectedProduct(null); // Close inline edit when showing create form
+  }, []);
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Quản lý sản phẩm</h1>
-            <p className="text-gray-600">Danh sách tất cả sản phẩm trong kho</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          {/* Main Content */}
+          <div className="relative">
+            {selectedProduct ? (
+              <ProductInlineEdit
+                product={selectedProduct}
+                onSave={permissions.products.canEdit ? handleUpdateProduct : async () => {}}
+                onDelete={permissions.products.canDelete ? handleDeleteProduct : async () => {}}
+                onReactivate={permissions.products.canDelete ? handleReactivateProduct : undefined}
+                onCancel={handleCancelEdit}
+                permissions={permissions}
+              />
+            ) : showCreateForm && permissions.products.canCreate ? (
+              <CreateProductForm
+                onSave={handleCreateProduct}
+                onCancel={handleCancelCreate}
+                isSubmitting={isSubmitting}
+              />
+            ) : (
+              <ProductList
+                products={products}
+                selectedProduct={selectedProduct}
+                onSelectProduct={handleSelectProduct}
+                onShowCreate={handleShowCreate}
+                loading={loading}
+                searchTerm={searchTerm}
+                onSearchTermChange={handleSearchTermChange}
+                onSearch={handleSearch}
+                onClearSearch={handleClearSearch}
+                permissions={permissions}
+              />
+            )}
           </div>
-          <Link to={ROUTES.PRODUCTS.CREATE}>
-            <Button>Thêm sản phẩm mới</Button>
-          </Link>
-        </div>
 
-        {/* Search */}
-        <Card>
-          <form onSubmit={handleSearch} className="flex gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Tìm kiếm theo tên sản phẩm, SKU..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
+          {/* Pagination - Only show when not in edit mode and have data */}
+          {!selectedProduct && !showCreateForm && products.length > 0 && totalPages > 1 && (
+            <div className="flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                onPageChange={handlePageChange}
+                loading={loading}
               />
             </div>
-            <Button type="submit">Tìm kiếm</Button>
-          </form>
-        </Card>
-
-        {/* Products Table */}
-        <Card>
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Sản phẩm
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        SKU
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Nhà cung cấp
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Tồn kho
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Giá bán
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Trạng thái
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Thao tác
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {products.length > 0 ? (
-                      products.map((product) => (
-                        <tr key={product.productId} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {product.productName}
-                              </div>
-                              {product.description && (
-                                <div className="text-sm text-gray-500 truncate max-w-xs">
-                                  {product.description}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {product.sku}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {product.supplierName || '-'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`text-sm font-medium ${
-                              product.currentStock < 10 ? 'text-red-600' : 'text-gray-900'
-                            }`}>
-                              {product.currentStock} {product.unit}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {product.sellingPrice?.toLocaleString('vi-VN')}đ
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              product?.status
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {product?.status ? 'Hoạt động' : 'Ngừng bán'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            <Link 
-                              to={ROUTES.PRODUCTS.VIEW(product.productId)}
-                              className="text-primary-600 hover:text-primary-900"
-                            >
-                              Xem
-                            </Link>
-                            <Link 
-                              to={ROUTES.PRODUCTS.EDIT(product.productId)}
-                              className="text-yellow-600 hover:text-yellow-900"
-                            >
-                              Sửa
-                            </Link>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                          Không tìm thấy sản phẩm nào
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200">
-                  <div className="text-sm text-gray-500">
-                    Hiển thị {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalCount)} của {totalCount} sản phẩm
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={currentPage === 1}
-                      onClick={() => handlePageChange(currentPage - 1)}
-                    >
-                      Trước
-                    </Button>
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const page = i + 1;
-                      return (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? 'primary' : 'outline'}
-                          size="sm"
-                          onClick={() => handlePageChange(page)}
-                        >
-                          {page}
-                        </Button>
-                      );
-                    })}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={currentPage === totalPages}
-                      onClick={() => handlePageChange(currentPage + 1)}
-                    >
-                      Sau
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </>
           )}
-        </Card>
+        </div>
       </div>
     </Layout>
   );

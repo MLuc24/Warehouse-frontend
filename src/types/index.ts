@@ -97,6 +97,7 @@ export interface UpdateProduct {
 
 export interface ProductSearch {
   keyword?: string;
+  sku?: string;
   supplierId?: number;
   status?: boolean;
   minPrice?: number;
@@ -118,6 +119,7 @@ export interface ProductListResponse {
 export interface ProductStats {
   productId: number;
   productName: string;
+  sku: string;
   totalReceived: number;
   totalIssued: number;
   currentStock: number;
