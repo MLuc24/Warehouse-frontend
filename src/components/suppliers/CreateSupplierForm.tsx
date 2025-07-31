@@ -21,7 +21,8 @@ export const CreateSupplierForm: React.FC<CreateSupplierFormProps> = ({
     supplierName: '',
     email: '',
     phoneNumber: '',
-    address: ''
+    address: '',
+    taxCode: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -47,6 +48,10 @@ export const CreateSupplierForm: React.FC<CreateSupplierFormProps> = ({
 
     if (!formData.address.trim()) {
       newErrors.address = 'Địa chỉ là bắt buộc';
+    }
+
+    if (formData.taxCode && !/^[0-9]{10,13}$/.test(formData.taxCode.replace(/\s/g, ''))) {
+      newErrors.taxCode = 'Mã số thuế không hợp lệ (10-13 chữ số)';
     }
 
     setErrors(newErrors);
@@ -195,6 +200,33 @@ export const CreateSupplierForm: React.FC<CreateSupplierFormProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 {errors.address}
+              </p>
+            )}
+          </div>
+
+          {/* Tax Code Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
+              Mã số thuế
+            </label>
+            <input
+              type="text"
+              value={formData.taxCode}
+              onChange={(e) => handleInputChange('taxCode', e.target.value)}
+              className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-100 ${
+                errors.taxCode 
+                  ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : 'border-gray-300 bg-white focus:border-green-400 hover:border-gray-400'
+              }`}
+              placeholder="Nhập mã số thuế"
+              disabled={isSubmitting}
+            />
+            {errors.taxCode && (
+              <p className="text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {errors.taxCode}
               </p>
             )}
           </div>

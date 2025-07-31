@@ -19,7 +19,8 @@ export const SuppliersPage: React.FC = () => {
     fetchSuppliers,
     createSupplier,
     updateSupplier,
-    deleteSupplier
+    deleteSupplier,
+    reactivateSupplier
   } = useSupplier();
 
   // Permissions hook
@@ -124,6 +125,21 @@ export const SuppliersPage: React.FC = () => {
     }
   }, [deleteSupplier, fetchSuppliers, searchConfig]);
 
+  // Handle supplier reactivation
+  const handleReactivateSupplier = useCallback(async (id: number) => {
+    setIsSubmitting(true);
+    try {
+      await reactivateSupplier(id);
+      setSelectedSupplier(null); // Close inline edit after successful reactivation
+      await fetchSuppliers(searchConfig); // Refresh data
+    } catch (error) {
+      console.error('Error reactivating supplier:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [reactivateSupplier, fetchSuppliers, searchConfig]);
+
   // Handle create supplier
   const handleCreateSupplier = useCallback(async (data: Partial<Supplier>) => {
     // Convert to CreateSupplier format
@@ -188,6 +204,7 @@ export const SuppliersPage: React.FC = () => {
                 supplier={selectedSupplier}
                 onSave={permissions.suppliers.canEdit ? handleUpdateSupplier : async () => {}}
                 onDelete={permissions.suppliers.canDelete ? handleDeleteSupplier : async () => {}}
+                onReactivate={permissions.suppliers.canDelete ? handleReactivateSupplier : undefined}
                 onCancel={handleCancelEdit}
                 permissions={permissions}
               />

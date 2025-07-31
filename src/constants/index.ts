@@ -40,6 +40,7 @@ export const API_ENDPOINTS = {
     STATS: (id: number) => `/supplier/${id}/statistics`,
     TOP_SUPPLIERS: '/supplier/top',
     CAN_DELETE: (id: number) => `/supplier/${id}/can-delete`,
+    REACTIVATE: (id: number) => `/supplier/${id}/reactivate`,
     ACTIVE: '/supplier/active',
   },
 } as const;

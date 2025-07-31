@@ -35,6 +35,7 @@ interface UseSupplierReturn {
   createSupplier: (data: CreateSupplier) => Promise<Supplier | null>;
   updateSupplier: (id: number, data: UpdateSupplier) => Promise<Supplier | null>;
   deleteSupplier: (id: number) => Promise<boolean>;
+  reactivateSupplier: (id: number) => Promise<boolean>;
   canDeleteSupplier: (id: number) => Promise<boolean>;
   getTopSuppliers: (count?: number) => Promise<Supplier[]>;
   clearError: () => void;
@@ -215,6 +216,38 @@ export const useSupplier = (): UseSupplierReturn => {
     }
   }, [handleError]);
 
+  // Reactivate supplier
+  const reactivateSupplier = useCallback(async (id: number): Promise<boolean> => {
+    console.log('Reactivating supplier with ID:', id); // Debug log
+    setUpdating(true);
+    setError(null);
+    
+    try {
+      const result = await supplierService.reactivateSupplier(id);
+      console.log('Reactivate result:', result); // Debug log
+      
+      // Update suppliers list if we have it loaded
+      if (suppliers.length > 0) {
+        setSuppliers(prev => prev.map(s => 
+          s.supplierId === id ? { ...s, status: 'Active' } : s
+        ));
+      }
+      
+      // Update single supplier if it's the one being reactivated
+      if (supplier && supplier.supplierId === id) {
+        setSupplier(prev => prev ? { ...prev, status: 'Active' } : null);
+      }
+      
+      return true;
+    } catch (err) {
+      console.error('Error in reactivateSupplier hook:', err); // Debug log
+      handleError(err, 'Đã xảy ra lỗi khi gia hạn nhà cung cấp');
+      return false;
+    } finally {
+      setUpdating(false);
+    }
+  }, [suppliers.length, supplier, handleError]);
+
   // Get top suppliers
   const getTopSuppliers = useCallback(async (count = 5): Promise<Supplier[]> => {
     try {
@@ -267,6 +300,7 @@ export const useSupplier = (): UseSupplierReturn => {
     createSupplier,
     updateSupplier,
     deleteSupplier,
+    reactivateSupplier,
     canDeleteSupplier,
     getTopSuppliers,
     clearError,

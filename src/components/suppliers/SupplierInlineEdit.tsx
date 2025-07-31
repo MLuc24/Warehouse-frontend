@@ -6,6 +6,7 @@ interface SupplierInlineEditProps {
   supplier: Supplier;
   onSave: (data: Partial<Supplier>) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
+  onReactivate?: (id: number) => Promise<void>;
   onCancel: () => void;
   permissions?: {
     suppliers: {
@@ -24,6 +25,7 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
   supplier,
   onSave,
   onDelete,
+  onReactivate,
   onCancel,
   permissions
 }) => {
@@ -31,7 +33,8 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
     supplierName: supplier.supplierName,
     email: supplier.email || '',
     phoneNumber: supplier.phoneNumber || '',
-    address: supplier.address || ''
+    address: supplier.address || '',
+    taxCode: supplier.taxCode || ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,6 +62,10 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
 
     if (!formData.address.trim()) {
       newErrors.address = 'Địa chỉ là bắt buộc';
+    }
+
+    if (formData.taxCode && !/^[0-9]{10,13}$/.test(formData.taxCode.replace(/\s/g, ''))) {
+      newErrors.taxCode = 'Mã số thuế không hợp lệ (10-13 chữ số)';
     }
 
     setErrors(newErrors);
@@ -97,6 +104,24 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
     } finally {
       setIsSubmitting(false);
       setShowDeleteConfirm(false);
+    }
+  };
+
+  // Handle reactivate
+  const handleReactivate = async () => {
+    if (!onReactivate) return;
+    
+    console.log('SupplierInlineEdit: handleReactivate called for supplier:', supplier.supplierId); // Debug log
+    setIsSubmitting(true);
+    try {
+      await onReactivate(supplier.supplierId);
+      console.log('SupplierInlineEdit: onReactivate completed successfully'); // Debug log
+      // UI will be updated by parent component through onReactivate callback
+    } catch (error) {
+      console.error('SupplierInlineEdit: Error reactivating supplier:', error);
+      // Could add toast notification here
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -259,6 +284,36 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
               </p>
             )}
           </div>
+
+          {/* Tax Code Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
+              Mã số thuế
+            </label>
+            <input
+              type="text"
+              value={formData.taxCode}
+              onChange={(e) => handleInputChange('taxCode', e.target.value)}
+              className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100 ${
+                errors.taxCode 
+                  ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : permissions?.isReadOnly
+                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
+                  : 'border-gray-300 bg-white focus:border-blue-400 hover:border-gray-400'
+              }`}
+              placeholder="Nhập mã số thuế"
+              disabled={isSubmitting || permissions?.isReadOnly}
+              readOnly={permissions?.isReadOnly}
+            />
+            {errors.taxCode && (
+              <p className="text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {errors.taxCode}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Supplier Info Section với styling đẹp hơn */}
@@ -310,7 +365,30 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
       {/* Action Buttons với styling đẹp hơn */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t-2 border-gray-200">
         <div>
-          {permissions?.suppliers.canDelete && supplier.status === 'Active' && (
+          {supplier.status === 'Expired' && (
+            <div className="flex gap-3">
+              <div className="px-6 py-3 bg-gray-100 text-gray-600 rounded-lg font-medium flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Nhà cung cấp đã hết hạn
+              </div>
+              {permissions?.suppliers.canDelete && onReactivate && (
+                <Button
+                  onClick={handleReactivate}
+                  variant="primary"
+                  disabled={isSubmitting}
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold shadow-sm transition-all duration-200 hover:shadow-md flex items-center"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {isSubmitting ? 'Đang gia hạn...' : 'Gia hạn'}
+                </Button>
+              )}
+            </div>
+          )}
+          {supplier.status === 'Active' && permissions?.suppliers.canDelete && (
             <Button
               onClick={() => setShowDeleteConfirm(true)}
               variant="danger"
@@ -322,14 +400,6 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
               </svg>
               {isSubmitting ? 'Đang chuyển...' : 'Chuyển sang hết hạn'}
             </Button>
-          )}
-          {supplier.status === 'Expired' && (
-            <div className="px-6 py-3 bg-gray-100 text-gray-600 rounded-lg font-medium flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Nhà cung cấp đã hết hạn
-            </div>
           )}
         </div>
         

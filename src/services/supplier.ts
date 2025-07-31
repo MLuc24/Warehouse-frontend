@@ -95,6 +95,14 @@ export class SupplierService {
   }
 
   /**
+   * Reactivate supplier (change from Expired to Active)
+   */
+  async reactivateSupplier(id: number): Promise<{ message: string }> {
+    console.log('SupplierService: Reactivating supplier with ID:', id); // Debug log
+    return apiService.patch<{ message: string }>(API_ENDPOINTS.SUPPLIERS.REACTIVATE(id));
+  }
+
+  /**
    * Get active suppliers (for dropdowns and selection)
    */
   async getActiveSuppliers(): Promise<Supplier[]> {
