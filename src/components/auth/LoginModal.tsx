@@ -73,6 +73,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Chào mừng trở lại!"
+      headerColor="blue"
+      icon="👋"
     >
       <div className="space-y-6">
         {/* Greeting text */}

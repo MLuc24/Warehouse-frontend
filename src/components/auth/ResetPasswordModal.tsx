@@ -124,21 +124,22 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Tạo mật khẩu mới"
+      title="Đặt lại mật khẩu"
+      headerColor="purple"
+      icon="🔒"
       className="max-w-md"
     >
       <div className="space-y-6">
-        {/* Success indicator */}
+        {/* Help text */}
         <div className="text-center">
-          <div className="text-4xl mb-2">🔑</div>
           <p className="text-gray-600 text-sm">
             Tạo mật khẩu mới cho tài khoản của bạn
           </p>
         </div>
 
-        <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 px-4 py-3 rounded-r-md text-sm">
+        <div className="bg-purple-50 border-l-4 border-purple-500 text-purple-700 px-4 py-3 rounded-r-md text-sm">
           <div className="flex items-center">
-            <span className="text-blue-500 mr-2">📧</span>
+            <span className="text-purple-500 mr-2">📧</span>
             <div>
               <p className="font-semibold">Email: {email}</p>
               <p>Nhập mật khẩu mới để hoàn tất khôi phục</p>
@@ -159,7 +160,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
           {success && (
             <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-r-md text-sm">
               <div className="flex items-center">
-                <span className="text-green-500">🎉</span>
+                <span className="text-green-500">✅</span>
                 <span className="ml-2">{success}</span>
               </div>
             </div>
@@ -187,10 +188,9 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
             />
           </div>
 
-          {/* Password requirements */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm">
+          <div className="bg-gray-50 p-4 rounded-lg text-sm">
             <div className="flex items-start mb-2">
-              <span className="text-gray-400 mr-2">🔒</span>
+              <span className="text-gray-500 mr-2">🔐</span>
               <span className="font-semibold text-gray-700">Yêu cầu mật khẩu:</span>
             </div>
             <ul className="list-disc list-inside space-y-1 text-xs text-gray-600 ml-6">
@@ -212,11 +212,11 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                Đang cập nhật...
+                Đang đặt lại...
               </div>
             ) : success ? (
               <div className="flex items-center justify-center">
-                <span className="mr-2">🎉</span>
+                <span className="mr-2">✅</span>
                 Thành công!
               </div>
             ) : (
@@ -224,11 +224,11 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
             )}
           </Button>
 
-          {/* Security note */}
-          <div className="bg-green-50 p-4 rounded-lg text-xs text-green-700">
+          {/* Security notice */}
+          <div className="bg-gray-50 p-4 rounded-lg text-xs text-gray-600">
             <div className="flex items-start">
-              <span className="text-green-500 mr-2">🛡️</span>
-              <span>Mật khẩu mới sẽ được mã hóa và bảo mật tuyệt đối.</span>
+              <span className="text-gray-400 mr-2">🛡️</span>
+              <span>Mật khẩu mới sẽ được mã hóa và bảo mật theo tiêu chuẩn cao nhất.</span>
             </div>
           </div>
         </form>

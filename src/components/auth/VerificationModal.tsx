@@ -162,11 +162,25 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
     return `Chúng tôi đã gửi mã xác thực 6 chữ số đến ${contactDisplay}: ${contact}`
   }
 
+  const getModalProps = () => {
+    if (purpose === 'Registration') {
+      return {
+        headerColor: 'green' as const,
+        icon: '📝'
+      }
+    }
+    return {
+      headerColor: 'orange' as const,
+      icon: '🔐'
+    }
+  }
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
       title={getTitle()}
+      {...getModalProps()}
       className="max-w-md"
     >
       <div className="space-y-6">

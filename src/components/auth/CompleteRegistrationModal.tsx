@@ -99,6 +99,8 @@ export const CompleteRegistrationModal: React.FC<CompleteRegistrationModalProps>
       isOpen={isOpen}
       onClose={handleClose}
       title="Hoàn tất đăng ký"
+      headerColor="green"
+      icon="🎉"
       className="max-w-lg"
     >
       <div className="space-y-6">

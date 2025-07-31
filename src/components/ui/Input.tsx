@@ -19,11 +19,12 @@ export const Input: React.FC<InputProps> = ({
   const hasError = !!error;
 
   const inputClasses = `
-    block w-full rounded-md shadow-sm sm:text-sm
+    block w-full rounded-md shadow-sm sm:text-sm transition-all duration-200
     ${hasError 
-      ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-      : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'
+      ? 'border-red-300 focus:border-red-500 focus:ring-red-500 focus:ring-2' 
+      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 focus:ring-2'
     }
+    hover:border-gray-400 focus:outline-none
     ${className}
   `;
 

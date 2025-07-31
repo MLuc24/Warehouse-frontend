@@ -83,6 +83,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Khôi phục mật khẩu"
+      headerColor="orange"
+      icon="🔑"
       className="max-w-md"
     >
       <div className="space-y-6">

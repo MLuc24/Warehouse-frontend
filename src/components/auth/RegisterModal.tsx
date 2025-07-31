@@ -88,6 +88,8 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Tạo tài khoản mới"
+      headerColor="green"
+      icon="🚀"
       className="max-w-md"
     >
       <div className="space-y-6">

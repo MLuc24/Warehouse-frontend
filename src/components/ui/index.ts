@@ -4,3 +4,4 @@ export { Card } from './Card';
 export { LoadingSpinner } from './LoadingSpinner';
 export { Modal } from './Modal';
 export { Alert } from './Alert';
+export { LoadingButton } from './LoadingButton';

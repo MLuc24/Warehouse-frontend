@@ -4,23 +4,33 @@ interface AlertProps {
   type: 'success' | 'error' | 'info' | 'warning'
   message: string
   icon?: string
+  title?: string
+  showBorder?: boolean
 }
 
-export const Alert: React.FC<AlertProps> = ({ type, message, icon }) => {
+export const Alert: React.FC<AlertProps> = ({ 
+  type, 
+  message, 
+  icon, 
+  title,
+  showBorder = true
+}) => {
   const getAlertClasses = () => {
-    const baseClasses = "border-l-4 px-4 py-3 rounded-r-md text-sm"
+    const baseClasses = showBorder 
+      ? "border-l-4 px-4 py-3 rounded-r-md text-sm"
+      : "px-4 py-3 rounded-lg text-sm border"
     
     switch (type) {
       case 'success':
-        return `${baseClasses} bg-green-50 border-green-500 text-green-700`
+        return `${baseClasses} bg-green-50 ${showBorder ? 'border-green-500' : 'border-green-200'} text-green-700`
       case 'error':
-        return `${baseClasses} bg-red-50 border-red-500 text-red-700`
+        return `${baseClasses} bg-red-50 ${showBorder ? 'border-red-500' : 'border-red-200'} text-red-700`
       case 'warning':
-        return `${baseClasses} bg-amber-50 border-amber-500 text-amber-700`
+        return `${baseClasses} bg-amber-50 ${showBorder ? 'border-amber-500' : 'border-amber-200'} text-amber-700`
       case 'info':
-        return `${baseClasses} bg-blue-50 border-blue-500 text-blue-700`
+        return `${baseClasses} bg-blue-50 ${showBorder ? 'border-blue-500' : 'border-blue-200'} text-blue-700`
       default:
-        return `${baseClasses} bg-gray-50 border-gray-500 text-gray-700`
+        return `${baseClasses} bg-gray-50 ${showBorder ? 'border-gray-500' : 'border-gray-200'} text-gray-700`
     }
   }
 
@@ -41,9 +51,16 @@ export const Alert: React.FC<AlertProps> = ({ type, message, icon }) => {
 
   return (
     <div className={getAlertClasses()}>
-      <div className="flex items-center">
-        <span className="mr-2">{icon || getDefaultIcon()}</span>
-        <span>{message}</span>
+      <div className="flex items-start">
+        <span className="mr-3 text-lg flex-shrink-0 mt-0.5">
+          {icon || getDefaultIcon()}
+        </span>
+        <div className="flex-1">
+          {title && (
+            <div className="font-semibold mb-1">{title}</div>
+          )}
+          <div>{message}</div>
+        </div>
       </div>
     </div>
   )
