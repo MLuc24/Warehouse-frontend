@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui';
 import { Pagination } from '@/components/common';
 import { Layout } from '@/components/layout';
-import { SupplierStats, SupplierSearchBar } from '@/components/suppliers';
+import { SupplierSearchBar } from '@/components/suppliers';
 import { SupplierList } from '@/components/suppliers/SupplierList';
 import { SupplierInlineEdit } from '@/components/suppliers/SupplierInlineEdit';
 import { useSupplier } from '@/hooks/useSupplier';
@@ -192,22 +192,8 @@ export const SuppliersPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Section with enhanced cards */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <SupplierStats
-            totalCount={totalCount}
-            currentCount={suppliers.length}
-            currentPage={currentPage}
-            totalPages={totalPages}
-          />
-        </div>
-
         {/* Search Bar with enhanced styling */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Tìm kiếm</h3>
-            <p className="text-sm text-gray-600">Tìm kiếm nhà cung cấp theo tên, email hoặc thông tin khác</p>
-          </div>
           <SupplierSearchBar
             searchTerm={searchTerm}
             onSearchTermChange={handleSearchTermChange}
@@ -243,22 +229,22 @@ export const SuppliersPage: React.FC = () => {
                 loading={loading}
               />
             )}
+
+            {/* Pagination inside the same card */}
+            {totalPages > 1 && !selectedSupplier && !showCreateForm && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalCount={totalCount}
+                  pageSize={pageSize}
+                  onPageChange={handlePageChange}
+                  loading={loading}
+                />
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Pagination with enhanced styling */}
-        {totalPages > 1 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalCount={totalCount}
-              pageSize={pageSize}
-              onPageChange={handlePageChange}
-              loading={loading}
-            />
-          </div>
-        )}
       </div>
     </Layout>
   );

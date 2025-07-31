@@ -27,9 +27,6 @@ export const SupplierList: React.FC<SupplierListProps> = ({
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               Danh sách nhà cung cấp
             </h3>
-            <p className="text-gray-600">
-              Click vào nhà cung cấp để chỉnh sửa thông tin
-            </p>
           </div>
           <div className="text-sm text-gray-500">
             {suppliers.length} nhà cung cấp
