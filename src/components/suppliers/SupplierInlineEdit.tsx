@@ -228,25 +228,38 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
         {/* Supplier Info Section với styling đẹp hơn */}
         <div className="mt-8 p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
           <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Thông tin bổ sung
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">ID</div>
-              <div className="text-lg font-bold text-gray-900">{supplier.supplierId}</div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+              <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">ID nhà cung cấp</div>
+              <div className="text-lg font-bold text-gray-900">#{supplier.supplierId}</div>
             </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
               <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Ngày tạo</div>
               <div className="text-lg font-bold text-gray-900">
                 {supplier.createdAt ? new Date(supplier.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
               </div>
             </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Tổng sản phẩm</div>
-              <div className="text-lg font-bold text-blue-600">{supplier.totalProducts}</div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+              <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Trạng thái</div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                <span className="text-lg font-bold text-green-600">Hoạt động</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Additional Info */}
+          <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200">
+            <div className="flex items-center text-sm text-gray-600">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Lần cập nhật cuối: {new Date().toLocaleString('vi-VN')}</span>
             </div>
           </div>
         </div>
