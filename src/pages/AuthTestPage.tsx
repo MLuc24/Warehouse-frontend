@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { authService } from '@/services';
 import { Button, Input, Card } from '@/components/ui';
+import { Layout } from '@/components/layout';
 
 export const AuthTestPage: React.FC = () => {
   const [email, setEmail] = useState('test@example.com');
@@ -67,8 +68,9 @@ export const AuthTestPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Auth API Test Page</h1>
+    <Layout>
+      <div className="p-6 max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Auth API Test Page</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Inputs */}
@@ -163,6 +165,7 @@ export const AuthTestPage: React.FC = () => {
           {result || 'No result yet...'}
         </pre>
       </Card>
-    </div>
+      </div>
+    </Layout>
   );
 };

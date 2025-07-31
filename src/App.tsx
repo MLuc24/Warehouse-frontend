@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/ui';
-import { Layout } from '@/components/layout';
 import { HomePage } from '@/pages/HomePage';
 import { ProductsPage } from '@/pages/ProductsPage';
 import { SuppliersPage } from '@/pages/SuppliersPage';
@@ -26,7 +25,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <HomePage />;
   }
 
-  return <Layout>{children}</Layout>;
+  return <>{children}</>;
 };
 
 // App Routes Component

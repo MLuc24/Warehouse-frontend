@@ -48,13 +48,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       const response = await login(data)
       if (response.success) {
         reset()
-        onClose()
+        onClose() // Chỉ đóng modal khi login thành công
       } else {
         setError(response.message || 'Đăng nhập thất bại')
+        // Không đóng modal khi có lỗi, để user có thể thử lại
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } }
       setError(error?.response?.data?.message || 'Đăng nhập thất bại')
+      // Không đóng modal khi có lỗi
     } finally {
       setIsLoading(false)
     }

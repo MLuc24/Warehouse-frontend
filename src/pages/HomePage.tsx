@@ -7,8 +7,10 @@ import { useState } from 'react';
 export const HomePage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [initialModal, setInitialModal] = useState<'login' | 'register'>('login');
 
-  const handleOpenAuthModal = () => {
+  const handleOpenAuthModal = (type: 'login' | 'register' = 'login') => {
+    setInitialModal(type);
     setIsAuthModalOpen(true);
   };
 
@@ -37,7 +39,7 @@ export const HomePage: React.FC = () => {
       <AuthModals
         isOpen={isAuthModalOpen}
         onClose={handleCloseAuthModal}
-        initialModal="login"
+        initialModal={initialModal}
       />
     </>
   );

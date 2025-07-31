@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { LoginModal } from './LoginModal'
 import { RegisterModal } from './RegisterModal' 
 import { ForgotPasswordModal } from './ForgotPasswordModal'
@@ -29,6 +29,16 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
 }) => {
   const [currentModal, setCurrentModal] = useState<AuthModalType>(initialModal)
   const [modalProps, setModalProps] = useState<AuthModalProps>({})
+
+  // Reset currentModal when isOpen changes or initialModal changes
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentModal(initialModal)
+    } else {
+      setCurrentModal(null)
+      setModalProps({})
+    }
+  }, [isOpen, initialModal])
 
   const handleClose = () => {
     setCurrentModal(null)
