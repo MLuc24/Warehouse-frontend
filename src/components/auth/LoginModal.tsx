@@ -72,66 +72,93 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Đăng nhập"
+      title="Chào mừng trở lại!"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-            {error}
+      <div className="space-y-6">
+        {/* Greeting text */}
+        <p className="text-gray-600 text-center">
+          Đăng nhập để tiếp tục quản lý kho hàng
+        </p>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-r-md text-sm">
+              <div className="flex items-center">
+                <span className="text-red-500">⚠️</span>
+                <span className="ml-2">{error}</span>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <Input
+              label="Username hoặc Email"
+              type="text"
+              {...register('username')}
+              error={errors.username?.message}
+              placeholder="Nhập username hoặc email"
+              className="focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+
+            <Input
+              label="Mật khẩu"
+              type="password"
+              {...register('password')}
+              error={errors.password?.message}
+              placeholder="Nhập mật khẩu"
+              className="focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
-        )}
 
-        <div>
-          <Input
-            label="Username hoặc Email"
-            type="text"
-            {...register('username')}
-            error={errors.username?.message}
-            placeholder="Nhập username hoặc email của bạn"
-          />
-        </div>
-
-        <div>
-          <Input
-            label="Mật khẩu"
-            type="password"
-            {...register('password')}
-            error={errors.password?.message}
-            placeholder="Nhập mật khẩu"
-          />
-        </div>
-
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          className="w-full"
-          disabled={isLoading}
-        >
-          {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-        </Button>
-
-        <div className="text-center space-y-2">
-          <button
-            type="button"
-            onClick={onSwitchToForgotPassword}
-            className="text-sm text-blue-600 hover:text-blue-500 hover:underline"
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg"
+            disabled={isLoading}
           >
-            Quên mật khẩu?
-          </button>
-          
-          <div className="text-sm text-gray-600">
-            Chưa có tài khoản?{' '}
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Đang đăng nhập...
+              </div>
+            ) : (
+              'Đăng nhập'
+            )}
+          </Button>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">hoặc</span>
+            </div>
+          </div>
+
+          <div className="text-center space-y-3">
             <button
               type="button"
-              onClick={onSwitchToRegister}
-              className="text-blue-600 hover:text-blue-500 hover:underline font-medium"
+              onClick={onSwitchToForgotPassword}
+              className="text-sm text-blue-600 hover:text-blue-700 hover:underline transition-colors"
             >
-              Đăng ký ngay
+              Quên mật khẩu?
             </button>
+            
+            <div className="text-sm text-gray-600">
+              Chưa có tài khoản?{' '}
+              <button
+                type="button"
+                onClick={onSwitchToRegister}
+                className="text-blue-600 hover:text-blue-700 hover:underline font-semibold transition-colors"
+              >
+                Đăng ký ngay
+              </button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </Modal>
   )
 }

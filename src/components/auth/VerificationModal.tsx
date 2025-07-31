@@ -170,24 +170,41 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
       className="max-w-md"
     >
       <div className="space-y-6">
+        {/* Icon and description */}
+        <div className="text-center">
+          <div className="text-5xl mb-3">
+            {purpose === 'Registration' ? '📝' : '🔐'}
+          </div>
+          <p className="text-gray-600 text-sm leading-relaxed">
+            {getDescription()}
+          </p>
+        </div>
+
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-            {error}
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-r-md text-sm">
+            <div className="flex items-center">
+              <span className="text-red-500">❌</span>
+              <span className="ml-2">{error}</span>
+            </div>
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm">
-            {success}
+          <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-r-md text-sm">
+            <div className="flex items-center">
+              <span className="text-green-500">✅</span>
+              <span className="ml-2">{success}</span>
+            </div>
           </div>
         )}
 
-        <div className="text-center">
-          <p className="text-sm text-gray-600 mb-6">
-            {getDescription()}
+        {/* Code input section */}
+        <div className="bg-gray-50 p-6 rounded-xl">
+          <p className="text-center text-sm text-gray-600 mb-4 font-medium">
+            Nhập mã xác thực 6 chữ số
           </p>
           
-          <div className="flex justify-center space-x-2 mb-6" onPaste={handlePaste}>
+          <div className="flex justify-center space-x-3 mb-4" onPaste={handlePaste}>
             {code.map((digit, index) => (
               <input
                 key={index}
@@ -196,39 +213,63 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
                 value={digit}
                 onChange={e => handleInputChange(index, e.target.value)}
                 onKeyDown={e => handleKeyDown(index, e)}
-                className="w-12 h-12 text-center border border-gray-300 rounded-lg text-lg font-semibold focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                className="w-12 h-12 text-center border-2 border-gray-200 rounded-lg text-xl font-bold 
+                          focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none
+                          transition-all duration-200 bg-white shadow-sm
+                          disabled:bg-gray-100 disabled:text-gray-400"
                 maxLength={1}
                 disabled={isLoading || !!success}
               />
             ))}
           </div>
+          
+          <p className="text-center text-xs text-gray-500">
+            💡 Bạn có thể dán mã trực tiếp vào ô đầu tiên
+          </p>
         </div>
 
         <Button
           onClick={handleVerify}
           variant="primary"
           size="lg"
-          className="w-full"
+          className={`w-full shadow-lg ${
+            purpose === 'Registration' 
+              ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
+              : 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800'
+          }`}
           disabled={isLoading || code.join('').length !== 6 || !!success}
         >
-          {isLoading ? 'Đang xác thực...' : success ? 'Xác thực thành công!' : 'Xác thực'}
+          {isLoading ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Đang xác thực...
+            </div>
+          ) : success ? (
+            <div className="flex items-center justify-center">
+              <span className="mr-2">✅</span>
+              Xác thực thành công!
+            </div>
+          ) : (
+            'Xác thực mã'
+          )}
         </Button>
 
-        <div className="text-center">
+        {/* Resend section */}
+        <div className="text-center bg-blue-50 p-4 rounded-lg">
           <p className="text-sm text-gray-600">
             Không nhận được mã?{' '}
             {canResend ? (
               <button
                 type="button"
                 onClick={handleResend}
-                className="text-blue-600 hover:text-blue-500 hover:underline font-medium"
+                className="text-blue-600 hover:text-blue-700 hover:underline font-semibold transition-colors"
                 disabled={isLoading}
               >
-                Gửi lại
+                Gửi lại ngay
               </button>
             ) : (
-              <span className="text-gray-400">
-                Gửi lại sau {countdown}s
+              <span className="text-gray-500 font-medium">
+                Gửi lại sau <span className="text-blue-600 font-bold">{countdown}s</span>
               </span>
             )}
           </p>

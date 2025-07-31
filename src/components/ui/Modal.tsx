@@ -30,19 +30,19 @@ export const Modal: React.FC<ModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div className="flex min-h-screen items-center justify-center p-4">
-        {/* Backdrop */}
-        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
+        {/* Backdrop with animation */}
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300" />
         
-        {/* Modal */}
-        <div className={`relative bg-white rounded-lg shadow-xl max-w-md w-full ${className}`}>
+        {/* Modal with enhanced styling */}
+        <div className={`relative bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 scale-100 ${className}`}>
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b">
-            <h3 className="text-lg font-semibold text-gray-900">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h3 className="text-xl font-bold text-gray-800">
               {title}
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
             >
               <X className="w-5 h-5" />
             </button>
