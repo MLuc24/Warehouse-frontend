@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui';
 import { Pagination } from '@/components/common';
+import { Layout } from '@/components/layout';
 import { SupplierStats, SupplierSearchBar } from '@/components/suppliers';
 import { SupplierList } from '@/components/suppliers/SupplierList';
 import { SupplierInlineEdit } from '@/components/suppliers/SupplierInlineEdit';
@@ -162,86 +163,104 @@ export const SuppliersPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Quản lý nhà cung cấp
-          </h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Quản lý thông tin nhà cung cấp và theo dõi hoạt động
-          </p>
+    <Layout>
+      <div className="space-y-8">
+        {/* Page Header with enhanced styling */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Quản lý nhà cung cấp
+              </h1>
+              <p className="text-gray-600">
+                Quản lý thông tin nhà cung cấp và theo dõi hoạt động kinh doanh
+              </p>
+            </div>
+            <div className="mt-6 md:mt-0">
+              <Button
+                onClick={handleShowCreate}
+                variant="primary"
+                disabled={loading || isSubmitting}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-all duration-200 hover:shadow-md"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Thêm nhà cung cấp
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="mt-4 md:mt-0">
-          <Button
-            onClick={handleShowCreate}
-            variant="primary"
-            disabled={loading || isSubmitting}
-          >
-            Thêm nhà cung cấp
-          </Button>
-        </div>
-      </div>
 
-      {/* Stats Section */}
-      <SupplierStats
-        totalCount={totalCount}
-        currentCount={suppliers.length}
-        currentPage={currentPage}
-        totalPages={totalPages}
-      />
-
-      {/* Search Bar */}
-      <SupplierSearchBar
-        searchTerm={searchTerm}
-        onSearchTermChange={handleSearchTermChange}
-        onSearch={handleSearch}
-        onClearSearch={handleClearSearch}
-        loading={loading}
-        disabled={isSubmitting}
-      />
-
-      {/* Main Content Area with consistent spacing */}
-      <div className="bg-white shadow-sm rounded-lg p-6">
-        {/* Show either the supplier list or the inline edit form */}
-        {selectedSupplier ? (
-          <SupplierInlineEdit
-            supplier={selectedSupplier}
-            onSave={handleUpdateSupplier}
-            onDelete={handleDeleteSupplier}
-            onCancel={handleCancelEdit}
-          />
-        ) : showCreateForm ? (
-          <CreateSupplierForm
-            onSave={handleCreateSupplier}
-            onCancel={handleCancelCreate}
-            isSubmitting={isSubmitting}
-          />
-        ) : (
-          <SupplierList
-            suppliers={suppliers}
-            selectedSupplier={selectedSupplier}
-            onSelectSupplier={handleSelectSupplier}
-            loading={loading}
-          />
-        )}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center">
-          <Pagination
+        {/* Stats Section with enhanced cards */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <SupplierStats
+            totalCount={totalCount}
+            currentCount={suppliers.length}
             currentPage={currentPage}
             totalPages={totalPages}
-            totalCount={totalCount}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            loading={loading}
           />
         </div>
-      )}
-    </div>
+
+        {/* Search Bar with enhanced styling */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Tìm kiếm</h3>
+            <p className="text-sm text-gray-600">Tìm kiếm nhà cung cấp theo tên, email hoặc thông tin khác</p>
+          </div>
+          <SupplierSearchBar
+            searchTerm={searchTerm}
+            onSearchTermChange={handleSearchTermChange}
+            onSearch={handleSearch}
+            onClearSearch={handleClearSearch}
+            loading={loading}
+            disabled={isSubmitting}
+          />
+        </div>
+
+        {/* Main Content Area with enhanced styling */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[600px]">
+          <div className="p-6">
+            {/* Show either the supplier list or the inline edit form */}
+            {selectedSupplier ? (
+              <SupplierInlineEdit
+                supplier={selectedSupplier}
+                onSave={handleUpdateSupplier}
+                onDelete={handleDeleteSupplier}
+                onCancel={handleCancelEdit}
+              />
+            ) : showCreateForm ? (
+              <CreateSupplierForm
+                onSave={handleCreateSupplier}
+                onCancel={handleCancelCreate}
+                isSubmitting={isSubmitting}
+              />
+            ) : (
+              <SupplierList
+                suppliers={suppliers}
+                selectedSupplier={selectedSupplier}
+                onSelectSupplier={handleSelectSupplier}
+                loading={loading}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Pagination with enhanced styling */}
+        {totalPages > 1 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              loading={loading}
+            />
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 };
 

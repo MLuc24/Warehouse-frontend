@@ -94,174 +94,243 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
 
   return (
     <div className="w-full">
-      {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Chỉnh sửa nhà cung cấp
-        </h3>
-        <p className="text-sm text-gray-600">
-          Cập nhật thông tin nhà cung cấp hoặc xóa nhà cung cấp khỏi hệ thống
-        </p>
+      {/* Header với styling đẹp hơn */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <div className="flex-shrink-0 h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Chỉnh sửa nhà cung cấp
+            </h3>
+            <p className="text-gray-600">
+              Cập nhật thông tin nhà cung cấp hoặc xóa nhà cung cấp khỏi hệ thống
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Form Content */}
+      {/* Form Content với styling cải tiến */}
       <div className="mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Name Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
               Tên nhà cung cấp <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={formData.supplierName}
               onChange={(e) => handleInputChange('supplierName', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.supplierName ? 'border-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100 ${
+                errors.supplierName 
+                  ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : 'border-gray-300 bg-white focus:border-blue-400 hover:border-gray-400'
               }`}
               placeholder="Nhập tên nhà cung cấp"
               disabled={isSubmitting}
             />
             {errors.supplierName && (
-              <p className="mt-1 text-sm text-red-600">{errors.supplierName}</p>
+              <p className="text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {errors.supplierName}
+              </p>
             )}
           </div>
 
           {/* Email Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
               Email <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100 ${
+                errors.email 
+                  ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : 'border-gray-300 bg-white focus:border-blue-400 hover:border-gray-400'
               }`}
               placeholder="Nhập email"
               disabled={isSubmitting}
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              <p className="text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {errors.email}
+              </p>
             )}
           </div>
 
           {/* Phone Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
               Số điện thoại <span className="text-red-500">*</span>
             </label>
             <input
               type="tel"
               value={formData.phoneNumber}
               onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100 ${
+                errors.phoneNumber 
+                  ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : 'border-gray-300 bg-white focus:border-blue-400 hover:border-gray-400'
               }`}
               placeholder="Nhập số điện thoại"
               disabled={isSubmitting}
             />
             {errors.phoneNumber && (
-              <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
+              <p className="text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {errors.phoneNumber}
+              </p>
             )}
           </div>
 
           {/* Address Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
               Địa chỉ <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={formData.address}
               onChange={(e) => handleInputChange('address', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.address ? 'border-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100 ${
+                errors.address 
+                  ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : 'border-gray-300 bg-white focus:border-blue-400 hover:border-gray-400'
               }`}
               placeholder="Nhập địa chỉ"
               disabled={isSubmitting}
             />
             {errors.address && (
-              <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+              <p className="text-sm text-red-600 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {errors.address}
+              </p>
             )}
           </div>
         </div>
 
-        {/* Supplier Info Section */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Thông tin bổ sung</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-            <div>
-              <span className="font-medium text-gray-700">ID:</span> {supplier.supplierId}
+        {/* Supplier Info Section với styling đẹp hơn */}
+        <div className="mt-8 p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
+          <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Thông tin bổ sung
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">ID</div>
+              <div className="text-lg font-bold text-gray-900">{supplier.supplierId}</div>
             </div>
-            <div>
-              <span className="font-medium text-gray-700">Ngày tạo:</span>{' '}
-              {supplier.createdAt ? new Date(supplier.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Ngày tạo</div>
+              <div className="text-lg font-bold text-gray-900">
+                {supplier.createdAt ? new Date(supplier.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
+              </div>
             </div>
-            <div>
-              <span className="font-medium text-gray-700">Tổng sản phẩm:</span> {supplier.totalProducts}
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">Tổng sản phẩm</div>
+              <div className="text-lg font-bold text-blue-600">{supplier.totalProducts}</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+      {/* Action Buttons với styling đẹp hơn */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t-2 border-gray-200">
         <div>
           <Button
             onClick={() => setShowDeleteConfirm(true)}
             variant="danger"
             disabled={isSubmitting}
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold shadow-sm transition-all duration-200 hover:shadow-md flex items-center"
           >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
             {isSubmitting ? 'Đang xóa...' : 'Xóa nhà cung cấp'}
           </Button>
         </div>
         
-        <div className="flex space-x-3">
+        <div className="flex gap-4">
           <Button
             onClick={onCancel}
             variant="secondary"
             disabled={isSubmitting}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center"
           >
-            ← Quay lại danh sách
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Quay lại danh sách
           </Button>
           <Button
             onClick={handleSave}
             variant="primary"
             disabled={isSubmitting}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold shadow-sm transition-all duration-200 hover:shadow-md flex items-center"
           >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
             {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
           </Button>
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal với styling đẹp hơn */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-              Xác nhận xóa
-            </h4>
-            <p className="text-gray-600 mb-6">
-              Bạn có chắc chắn muốn xóa nhà cung cấp <strong>{supplier.supplierName}</strong>? 
-              Thao tác này không thể hoàn tác.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <Button
-                onClick={() => setShowDeleteConfirm(false)}
-                variant="secondary"
-                disabled={isSubmitting}
-              >
-                Hủy
-              </Button>
-              <Button
-                onClick={handleDelete}
-                variant="danger"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Đang xóa...' : 'Xóa'}
-              </Button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h4 className="text-xl font-bold text-gray-900">
+                  Xác nhận xóa
+                </h4>
+              </div>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Bạn có chắc chắn muốn xóa nhà cung cấp <strong className="text-gray-900">{supplier.supplierName}</strong>? 
+                Thao tác này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  variant="secondary"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Hủy bỏ
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  variant="danger"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold"
+                >
+                  {isSubmitting ? 'Đang xóa...' : 'Xóa ngay'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
