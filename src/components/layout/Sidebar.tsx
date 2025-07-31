@@ -11,15 +11,6 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   {
-    name: 'Trang chủ',
-    href: ROUTES.HOME,
-    icon: ({ className }) => (
-      <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-      </svg>
-    ),
-  },
-  {
     name: 'Sản phẩm',
     href: ROUTES.PRODUCTS.LIST,
     icon: ({ className }) => (
@@ -85,35 +76,23 @@ export const Sidebar: React.FC = () => {
 
   return (
     <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-      <div className="flex-1 flex flex-col min-h-0 bg-gray-800">
+      <div className="flex-1 flex flex-col min-h-0 bg-gradient-to-b from-slate-900 via-purple-900 to-slate-800">
         {/* Logo/Brand */}
-        <div className="flex items-center h-16 flex-shrink-0 px-4 bg-gray-900">
+        <Link to={ROUTES.HOME} className="flex items-center h-16 flex-shrink-0 px-4 bg-black/20 backdrop-blur-sm hover:bg-black/30 transition-all duration-300">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-8 w-8 text-blue-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 21h16.5M4.5 3h15l-.75 18H5.25L4.5 3zm0 0L5.25 21M19.5 3l-.75 18M9 21V9l3-3 3 3v12M12 9v12"
-                />
+            {/* Logo from Header */}
+            <div className="h-10 w-10 bg-gradient-to-br from-purple-500 via-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+              <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15l-.75 18H5.25L4.5 3zm0 0L5.25 21M19.5 3l-.75 18M9 21V9l3-3 3 3v12M12 9v12" />
               </svg>
             </div>
-            <div className="ml-3">
-              <h1 className="text-white text-lg font-semibold">
-                Warehouse
+            <div className="ml-0">
+              <h1 className="text-white text-sm font-semibold tracking-tight font-inter">
+                Warehouse Management
               </h1>
-              <p className="text-gray-400 text-xs">
-                Management System
-              </p>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Navigation */}
         <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
@@ -127,15 +106,15 @@ export const Sidebar: React.FC = () => {
                   className={`
                     group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
                     ${isActive
-                      ? 'bg-gray-900 text-white border-r-2 border-blue-500'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      ? 'bg-white/10 text-white border-r-2 border-purple-400'
+                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
                     }
                   `}
                 >
                   <item.icon
                     className={`
                       mr-3 flex-shrink-0 h-6 w-6
-                      ${isActive ? 'text-blue-400' : 'text-gray-400 group-hover:text-gray-300'}
+                      ${isActive ? 'text-purple-300' : 'text-gray-400 group-hover:text-gray-300'}
                     `}
                   />
                   {item.name}
@@ -145,10 +124,10 @@ export const Sidebar: React.FC = () => {
           </nav>
 
           {/* User Profile & Logout */}
-          <div className="flex-shrink-0 flex border-t border-gray-700 p-4">
+          <div className="flex-shrink-0 flex border-t border-white/20 p-4">
             <div className="flex items-center w-full">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 bg-gray-600 rounded-full flex items-center justify-center">
+                <div className="h-8 w-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-medium">
                     {user.email?.charAt(0).toUpperCase() || 'U'}
                   </span>
