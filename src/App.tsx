@@ -1,42 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/ui';
-import { Layout, PublicLayout, WelcomePage } from '@/components/layout';
-import { AuthModals } from '@/components/auth/AuthModals';
-import { DashboardPage } from '@/pages/DashboardPage';
+import { Layout } from '@/components/layout';
+import { HomePage } from '@/pages/HomePage';
 import { ProductsPage } from '@/pages/ProductsPage';
 import { SuppliersPage } from '@/pages/SuppliersPage';
 import { AuthTestPage } from '@/pages/AuthTestPage';
 import { ROUTES } from '@/constants';
-
-// Public Route Component - cho user chưa login
-const PublicRoute: React.FC = () => {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-
-  const handleOpenAuthModal = () => {
-    setIsAuthModalOpen(true);
-  };
-
-  const handleCloseAuthModal = () => {
-    setIsAuthModalOpen(false);
-  };
-
-  return (
-    <>
-      <PublicLayout>
-        <WelcomePage onOpenAuth={handleOpenAuthModal} />
-      </PublicLayout>
-      
-      <AuthModals
-        isOpen={isAuthModalOpen}
-        onClose={handleCloseAuthModal}
-        initialModal="login"
-      />
-    </>
-  );
-};
 
 // Protected Route Component - cho user đã login
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,7 +23,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   if (!isAuthenticated) {
-    return <PublicRoute />;
+    return <HomePage />;
   }
 
   return <Layout>{children}</Layout>;
@@ -72,12 +44,8 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route 
-        path={ROUTES.DASHBOARD} 
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        } 
+        path={ROUTES.HOME} 
+        element={<HomePage />} 
       />
       <Route 
         path={ROUTES.PRODUCTS.LIST} 
@@ -105,7 +73,7 @@ const AppRoutes: React.FC = () => {
       />
       <Route 
         path="*" 
-        element={<Navigate to={ROUTES.DASHBOARD} replace />} 
+        element={<Navigate to={ROUTES.HOME} replace />} 
       />
     </Routes>
   );
