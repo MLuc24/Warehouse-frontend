@@ -22,31 +22,24 @@ export const SupplierSearchBar: React.FC<SupplierSearchBarProps> = ({
   loading,
   disabled
 }) => {
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      onSearch(searchTerm);
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    onSearchTermChange(value);
+    // Tìm kiếm real-time khi nhập
+    onSearch(value);
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4">
+    <div className="flex flex-col md:flex-row gap-3">
       <div className="flex-1">
         <Input
           type="text"
           placeholder="Tìm kiếm theo tên, email, số điện thoại..."
           value={searchTerm}
-          onChange={(e) => onSearchTermChange(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onChange={handleInputChange}
           disabled={disabled}
         />
       </div>
-      <Button 
-        onClick={() => onSearch(searchTerm)}
-        disabled={loading || disabled}
-        className="md:w-auto"
-      >
-        🔍 Tìm kiếm
-      </Button>
       {searchTerm && (
         <Button 
           onClick={onClearSearch}

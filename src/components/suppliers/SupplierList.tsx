@@ -1,11 +1,18 @@
 import React from 'react';
+import { Button, Input } from '@/components/ui';
 import type { Supplier } from '@/types';
 
 interface SupplierListProps {
   suppliers: Supplier[];
   selectedSupplier: Supplier | null;
   onSelectSupplier: (supplier: Supplier) => void;
+  onShowCreate?: () => void;
   loading: boolean;
+  // Search props
+  searchTerm: string;
+  onSearchTermChange: (term: string) => void;
+  onSearch: (term: string) => void;
+  onClearSearch: () => void;
 }
 
 /**
@@ -16,6 +23,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   suppliers,
   selectedSupplier,
   onSelectSupplier,
+  onShowCreate,
   loading
 }) => {
   return (
@@ -28,8 +36,22 @@ export const SupplierList: React.FC<SupplierListProps> = ({
               Danh sách nhà cung cấp
             </h3>
           </div>
-          <div className="text-sm text-gray-500">
-            {suppliers.length} nhà cung cấp
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-500">
+              {suppliers.length} nhà cung cấp
+            </div>
+            {onShowCreate && (
+              <Button
+                onClick={onShowCreate}
+                variant="primary"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200 hover:shadow-md"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Thêm nhà cung cấp
+              </Button>
+            )}
           </div>
         </div>
       </div>

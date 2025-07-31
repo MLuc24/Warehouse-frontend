@@ -53,9 +53,11 @@ export const SuppliersPage: React.FC = () => {
     setSelectedSupplier(null); // Close inline edit when searching
   }, []);
 
-  // Handle search term change
+  // Handle search term change - now triggers immediate search
   const handleSearchTermChange = useCallback((term: string) => {
     setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
+    setSelectedSupplier(null); // Close inline edit when searching
   }, []);
 
   // Handle clear search
@@ -166,34 +168,19 @@ export const SuppliersPage: React.FC = () => {
     <Layout>
       <div className="space-y-8">
         {/* Page Header with enhanced styling */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Quản lý nhà cung cấp
-              </h1>
-              <p className="text-gray-600">
-                Quản lý thông tin nhà cung cấp và theo dõi hoạt động kinh doanh
-              </p>
-            </div>
-            <div className="mt-6 md:mt-0">
-              <Button
-                onClick={handleShowCreate}
-                variant="primary"
-                disabled={loading || isSubmitting}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-all duration-200 hover:shadow-md"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Thêm nhà cung cấp
-              </Button>
-            </div>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              Quản lý nhà cung cấp
+            </h1>
+            <p className="text-sm text-gray-600">
+              Quản lý thông tin nhà cung cấp và theo dõi hoạt động kinh doanh
+            </p>
           </div>
         </div>
 
         {/* Search Bar with enhanced styling */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <SupplierSearchBar
             searchTerm={searchTerm}
             onSearchTermChange={handleSearchTermChange}
@@ -226,6 +213,7 @@ export const SuppliersPage: React.FC = () => {
                 suppliers={suppliers}
                 selectedSupplier={selectedSupplier}
                 onSelectSupplier={handleSelectSupplier}
+                onShowCreate={handleShowCreate}
                 loading={loading}
               />
             )}
