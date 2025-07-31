@@ -57,7 +57,7 @@ export const AuthTestPage: React.FC = () => {
   const testResetPassword = async () => {
     setLoading(true);
     try {
-      const response = await authService.resetPassword(email, code, password, password);
+      const response = await authService.resetPassword(email, password, password);
       setResult(`Reset Password: ${JSON.stringify(response, null, 2)}`);
     } catch (error) {
       setResult(`Error: ${error}`);

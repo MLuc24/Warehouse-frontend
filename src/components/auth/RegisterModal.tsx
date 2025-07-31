@@ -54,11 +54,23 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({
           onSwitchToVerification(data.email)
         }, 1500)
       } else {
-        setError(response.message || 'Không thể gửi mã xác thực')
+        // Enhanced error messages based on backend validation
+        let errorMessage = response.message || 'Không thể gửi mã xác thực'
+        if (!response.success && !response.message) {
+          errorMessage = 'Email này đã được sử dụng. Vui lòng sử dụng email khác hoặc đăng nhập.'
+        }
+        setError(errorMessage)
       }
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } }
-      setError(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi mã xác thực')
+      const error = err as { response?: { data?: { message?: string }; status?: number } }
+      let errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi gửi mã xác thực'
+      
+      // Handle specific error cases
+      if (error?.response?.status === 400) {
+        errorMessage = 'Email này đã được sử dụng. Vui lòng sử dụng email khác hoặc đăng nhập.'
+      }
+      
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }

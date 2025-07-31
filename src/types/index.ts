@@ -1,6 +1,6 @@
 // Auth types
 export interface LoginRequest {
-  username: string;
+  username: string; // Can be username or email
   password: string;
 }
 
@@ -47,7 +47,6 @@ export interface VerifyCodeRequest {
 
 export interface ResetPasswordRequest {
   email: string;
-  code: string;
   newPassword: string;
   confirmNewPassword: string;
 }

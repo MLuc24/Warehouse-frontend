@@ -69,12 +69,11 @@ export class AuthService {
     });
   }
 
-  async resetPassword(email: string, code: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; message: string }> {
+  async resetPassword(email: string, newPassword: string, confirmNewPassword: string): Promise<{ success: boolean; message: string }> {
     return apiService.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, { 
-      email, 
-      code, 
-      newPassword, 
-      confirmNewPassword 
+      Email: email,  // Backend expects PascalCase
+      NewPassword: newPassword,  // Backend expects PascalCase 
+      ConfirmNewPassword: confirmNewPassword  // Backend expects PascalCase
     });
   }
 

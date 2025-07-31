@@ -12,7 +12,7 @@ const resetPasswordSchema = z.object({
     .max(100, 'Mật khẩu không được vượt quá 100 ký tự')
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-      'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt'
+      'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt (@$!%*?&)'
     ),
   confirmNewPassword: z.string()
 }).refine((data) => data.newPassword === data.confirmNewPassword, {
@@ -58,12 +58,20 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
     try {
       const { authService } = await import('../../services/auth')
       
-      const response = await authService.resetPassword(
+      console.log('Sending reset password request:', {
         email,
         verificationCode,
+        newPassword: '****',
+        confirmNewPassword: '****'
+      })
+      
+      const response = await authService.resetPassword(
+        email,
         data.newPassword,
         data.confirmNewPassword
       )
+      
+      console.log('Reset password response:', response)
       
       if (response.success) {
         setSuccess('Đặt lại mật khẩu thành công! Đang chuyển đến trang đăng nhập...')
@@ -75,8 +83,31 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
         setError(response.message || 'Đặt lại mật khẩu thất bại')
       }
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } }
-      setError(error?.response?.data?.message || 'Có lỗi xảy ra khi đặt lại mật khẩu')
+      console.error('Reset password error:', err)
+      const error = err as { 
+        response?: { 
+          data?: { 
+            message?: string;
+            errors?: Record<string, string[]>;
+          };
+          status?: number;
+        };
+        message?: string;
+      }
+      
+      let errorMessage = 'Có lỗi xảy ra khi đặt lại mật khẩu'
+      
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error?.response?.data?.errors) {
+        // Handle validation errors
+        const validationErrors = Object.values(error.response.data.errors).flat()
+        errorMessage = validationErrors.join('. ')
+      } else if (error?.message) {
+        errorMessage = error.message
+      }
+      
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }

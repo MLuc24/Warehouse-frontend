@@ -3,9 +3,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui';
 import { AuthModals } from '@/components/auth/AuthModals';
 
+type AuthModalType = 'login' | 'register' | 'forgot-password' | null
+
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [initialModal, setInitialModal] = useState<AuthModalType>('login');
 
   const handleLogout = async () => {
     try {
@@ -15,7 +18,8 @@ export const Header: React.FC = () => {
     }
   };
 
-  const handleOpenAuthModal = () => {
+  const handleOpenAuthModal = (modal: AuthModalType = 'login') => {
+    setInitialModal(modal);
     setIsAuthModalOpen(true);
   };
 
@@ -51,13 +55,22 @@ export const Header: React.FC = () => {
                   </Button>
                 </>
               ) : (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleOpenAuthModal}
-                >
-                  Đăng nhập
-                </Button>
+                <div className="flex items-center space-x-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenAuthModal('register')}
+                  >
+                    Đăng ký
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleOpenAuthModal('login')}
+                  >
+                    Đăng nhập
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -67,7 +80,7 @@ export const Header: React.FC = () => {
       <AuthModals
         isOpen={isAuthModalOpen}
         onClose={handleCloseAuthModal}
-        initialModal="login"
+        initialModal={initialModal}
       />
     </>
   );

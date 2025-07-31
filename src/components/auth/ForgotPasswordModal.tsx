@@ -57,8 +57,15 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         setError(response.message || 'Không thể gửi mã xác thực')
       }
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } }
-      setError(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi mã xác thực')
+      const error = err as { response?: { data?: { message?: string }; status?: number } }
+      let errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi gửi mã xác thực'
+      
+      // Handle specific error cases
+      if (error?.response?.status === 400) {
+        errorMessage = 'Email này không tồn tại trong hệ thống. Vui lòng kiểm tra lại hoặc đăng ký tài khoản mới.'
+      }
+      
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }

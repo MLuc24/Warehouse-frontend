@@ -58,14 +58,15 @@ export const LoginPage: React.FC = () => {
             )}
 
             <Input
-              label="Tên đăng nhập"
+              label="Tên đăng nhập hoặc Email"
               type="text"
               autoComplete="username"
+              placeholder="Nhập tên đăng nhập hoặc email"
               {...register('username', {
-                required: 'Tên đăng nhập là bắt buộc',
+                required: 'Tên đăng nhập hoặc email là bắt buộc',
                 minLength: {
                   value: 3,
-                  message: 'Tên đăng nhập phải từ 3 ký tự trở lên',
+                  message: 'Tên đăng nhập hoặc email phải từ 3 ký tự trở lên',
                 },
               })}
               error={errors.username?.message}

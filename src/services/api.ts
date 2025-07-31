@@ -65,6 +65,13 @@ export class ApiService {
       const response = await apiClient.get<T>(endpoint, { params });
       return response.data;
     } catch (error) {
+      // Special case: if backend returns structured error response, return it instead of throwing
+      if (axios.isAxiosError(error) && error.response?.data && 
+          typeof error.response.data === 'object' && 
+          'success' in error.response.data && 
+          'message' in error.response.data) {
+        return error.response.data as T;
+      }
       throw this.handleError(error);
     }
   }
@@ -74,6 +81,13 @@ export class ApiService {
       const response = await apiClient.post<T>(endpoint, data);
       return response.data;
     } catch (error) {
+      // Special case: if backend returns structured error response, return it instead of throwing
+      if (axios.isAxiosError(error) && error.response?.data && 
+          typeof error.response.data === 'object' && 
+          'success' in error.response.data && 
+          'message' in error.response.data) {
+        return error.response.data as T;
+      }
       throw this.handleError(error);
     }
   }
@@ -83,6 +97,13 @@ export class ApiService {
       const response = await apiClient.put<T>(endpoint, data);
       return response.data;
     } catch (error) {
+      // Special case: if backend returns structured error response, return it instead of throwing
+      if (axios.isAxiosError(error) && error.response?.data && 
+          typeof error.response.data === 'object' && 
+          'success' in error.response.data && 
+          'message' in error.response.data) {
+        return error.response.data as T;
+      }
       throw this.handleError(error);
     }
   }
@@ -92,6 +113,13 @@ export class ApiService {
       const response = await apiClient.delete<T>(endpoint);
       return response.data;
     } catch (error) {
+      // Special case: if backend returns structured error response, return it instead of throwing
+      if (axios.isAxiosError(error) && error.response?.data && 
+          typeof error.response.data === 'object' && 
+          'success' in error.response.data && 
+          'message' in error.response.data) {
+        return error.response.data as T;
+      }
       throw this.handleError(error);
     }
   }

@@ -81,11 +81,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
         <div>
           <Input
-            label="Username"
+            label="Username hoặc Email"
             type="text"
             {...register('username')}
             error={errors.username?.message}
-            placeholder="Nhập username của bạn"
+            placeholder="Nhập username hoặc email của bạn"
           />
         </div>
 
