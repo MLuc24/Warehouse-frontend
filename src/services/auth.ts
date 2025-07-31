@@ -45,7 +45,8 @@ export class AuthService {
   }
 
   async getCurrentUser(): Promise<User> {
-    return apiService.get<User>(API_ENDPOINTS.AUTH.ME);
+    const response = await apiService.get<{ success: boolean; data: User }>(API_ENDPOINTS.AUTH.ME);
+    return response.data;
   }
 
   async completeRegistration(data: CompleteRegistrationRequest): Promise<LoginResponse> {

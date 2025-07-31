@@ -65,6 +65,8 @@ export const ROUTES = {
 // User roles
 export const USER_ROLES = {
   ADMIN: 'Admin',
+  MANAGER: 'Manager',
+  EMPLOYEE: 'Employee',
   USER: 'User',
 } as const;
 

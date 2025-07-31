@@ -7,6 +7,13 @@ interface SupplierInlineEditProps {
   onSave: (data: Partial<Supplier>) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
   onCancel: () => void;
+  permissions?: {
+    suppliers: {
+      canEdit: boolean;
+      canDelete: boolean;
+    };
+    isReadOnly: boolean;
+  };
 }
 
 /**
@@ -17,7 +24,8 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
   supplier,
   onSave,
   onDelete,
-  onCancel
+  onCancel,
+  permissions
 }) => {
   const [formData, setFormData] = useState({
     supplierName: supplier.supplierName,
@@ -104,10 +112,13 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
           </div>
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Chỉnh sửa nhà cung cấp
+              {permissions?.isReadOnly ? 'Xem thông tin nhà cung cấp' : 'Chỉnh sửa nhà cung cấp'}
             </h3>
             <p className="text-gray-600">
-              Cập nhật thông tin nhà cung cấp hoặc xóa nhà cung cấp khỏi hệ thống
+              {permissions?.isReadOnly 
+                ? 'Xem chi tiết thông tin nhà cung cấp' 
+                : 'Cập nhật thông tin nhà cung cấp hoặc xóa nhà cung cấp khỏi hệ thống'
+              }
             </p>
           </div>
         </div>
@@ -115,6 +126,19 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
 
       {/* Form Content với styling cải tiến */}
       <div className="mb-8">
+        {permissions?.isReadOnly && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-yellow-800 font-medium">
+                Bạn chỉ có quyền xem thông tin. Không thể chỉnh sửa hoặc xóa nhà cung cấp.
+              </p>
+            </div>
+          </div>
+        )}
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Name Field */}
           <div className="space-y-2">
@@ -128,10 +152,13 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
               className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100 ${
                 errors.supplierName 
                   ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : permissions?.isReadOnly
+                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
                   : 'border-gray-300 bg-white focus:border-blue-400 hover:border-gray-400'
               }`}
               placeholder="Nhập tên nhà cung cấp"
-              disabled={isSubmitting}
+              disabled={isSubmitting || permissions?.isReadOnly}
+              readOnly={permissions?.isReadOnly}
             />
             {errors.supplierName && (
               <p className="text-sm text-red-600 flex items-center">
@@ -155,10 +182,13 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
               className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100 ${
                 errors.email 
                   ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : permissions?.isReadOnly
+                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
                   : 'border-gray-300 bg-white focus:border-blue-400 hover:border-gray-400'
               }`}
               placeholder="Nhập email"
-              disabled={isSubmitting}
+              disabled={isSubmitting || permissions?.isReadOnly}
+              readOnly={permissions?.isReadOnly}
             />
             {errors.email && (
               <p className="text-sm text-red-600 flex items-center">
@@ -182,10 +212,13 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
               className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100 ${
                 errors.phoneNumber 
                   ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : permissions?.isReadOnly
+                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
                   : 'border-gray-300 bg-white focus:border-blue-400 hover:border-gray-400'
               }`}
               placeholder="Nhập số điện thoại"
-              disabled={isSubmitting}
+              disabled={isSubmitting || permissions?.isReadOnly}
+              readOnly={permissions?.isReadOnly}
             />
             {errors.phoneNumber && (
               <p className="text-sm text-red-600 flex items-center">
@@ -209,10 +242,13 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
               className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-100 ${
                 errors.address 
                   ? 'border-red-300 bg-red-50 focus:border-red-400' 
+                  : permissions?.isReadOnly
+                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
                   : 'border-gray-300 bg-white focus:border-blue-400 hover:border-gray-400'
               }`}
               placeholder="Nhập địa chỉ"
-              disabled={isSubmitting}
+              disabled={isSubmitting || permissions?.isReadOnly}
+              readOnly={permissions?.isReadOnly}
             />
             {errors.address && (
               <p className="text-sm text-red-600 flex items-center">
@@ -268,17 +304,19 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
       {/* Action Buttons với styling đẹp hơn */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t-2 border-gray-200">
         <div>
-          <Button
-            onClick={() => setShowDeleteConfirm(true)}
-            variant="danger"
-            disabled={isSubmitting}
-            className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold shadow-sm transition-all duration-200 hover:shadow-md flex items-center"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            {isSubmitting ? 'Đang xóa...' : 'Xóa nhà cung cấp'}
-          </Button>
+          {permissions?.suppliers.canDelete && (
+            <Button
+              onClick={() => setShowDeleteConfirm(true)}
+              variant="danger"
+              disabled={isSubmitting}
+              className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold shadow-sm transition-all duration-200 hover:shadow-md flex items-center"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              {isSubmitting ? 'Đang xóa...' : 'Xóa nhà cung cấp'}
+            </Button>
+          )}
         </div>
         
         <div className="flex gap-4">
@@ -293,22 +331,24 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
             </svg>
             Quay lại danh sách
           </Button>
-          <Button
-            onClick={handleSave}
-            variant="primary"
-            disabled={isSubmitting}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold shadow-sm transition-all duration-200 hover:shadow-md flex items-center"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
-          </Button>
+          {permissions?.suppliers.canEdit && (
+            <Button
+              onClick={handleSave}
+              variant="primary"
+              disabled={isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold shadow-sm transition-all duration-200 hover:shadow-md flex items-center"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Delete Confirmation Modal với styling đẹp hơn */}
-      {showDeleteConfirm && (
+      {showDeleteConfirm && permissions?.suppliers.canDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
             <div className="p-6">

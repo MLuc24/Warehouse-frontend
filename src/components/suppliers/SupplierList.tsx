@@ -13,6 +13,12 @@ interface SupplierListProps {
   onSearchTermChange: (term: string) => void;
   onSearch: (term: string) => void;
   onClearSearch: () => void;
+  // Permission props
+  permissions?: {
+    suppliers: {
+      canCreate: boolean;
+    };
+  };
 }
 
 /**
@@ -29,7 +35,9 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   searchTerm,
   onSearchTermChange,
   onSearch,
-  onClearSearch
+  onClearSearch,
+  // Permission props
+  permissions
 }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -50,7 +58,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
               {suppliers.length} nhà cung cấp
             </div>
           </div>
-          {onShowCreate && (
+          {onShowCreate && permissions?.suppliers.canCreate && (
             <Button
               onClick={onShowCreate}
               variant="primary"
