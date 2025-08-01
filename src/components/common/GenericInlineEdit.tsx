@@ -48,6 +48,7 @@ export const GenericInlineEdit = <T,>({
 }: GenericInlineEditProps<T>) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // New state to track editing mode
 
   // Convert item to form data
   const getInitialData = (): Record<string, unknown> => {
@@ -63,6 +64,7 @@ export const GenericInlineEdit = <T,>({
     setIsSubmitting(true);
     try {
       await onSave(formData as Partial<T>);
+      setIsEditing(false); // Exit editing mode after successful save
     } catch (error) {
       console.error('Error saving:', error);
     } finally {
@@ -70,8 +72,25 @@ export const GenericInlineEdit = <T,>({
     }
   };
 
+  // Handle edit mode toggle
+  const handleEditToggle = () => {
+    if (isEditing) {
+      // If in editing mode, this becomes a save action handled by form
+      return;
+    } else {
+      // Enter editing mode
+      setIsEditing(true);
+    }
+  };
+
+  // Handle cancel - exit editing mode
+  const handleCancel = () => {
+    setIsEditing(false);
+    onCancel();
+  };
+
   // Custom action buttons renderer
-  const renderCustomActionButtons = (formHandleSave: () => Promise<void>, formOnCancel: () => void, formIsSubmitting: boolean) => (
+  const renderCustomActionButtons = (formHandleSave: () => Promise<void>, _formOnCancel: () => void, formIsSubmitting: boolean) => (
     <div className="bg-gray-50 px-8 py-6 border-t border-gray-200">
       <div className="flex items-center space-x-4">
         {/* Left side - Delete/Reactivate button (aligned) */}
@@ -119,35 +138,54 @@ export const GenericInlineEdit = <T,>({
         {/* Spacer to push Cancel/Save buttons to the right */}
         <div className="flex-1"></div>
 
-        {/* Right side - Cancel and Save buttons */}
+        {/* Right side - Cancel and Edit/Save buttons */}
         <div className="flex items-center space-x-3">
           <Button
-            onClick={formOnCancel}
+            onClick={handleCancel}
             variant="secondary"
             disabled={formIsSubmitting}
             className="px-6 py-3 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
           >
             Hủy
           </Button>
-          <Button
-            onClick={formHandleSave}
-            disabled={formIsSubmitting}
-            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            {formIsSubmitting ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Đang lưu...
-              </div>
-            ) : (
+          
+          {/* Edit/Save button with dynamic behavior */}
+          {!isEditing ? (
+            /* Show Edit/Change button when not in editing mode */
+            <Button
+              onClick={handleEditToggle}
+              disabled={formIsSubmitting || !canEdit}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
               <div className="flex items-center">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-                Lưu thay đổi
+                Thay đổi
               </div>
-            )}
-          </Button>
+            </Button>
+          ) : (
+            /* Show Save button when in editing mode */
+            <Button
+              onClick={formHandleSave}
+              disabled={formIsSubmitting}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {formIsSubmitting ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Đang lưu...
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Lưu
+                </div>
+              )}
+            </Button>
+          )}
         </div>
       </div>
     </div>
@@ -240,58 +278,58 @@ export const GenericInlineEdit = <T,>({
             titleIcon={titleIcon}
             fields={fields.map(field => ({
               ...field,
-              disabled: field.disabled || isReadOnly || !canEdit
+              disabled: field.disabled || isReadOnly || !canEdit || !isEditing // Disable fields when not in editing mode
             }))}
             initialData={getInitialData()}
             onSave={handleSave}
-            onCancel={onCancel}
+            onCancel={handleCancel}
             isSubmitting={isSubmitting}
-            submitButtonText={isReadOnly ? "Đóng" : "Lưu thay đổi"}
+            submitButtonText={isReadOnly ? "Đóng" : "Lưu"}
             cancelButtonText="Hủy"
             layout="double" // Use double column with smart wide field handling
             showActionButtons={false} // Hide default action buttons
             showFullTitle={false} // Only show name, not full title
             customActionButtons={isReadOnly ? undefined : renderCustomActionButtons} // Use custom action buttons for edit mode
           />
+        </div>
 
-          {/* Enhanced Additional Info Section - Moved below form fields */}
-          {getAdditionalInfo && (
-            <div className="mt-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-3">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-semibold text-white">Thông tin chi tiết</h4>
+        {/* Enhanced Additional Info Section - Between form fields and action buttons */}
+        {getAdditionalInfo && (
+          <div className="mx-8 mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-              </div>
-              
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {getAdditionalInfo(item).map((info, index) => (
-                    <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-3">
-                          <span className="text-xs font-bold text-white">{index + 1}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                            {info.label}
-                          </dt>
-                          <dd className="text-sm font-semibold text-gray-900 break-words">
-                            {info.value}
-                          </dd>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <h4 className="text-lg font-semibold text-white">Thông tin chi tiết</h4>
               </div>
             </div>
-          )}
-        </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {getAdditionalInfo(item).map((info, index) => (
+                  <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-3">
+                        <span className="text-xs font-bold text-white">{index + 1}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                          {info.label}
+                        </dt>
+                        <dd className="text-sm font-semibold text-gray-900 break-words">
+                          {info.value}
+                        </dd>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

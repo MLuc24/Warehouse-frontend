@@ -3,6 +3,7 @@ import { Package } from 'lucide-react';
 import { GenericInlineEdit } from '@/components/common';
 import type { FormField } from '@/components/common';
 import type { Product } from '@/types';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface ProductInlineEditProps {
   product: Product;
@@ -29,6 +30,12 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
   canDelete = true,
   isReadOnly = false
 }) => {
+  const { products: productPermissions } = usePermissions();
+
+  // Override permissions based on user role - Products: tất cả role đều có toàn quyền
+  const effectiveCanEdit = canEdit && productPermissions.canEdit;
+  const effectiveCanDelete = canDelete && productPermissions.canDelete;
+  const effectiveIsReadOnly = isReadOnly;
   const productFields: FormField[] = [
     {
       name: 'productName',
@@ -103,9 +110,9 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
       onReactivate={onReactivate}
       onCancel={onCancel}
       getItemId={(item) => item.productId}
-      canEdit={canEdit}
-      canDelete={canDelete}
-      isReadOnly={isReadOnly}
+      canEdit={effectiveCanEdit}
+      canDelete={effectiveCanDelete}
+      isReadOnly={effectiveIsReadOnly}
       isActive={(item) => item.status === true}
       deleteConfirmTitle="Xác nhận xóa sản phẩm"
       deleteConfirmMessage="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."

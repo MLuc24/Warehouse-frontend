@@ -20,12 +20,12 @@ export const usePermissions = () => {
         canDelete: userRole === USER_ROLES.ADMIN,
       },
       
-      // Product permissions
+      // Product permissions - Tất cả role đều có toàn quyền
       products: {
         canView: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER || userRole === USER_ROLES.EMPLOYEE,
-        canCreate: userRole === USER_ROLES.ADMIN,
-        canEdit: userRole === USER_ROLES.ADMIN,
-        canDelete: userRole === USER_ROLES.ADMIN,
+        canCreate: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER || userRole === USER_ROLES.EMPLOYEE,
+        canEdit: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER || userRole === USER_ROLES.EMPLOYEE,
+        canDelete: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER || userRole === USER_ROLES.EMPLOYEE,
       },
 
       // General admin functions

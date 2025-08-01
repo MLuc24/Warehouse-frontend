@@ -3,6 +3,7 @@ import { Building2 } from 'lucide-react';
 import { GenericInlineEdit } from '@/components/common';
 import type { FormField } from '@/components/common';
 import type { Supplier } from '@/types';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface SupplierInlineEditProps {
   supplier: Supplier;
@@ -29,6 +30,12 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
   canDelete = true,
   isReadOnly = false
 }) => {
+  const { suppliers: supplierPermissions } = usePermissions();
+
+  // Override permissions based on user role
+  const effectiveCanEdit = canEdit && supplierPermissions.canEdit;
+  const effectiveCanDelete = canDelete && supplierPermissions.canDelete;
+  const effectiveIsReadOnly = isReadOnly || !supplierPermissions.canEdit;
   const supplierFields: FormField[] = [
     {
       name: 'supplierName',
@@ -89,9 +96,9 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
       onReactivate={onReactivate}
       onCancel={onCancel}
       getItemId={(item) => item.supplierId}
-      canEdit={canEdit}
-      canDelete={canDelete}
-      isReadOnly={isReadOnly}
+      canEdit={effectiveCanEdit}
+      canDelete={effectiveCanDelete}
+      isReadOnly={effectiveIsReadOnly}
       isActive={(item) => item.status === 'Active'}
       deleteConfirmTitle="Xác nhận xóa nhà cung cấp"
       deleteConfirmMessage="Bạn có chắc chắn muốn xóa nhà cung cấp này? Hành động này không thể hoàn tác."
