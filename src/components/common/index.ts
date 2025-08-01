@@ -2,6 +2,10 @@
 export { DeleteConfirmModal } from './DeleteConfirmModal';
 export { Pagination } from './Pagination';
 export { ExportButtons } from './ExportButtons';
+export { Notification } from './Notification';
+
+// Generic Modal Components (for create/update forms)
+export { GenericModal } from './GenericModal';
 
 // Enhanced Common Components
 export { GenericList } from './GenericList';
