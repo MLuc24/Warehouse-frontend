@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, ImageUpload } from '@/components/ui';
+import { Button, CloudinaryImageUpload } from '@/components/ui';
 import { getUnitsAsOptions } from '@/constants/units';
 
 export interface FormField {
@@ -13,9 +13,8 @@ export interface FormField {
   rows?: number; // For textarea
   disabled?: boolean;
   description?: string;
-}
-
-interface GenericFormProps {
+  productName?: string; // For Cloudinary context
+}interface GenericFormProps {
   title: string;
   description?: string;
   titleIcon: React.ReactNode;
@@ -195,12 +194,12 @@ export const GenericForm: React.FC<GenericFormProps> = ({
 
         case 'image':
           return (
-            <ImageUpload
+            <CloudinaryImageUpload
               value={String(formData[field.name] || '')}
-              onChange={(value) => handleInputChange(field, value)}
+              onChange={(value: string) => handleInputChange(field, value)}
               disabled={field.disabled || isSubmitting}
               placeholder={field.placeholder}
-              showPreview={true}
+              productName={field.productName}
             />
           );
         

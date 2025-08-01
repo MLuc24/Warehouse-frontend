@@ -137,7 +137,7 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
       name: 'imageUrl',
       label: 'Hình ảnh sản phẩm',
       type: 'image',
-      description: 'Tải ảnh lên hoặc nhập URL hình ảnh sản phẩm',
+      description: 'Tải ảnh lên Cloudinary hoặc nhập URL hình ảnh sản phẩm',
       validation: (value: unknown) => {
         const strValue = String(value || '');
         if (strValue && strValue.length > 1000) {

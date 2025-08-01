@@ -5,4 +5,6 @@ export { LoadingSpinner } from './LoadingSpinner';
 export { Modal } from './Modal';
 export { Alert } from './Alert';
 export { LoadingButton } from './LoadingButton';
-export { ImageUpload } from './ImageUpload';
+export { CloudinaryImageUpload } from './CloudinaryImageUpload';
+// Alias for convenience
+export { CloudinaryImageUpload as ImageUpload } from './CloudinaryImageUpload';
