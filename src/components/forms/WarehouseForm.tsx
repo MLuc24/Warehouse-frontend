@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Input, Textarea, Button } from '@/components/ui';
 import type { WarehouseFormData, Warehouse } from '@/types';
 
 interface WarehouseFormProps {
@@ -38,24 +39,29 @@ export const WarehouseForm: React.FC<WarehouseFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
+    // Warehouse name validation
     if (!formData.warehouseName.trim()) {
       newErrors.warehouseName = 'Tên kho hàng không được để trống';
+    } else if (formData.warehouseName.length < 2) {
+      newErrors.warehouseName = 'Tên kho hàng phải có ít nhất 2 ký tự';
     } else if (formData.warehouseName.length > 100) {
       newErrors.warehouseName = 'Tên kho hàng không được vượt quá 100 ký tự';
     }
 
+    // Address validation
     if (!formData.address.trim()) {
       newErrors.address = 'Địa chỉ không được để trống';
+    } else if (formData.address.length < 10) {
+      newErrors.address = 'Địa chỉ phải có ít nhất 10 ký tự';
     } else if (formData.address.length > 500) {
       newErrors.address = 'Địa chỉ không được vượt quá 500 ký tự';
     }
 
+    // Phone validation (optional but must be valid if provided)
     if (formData.contactPhone) {
       const phoneRegex = /^(\+84|84|0)[3|5|7|8|9]([0-9]{8})$/;
-      if (!phoneRegex.test(formData.contactPhone)) {
-        newErrors.contactPhone = 'Số điện thoại không đúng định dạng';
-      } else if (formData.contactPhone.length > 20) {
-        newErrors.contactPhone = 'Số điện thoại không được vượt quá 20 ký tự';
+      if (!phoneRegex.test(formData.contactPhone.replace(/\s/g, ''))) {
+        newErrors.contactPhone = 'Số điện thoại không đúng định dạng (VD: 0912345678)';
       }
     }
 
@@ -102,96 +108,85 @@ export const WarehouseForm: React.FC<WarehouseFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Warehouse Name */}
-      <div>
-        <label htmlFor="warehouseName" className="block text-sm font-medium text-gray-700 mb-2">
-          Tên kho hàng *
-        </label>
-        <input
-          type="text"
-          id="warehouseName"
-          value={formData.warehouseName}
-          onChange={handleInputChange('warehouseName')}
-          disabled={isFormLoading}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${
-            errors.warehouseName ? 'border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="Nhập tên kho hàng"
-        />
-        {errors.warehouseName && (
-          <p className="mt-1 text-sm text-red-600">{errors.warehouseName}</p>
-        )}
+      {/* Form Header */}
+      <div className="text-center pb-6 border-b border-gray-200">
+        <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
+          <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900">
+          {warehouse ? 'Chỉnh sửa thông tin kho hàng' : 'Tạo kho hàng mới'}
+        </h3>
+        <p className="mt-2 text-sm text-gray-500">
+          {warehouse 
+            ? 'Cập nhật thông tin kho hàng hiện tại của bạn' 
+            : 'Nhập đầy đủ thông tin để tạo kho hàng mới trong hệ thống'
+          }
+        </p>
       </div>
+
+      {/* Warehouse Name */}
+      <Input
+        label="Tên kho hàng"
+        id="warehouseName"
+        type="text"
+        value={formData.warehouseName}
+        onChange={handleInputChange('warehouseName')}
+        disabled={isFormLoading}
+        error={errors.warehouseName}
+        placeholder="Nhập tên kho hàng"
+        required
+      />
 
       {/* Address */}
-      <div>
-        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-          Địa chỉ *
-        </label>
-        <textarea
-          id="address"
-          value={formData.address}
-          onChange={handleInputChange('address')}
-          disabled={isFormLoading}
-          rows={3}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none ${
-            errors.address ? 'border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="Nhập địa chỉ kho hàng"
-        />
-        {errors.address && (
-          <p className="mt-1 text-sm text-red-600">{errors.address}</p>
-        )}
-      </div>
+      <Textarea
+        label="Địa chỉ"
+        id="address"
+        value={formData.address}
+        onChange={handleInputChange('address')}
+        disabled={isFormLoading}
+        error={errors.address}
+        placeholder="Nhập địa chỉ kho hàng"
+        rows={3}
+        required
+      />
 
       {/* Contact Phone */}
-      <div>
-        <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-2">
-          Số điện thoại liên hệ
-        </label>
-        <input
-          type="tel"
-          id="contactPhone"
-          value={formData.contactPhone}
-          onChange={handleInputChange('contactPhone')}
-          disabled={isFormLoading}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${
-            errors.contactPhone ? 'border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="Ví dụ: 0912345678"
-        />
-        {errors.contactPhone && (
-          <p className="mt-1 text-sm text-red-600">{errors.contactPhone}</p>
-        )}
-      </div>
+      <Input
+        label="Số điện thoại liên hệ"
+        id="contactPhone"
+        type="tel"
+        value={formData.contactPhone}
+        onChange={handleInputChange('contactPhone')}
+        disabled={isFormLoading}
+        error={errors.contactPhone}
+        placeholder="Ví dụ: 0912345678"
+        helperText="Số điện thoại để liên hệ với kho hàng (không bắt buộc)"
+      />
 
       {/* Form Actions */}
-      <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-        <button
+      <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200 bg-gray-50 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
+        <Button
           type="button"
           onClick={onCancel}
           disabled={isFormLoading}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          variant="secondary"
+          size="md"
+          className="w-full sm:w-auto min-w-24"
         >
-          Hủy
-        </button>
-        <button
+          Hủy bỏ
+        </Button>
+        <Button
           type="submit"
           disabled={isFormLoading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
+          variant="primary"
+          size="md"
+          loading={isFormLoading}
+          className="w-full sm:w-auto min-w-32"
         >
-          {isFormLoading ? (
-            <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {warehouse ? 'Đang cập nhật...' : 'Đang tạo...'}
-            </span>
-          ) : (
-            warehouse ? 'Cập nhật' : 'Tạo mới'
-          )}
-        </button>
+          {warehouse ? 'Cập nhật kho hàng' : 'Tạo kho hàng'}
+        </Button>
       </div>
     </form>
   );

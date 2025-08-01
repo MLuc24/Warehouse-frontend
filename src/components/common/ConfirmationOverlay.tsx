@@ -78,62 +78,64 @@ export const ConfirmationOverlay: React.FC<ConfirmationOverlayProps> = ({
   };
 
   const iconBgColors = {
-    danger: 'bg-red-100',
-    warning: 'bg-yellow-100',
-    primary: 'bg-blue-100'
+    danger: 'bg-gradient-to-br from-red-50 to-red-100',
+    warning: 'bg-gradient-to-br from-yellow-50 to-yellow-100',
+    primary: 'bg-gradient-to-br from-blue-50 to-blue-100'
   };
 
   const buttonColors = {
-    danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
-    warning: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
-    primary: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+    danger: 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:ring-red-500 shadow-lg hover:shadow-xl',
+    warning: 'bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 focus:ring-yellow-500 shadow-lg hover:shadow-xl',
+    primary: 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500 shadow-lg hover:shadow-xl'
   };
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirmation-title"
       aria-describedby="confirmation-description"
     >
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-100 hover:scale-[1.02]">
         <div className="p-6">
           {/* Icon */}
-          <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${iconBgColors[confirmVariant]} mb-4`}>
+          <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-full ${iconBgColors[confirmVariant]} mb-6 ring-4 ring-white shadow-lg`}>
             {icon || defaultIcons[confirmVariant]}
           </div>
 
           {/* Content */}
           <div className="text-center">
-            <h3 id="confirmation-title" className="text-lg font-medium text-gray-900 mb-2">
+            <h3 id="confirmation-title" className="text-xl font-semibold text-gray-900 mb-3">
               {title}
             </h3>
-            <div id="confirmation-description" className="text-sm text-gray-500 mb-4">
-              <p className="mb-2">{message}</p>
+            <div id="confirmation-description" className="text-gray-600 mb-6">
+              <p className="mb-3 leading-relaxed">{message}</p>
               {itemName && (
-                <p className="font-medium text-gray-700">
-                  Mục: <span className="font-semibold">{itemName}</span>
-                </p>
+                <div className="bg-gray-50 rounded-lg p-3 border-l-4 border-gray-300">
+                  <p className="font-medium text-gray-800">
+                    Mục: <span className="font-bold text-gray-900">{itemName}</span>
+                  </p>
+                </div>
               )}
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex space-x-3 justify-end">
+          <div className="flex space-x-3 justify-end pt-2">
             <Button
               variant="outline"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2"
+              className="px-6 py-2.5 hover:bg-gray-50 transition-colors"
             >
               {cancelText}
             </Button>
             <button
               onClick={onConfirm}
               disabled={loading}
-              className={`px-4 py-2 text-white rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center ${buttonColors[confirmVariant]}`}
+              className={`px-6 py-2.5 text-white rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center transform hover:-translate-y-0.5 ${buttonColors[confirmVariant]}`}
             >
               {loading && (
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

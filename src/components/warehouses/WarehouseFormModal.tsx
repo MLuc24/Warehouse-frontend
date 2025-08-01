@@ -12,8 +12,7 @@ interface WarehouseFormModalProps {
 }
 
 /**
- * Warehouse Form Modal - Create/Update warehouse using GenericModal
- * Distinguished from inline edit by "FormModal" suffix
+ * WarehouseFormModal - Enhanced modal for warehouse CRUD operations
  */
 export const WarehouseFormModal: React.FC<WarehouseFormModalProps> = ({
   isOpen,
@@ -23,13 +22,22 @@ export const WarehouseFormModal: React.FC<WarehouseFormModalProps> = ({
   loading = false
 }) => {
   const title = warehouse ? 'Chỉnh sửa kho hàng' : 'Thêm kho hàng mới';
-
+  
+  // Icon for warehouse operations
+  const warehouseIcon = (
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+    </svg>
+  );
+  
   return (
     <GenericModal
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      size="md"
+      size="xl"
+      icon={warehouseIcon}
+      variant={warehouse ? 'info' : 'success'}
     >
       <WarehouseForm
         warehouse={warehouse}
