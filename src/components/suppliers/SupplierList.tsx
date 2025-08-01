@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { GenericList } from '@/components/common';
+import { GenericList, ExportButtons } from '@/components/common';
+import { useSupplierExport } from '@/hooks';
 import type { Supplier } from '@/types';
 
 type StatusFilter = 'all' | 'Active' | 'Expired';
@@ -79,6 +80,13 @@ export const SupplierList: React.FC<SupplierListProps> = ({
 
     return filtered;
   }, [suppliers, statusFilter, dateSort]);
+
+  // Export functionality
+  const { exportOptions, canExport } = useSupplierExport({
+    suppliers: filteredAndSortedSuppliers,
+    title: 'Danh sách nhà cung cấp',
+    filename: 'danh-sach-nha-cung-cap'
+  });
 
   // Handle column header click
   const handleColumnHeaderClick = (column: { key: string; label: string }) => {
@@ -214,43 +222,50 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   ];
 
   return (
-    <GenericList
-      // Data props
-      items={filteredAndSortedSuppliers}
-      selectedItem={selectedSupplier}
-      onSelectItem={onSelectSupplier}
-      loading={loading}
+    <div className="space-y-6">
+      {/* Export Button */}
+      <div className="flex justify-end mb-4">
+        <ExportButtons 
+          exportOptions={exportOptions}
+          disabled={!canExport || loading}
+        />
+      </div>
       
-      // Header props
-      title="Danh sách nhà cung cấp"
-      totalCount={suppliers.length}
-      headerIcon={
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      }
-      onShowCreate={onShowCreate}
-      createButtonText="Thêm"
-      
-      // Search props
-      searchTerm={searchTerm}
-      onSearchTermChange={onSearchTermChange}
-      onSearch={onSearch}
-      onClearSearch={onClearSearch}
-      searchPlaceholder="Tìm kiếm theo tên, email, số điện thoại..."
-      
-      // Pagination props
-      currentPage={currentPage}
-      totalPages={totalPages}
-      pageSize={pageSize}
-      onPageChange={onPageChange}
-      
-      // Table props
-      columns={columns}
-      getItemKey={(supplier) => supplier.supplierId}
-      isItemSelected={(supplier, selected) => selected?.supplierId === supplier.supplierId}
-      
-      // Column interactions
+      <GenericList<Supplier>
+        // Data props
+        items={filteredAndSortedSuppliers}
+        selectedItem={selectedSupplier}
+        onSelectItem={onSelectSupplier}
+        loading={loading}
+        
+        // Header props
+        title="Danh sách nhà cung cấp"
+        totalCount={suppliers.length}
+        headerIcon={
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        }
+        onShowCreate={onShowCreate}
+        createButtonText="Thêm"
+        
+        // Search props
+        searchTerm={searchTerm}
+        onSearchTermChange={onSearchTermChange}
+        onSearch={onSearch}
+        onClearSearch={onClearSearch}
+        searchPlaceholder="Tìm kiếm theo tên, email, số điện thoại..."
+        
+        // Pagination props
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={onPageChange}
+        
+        // Table props
+        columns={columns}
+        getItemKey={(supplier) => supplier.supplierId}
+        isItemSelected={(supplier, selected) => selected?.supplierId === supplier.supplierId}      // Column interactions
       onColumnHeaderClick={handleColumnHeaderClick}
       
       // Permission props
@@ -268,6 +283,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
       emptySearchMessage={(term) => `Không tìm thấy nhà cung cấp nào với từ khóa "${term}"`}
       emptyFilterMessage={(filter) => `Không có nhà cung cấp nào ${filter === 'Active' ? 'đang hoạt động' : 'hết hạn'}`}
     />
+    </div>
   );
 };
 

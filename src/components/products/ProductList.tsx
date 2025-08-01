@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { GenericList } from '@/components/common';
+import { GenericList, ExportButtons } from '@/components/common';
+import { useProductExport } from '@/hooks';
 import type { Product } from '@/types';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -109,6 +110,13 @@ export const ProductList: React.FC<ProductListProps> = ({
 
     return filtered;
   }, [products, statusFilter, dateSort, purchasePriceSort, sellingPriceSort]);
+
+  // Export functionality
+  const { exportOptions, canExport } = useProductExport({
+    products: filteredAndSortedProducts,
+    title: 'Danh sách sản phẩm',
+    filename: 'danh-sach-san-pham'
+  });
 
   // Handle column header click
   const handleColumnHeaderClick = (column: { key: string; label: string }) => {
@@ -325,60 +333,70 @@ export const ProductList: React.FC<ProductListProps> = ({
   ];
 
   return (
-    <GenericList
-      // Data props
-      items={filteredAndSortedProducts}
-      selectedItem={selectedProduct}
-      onSelectItem={onSelectProduct}
-      loading={loading}
-      
-      // Header props
-      title="Quản lý Sản phẩm"
-      totalCount={products.length}
-      headerIcon={
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      }
-      onShowCreate={onShowCreate}
-      createButtonText="Thêm"
-      
-      // Search props
-      searchTerm={searchTerm}
-      onSearchTermChange={onSearchTermChange}
-      onSearch={onSearch}
-      onClearSearch={onClearSearch}
-      searchPlaceholder="Tìm kiếm theo tên, SKU, nhà cung cấp..."
-      
-      // Pagination props
-      currentPage={currentPage}
-      totalPages={totalPages}
-      pageSize={pageSize}
-      onPageChange={onPageChange}
-      
-      // Table props
-      columns={columns}
-      getItemKey={(product) => product.productId}
-      isItemSelected={(product, selected) => selected?.productId === product.productId}
-      
-      // Column interactions
-      onColumnHeaderClick={handleColumnHeaderClick}
-      
-      // Permission props
-      permissions={{
-        canCreate: permissions?.products.canCreate ?? false
-      }}
-      
-      // Empty state props
-      emptyStateIcon={
-        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      }
-      emptyStateMessage="Chưa có sản phẩm nào được tạo"
-      emptySearchMessage={(term) => `Không tìm thấy sản phẩm nào với từ khóa "${term}"`}
-      emptyFilterMessage={(filter) => `Không có sản phẩm nào với trạng thái "${filter}"`}
-    />
+    <div className="space-y-6">
+      {/* Export Button */}
+      <div className="flex justify-end mb-4">
+        <ExportButtons
+          exportOptions={exportOptions}
+          disabled={!canExport || loading}
+        />
+      </div>
+
+      <GenericList<Product>
+        // Data props
+        items={filteredAndSortedProducts}
+        selectedItem={selectedProduct}
+        onSelectItem={onSelectProduct}
+        loading={loading}
+        
+        // Header props
+        title="Quản lý Sản phẩm"
+        totalCount={products.length}
+        headerIcon={
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        }
+        onShowCreate={onShowCreate}
+        createButtonText="Thêm"
+        
+        // Search props
+        searchTerm={searchTerm}
+        onSearchTermChange={onSearchTermChange}
+        onSearch={onSearch}
+        onClearSearch={onClearSearch}
+        searchPlaceholder="Tìm kiếm theo tên, SKU, nhà cung cấp..."
+        
+        // Pagination props
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={onPageChange}
+        
+        // Table props
+        columns={columns}
+        getItemKey={(product) => product.productId}
+        isItemSelected={(product, selected) => selected?.productId === product.productId}
+        
+        // Column interactions
+        onColumnHeaderClick={handleColumnHeaderClick}
+        
+        // Permission props
+        permissions={{
+          canCreate: permissions?.products.canCreate ?? false
+        }}
+        
+        // Empty state props
+        emptyStateIcon={
+          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        }
+        emptyStateMessage="Chưa có sản phẩm nào được tạo"
+        emptySearchMessage={(term) => `Không tìm thấy sản phẩm nào với từ khóa "${term}"`}
+        emptyFilterMessage={(filter) => `Không có sản phẩm nào với trạng thái "${filter}"`}
+      />
+    </div>
   );
 };
 
