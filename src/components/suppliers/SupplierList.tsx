@@ -16,6 +16,11 @@ interface SupplierListProps {
   onSearchTermChange: (term: string) => void;
   onSearch: (term: string) => void;
   onClearSearch: () => void;
+  // Pagination props
+  currentPage?: number;
+  totalPages?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
   // Permission props
   permissions?: {
     suppliers: {
@@ -39,6 +44,11 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   onSearchTermChange,
   onSearch,
   onClearSearch,
+  // Pagination props
+  currentPage = 1,
+  totalPages = 1,
+  pageSize = 10,
+  onPageChange,
   // Permission props
   permissions
 }) => {
@@ -69,6 +79,19 @@ export const SupplierList: React.FC<SupplierListProps> = ({
 
     return filtered;
   }, [suppliers, statusFilter, dateSort]);
+
+  // Handle column header click
+  const handleColumnHeaderClick = (column: { key: string; label: string }) => {
+    if (column.key === 'status') {
+      // Toggle status filter
+      const nextStatus = statusFilter === 'all' ? 'Active' : statusFilter === 'Active' ? 'Expired' : 'all';
+      setStatusFilter(nextStatus);
+    } else if (column.key === 'createdAt') {
+      // Toggle date sort
+      const nextSort = dateSort === 'newest' ? 'oldest' : 'newest';
+      setDateSort(nextSort);
+    }
+  };
 
   // Define table columns
   const columns = [
@@ -152,6 +175,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
     {
       key: 'status',
       label: 'Trạng thái',
+      filterable: true,
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -170,6 +194,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
     {
       key: 'createdAt',
       label: 'Ngày tạo',
+      sortable: true,
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -205,7 +230,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
         </svg>
       }
       onShowCreate={onShowCreate}
-      createButtonText="Thêm nhà cung cấp"
+      createButtonText="Thêm"
       
       // Search props
       searchTerm={searchTerm}
@@ -214,25 +239,19 @@ export const SupplierList: React.FC<SupplierListProps> = ({
       onClearSearch={onClearSearch}
       searchPlaceholder="Tìm kiếm theo tên, email, số điện thoại..."
       
-      // Filter & Sort props
-      statusFilter={statusFilter}
-      onStatusFilterChange={(status) => setStatusFilter(status as StatusFilter)}
-      statusOptions={[
-        { label: 'Tất cả trạng thái', value: 'all' },
-        { label: 'Hoạt động', value: 'Active' },
-        { label: 'Hết hạn', value: 'Expired' }
-      ]}
-      dateSort={dateSort}
-      onDateSortChange={(sort) => setDateSort(sort as DateSort)}
-      sortOptions={[
-        { label: 'Mới nhất', value: 'newest' },
-        { label: 'Cũ nhất', value: 'oldest' }
-      ]}
+      // Pagination props
+      currentPage={currentPage}
+      totalPages={totalPages}
+      pageSize={pageSize}
+      onPageChange={onPageChange}
       
       // Table props
       columns={columns}
       getItemKey={(supplier) => supplier.supplierId}
       isItemSelected={(supplier, selected) => selected?.supplierId === supplier.supplierId}
+      
+      // Column interactions
+      onColumnHeaderClick={handleColumnHeaderClick}
       
       // Permission props
       permissions={{

@@ -16,6 +16,11 @@ interface ProductListProps {
   onSearchTermChange: (term: string) => void;
   onSearch: (term: string) => void;
   onClearSearch: () => void;
+  // Pagination props
+  currentPage?: number;
+  totalPages?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
   // Permission props
   permissions?: {
     products: {
@@ -39,6 +44,11 @@ export const ProductList: React.FC<ProductListProps> = ({
   onSearchTermChange,
   onSearch,
   onClearSearch,
+  // Pagination props
+  currentPage = 1,
+  totalPages = 1,
+  pageSize = 10,
+  onPageChange,
   // Permission props
   permissions
 }) => {
@@ -73,6 +83,19 @@ export const ProductList: React.FC<ProductListProps> = ({
 
     return filtered;
   }, [products, statusFilter, dateSort]);
+
+  // Handle column header click
+  const handleColumnHeaderClick = (column: { key: string; label: string }) => {
+    if (column.key === 'status') {
+      // Toggle status filter
+      const nextStatus = statusFilter === 'all' ? 'active' : statusFilter === 'active' ? 'inactive' : 'all';
+      setStatusFilter(nextStatus);
+    } else if (column.key === 'createdAt') {
+      // Toggle date sort
+      const nextSort = dateSort === 'newest' ? 'oldest' : 'newest';
+      setDateSort(nextSort);
+    }
+  };
 
   // Define table columns
   const columns = [
@@ -197,6 +220,7 @@ export const ProductList: React.FC<ProductListProps> = ({
     {
       key: 'status',
       label: 'Trạng thái',
+      filterable: true,
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -210,6 +234,26 @@ export const ProductList: React.FC<ProductListProps> = ({
         }`}>
           {product.status ? 'Hoạt động' : 'Ngừng hoạt động'}
         </span>
+      )
+    },
+    {
+      key: 'createdAt',
+      label: 'Ngày tạo',
+      sortable: true,
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+      render: (product: Product) => (
+        <div className="text-sm text-gray-900 whitespace-nowrap">
+          {product.createdAt 
+            ? new Date(product.createdAt).toLocaleDateString('vi-VN')
+            : (
+              <span className="text-gray-400 italic">N/A</span>
+            )
+          }
+        </div>
       )
     }
   ];
@@ -231,34 +275,28 @@ export const ProductList: React.FC<ProductListProps> = ({
         </svg>
       }
       onShowCreate={onShowCreate}
-      createButtonText="Thêm sản phẩm"
+      createButtonText="Thêm"
       
       // Search props
       searchTerm={searchTerm}
       onSearchTermChange={onSearchTermChange}
       onSearch={onSearch}
       onClearSearch={onClearSearch}
-      searchPlaceholder="Tìm kiếm theo tên, SKU..."
+      searchPlaceholder="Tìm kiếm theo tên, SKU, nhà cung cấp..."
       
-      // Filter & Sort props
-      statusFilter={statusFilter}
-      onStatusFilterChange={(status) => setStatusFilter(status as StatusFilter)}
-      statusOptions={[
-        { label: 'Tất cả trạng thái', value: 'all' },
-        { label: 'Đang hoạt động', value: 'active' },
-        { label: 'Ngừng hoạt động', value: 'inactive' }
-      ]}
-      dateSort={dateSort}
-      onDateSortChange={(sort) => setDateSort(sort as DateSort)}
-      sortOptions={[
-        { label: 'Mới nhất', value: 'newest' },
-        { label: 'Cũ nhất', value: 'oldest' }
-      ]}
+      // Pagination props
+      currentPage={currentPage}
+      totalPages={totalPages}
+      pageSize={pageSize}
+      onPageChange={onPageChange}
       
       // Table props
       columns={columns}
       getItemKey={(product) => product.productId}
       isItemSelected={(product, selected) => selected?.productId === product.productId}
+      
+      // Column interactions
+      onColumnHeaderClick={handleColumnHeaderClick}
       
       // Permission props
       permissions={{

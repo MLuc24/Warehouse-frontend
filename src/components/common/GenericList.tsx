@@ -1,12 +1,8 @@
 import React from 'react';
 import { Button, Input } from '@/components/ui';
+import { Pagination } from './Pagination';
 
 interface FilterOption {
-  label: string;
-  value: string;
-}
-
-interface SortOption {
   label: string;
   value: string;
 }
@@ -16,6 +12,10 @@ interface GenericListColumn<T> {
   label: string;
   icon?: React.ReactNode;
   render: (item: T) => React.ReactNode;
+  sortable?: boolean;
+  filterable?: boolean;
+  filterKey?: string; // Key to use for filtering (default: column.key)
+  sortKey?: string;   // Key to use for sorting (default: column.key)
 }
 
 interface GenericListProps<T> {
@@ -40,18 +40,23 @@ interface GenericListProps<T> {
   searchPlaceholder?: string;
   
   // Filters & Sorting
-  statusFilter: string;
-  onStatusFilterChange: (status: string) => void;
-  statusOptions: FilterOption[];
+  statusFilter?: string;
+  onStatusFilterChange?: (status: string) => void;
+  statusOptions?: FilterOption[];
   
-  dateSort: string;
-  onDateSortChange: (sort: string) => void;
-  sortOptions: SortOption[];
+  // Pagination
+  currentPage?: number;
+  totalPages?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
   
   // Table
   columns: GenericListColumn<T>[];
   getItemKey: (item: T) => string | number;
   isItemSelected: (item: T, selectedItem: T | null) => boolean;
+  
+  // Column interactions
+  onColumnHeaderClick?: (column: GenericListColumn<T>) => void;
   
   // Permissions
   permissions?: {
@@ -81,7 +86,7 @@ export const GenericList = <T,>({
   totalCount,
   headerIcon,
   onShowCreate,
-  createButtonText = "Thêm mới",
+  createButtonText = "Thêm",
   
   // Search props
   searchTerm,
@@ -90,18 +95,24 @@ export const GenericList = <T,>({
   onClearSearch,
   searchPlaceholder = "Tìm kiếm...",
   
-  // Filter & Sort props
+  // Filter & Sort props (now optional)
   statusFilter,
   onStatusFilterChange,
   statusOptions,
-  dateSort,
-  onDateSortChange,
-  sortOptions,
+  
+  // Pagination props
+  currentPage = 1,
+  totalPages = 1,
+  pageSize = 10,
+  onPageChange,
   
   // Table props
   columns,
   getItemKey,
   isItemSelected,
+  
+  // Column interaction props
+  onColumnHeaderClick,
   
   // Permission props
   permissions,
@@ -131,7 +142,7 @@ export const GenericList = <T,>({
 
   // Get empty state message
   const getEmptyStateMessage = () => {
-    const currentFilterOption = statusOptions.find(opt => opt.value === statusFilter);
+    const currentFilterOption = statusOptions?.find(opt => opt.value === statusFilter);
     
     if (currentFilterOption && statusFilter !== 'all') {
       return emptyFilterMessage(currentFilterOption.label);
@@ -144,39 +155,32 @@ export const GenericList = <T,>({
     return emptyStateMessage;
   };
 
+  // Handle column header click
+  const handleColumnHeaderClick = (column: GenericListColumn<T>) => {
+    if (onColumnHeaderClick) {
+      onColumnHeaderClick(column);
+    }
+  };
+
   return (
     <div className="w-full space-y-6">
       {/* Header with Search and Controls */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Title and Create Button */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 h-12 w-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
-                {headerIcon}
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                <p className="text-sm text-gray-600 mt-1">
-                  Tổng cộng: <span className="font-semibold text-blue-600">{totalCount}</span> bản ghi
-                </p>
-              </div>
+          {/* Title */}
+          <div className="flex items-center">
+            <div className="flex-shrink-0 h-12 w-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-4">
+              {headerIcon}
             </div>
-            
-            {permissions?.canCreate && onShowCreate && (
-              <Button
-                onClick={onShowCreate}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 font-semibold flex items-center"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                {createButtonText}
-              </Button>
-            )}
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Tổng cộng: <span className="font-semibold text-blue-600">{totalCount}</span> bản ghi
+              </p>
+            </div>
           </div>
 
-          {/* Search and Filters */}
+          {/* Search and Create Button */}
           <div className="flex flex-col sm:flex-row gap-3 lg:w-auto w-full">
             {/* Search Input */}
             <div className="relative flex-1 lg:w-80">
@@ -204,32 +208,19 @@ export const GenericList = <T,>({
                 </button>
               )}
             </div>
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => onStatusFilterChange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
-            >
-              {statusOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            {/* Date Sort */}
-            <select
-              value={dateSort}
-              onChange={(e) => onDateSortChange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm"
-            >
-              {sortOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            
+            {/* Create Button - Right aligned */}
+            {permissions?.canCreate && onShowCreate && (
+              <Button
+                onClick={onShowCreate}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 font-semibold flex items-center ml-auto"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                {createButtonText}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -237,41 +228,70 @@ export const GenericList = <T,>({
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {items.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  {columns.map((column) => (
-                    <th key={column.key} className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      <div className="flex items-center">
-                        {column.icon && <div className="w-4 h-4 mr-2">{column.icon}</div>}
-                        {column.label}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {items.map((item, index) => (
-                  <tr
-                    key={getItemKey(item)}
-                    onClick={() => onSelectItem(item)}
-                    className={`cursor-pointer hover:bg-blue-50 transition-colors duration-200 ${
-                      isItemSelected(item, selectedItem)
-                        ? 'bg-blue-50 border-l-4 border-blue-500 shadow-sm'
-                        : index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                    }`}
-                  >
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
                     {columns.map((column) => (
-                      <td key={column.key} className="px-6 py-4">
-                        {column.render(item)}
-                      </td>
+                      <th 
+                        key={column.key} 
+                        className={`px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider ${
+                          column.sortable || column.filterable ? 'cursor-pointer hover:bg-gray-100' : ''
+                        }`}
+                        onClick={() => column.sortable || column.filterable ? handleColumnHeaderClick(column) : undefined}
+                      >
+                        <div className="flex items-center">
+                          {column.icon && <div className="w-4 h-4 mr-2">{column.icon}</div>}
+                          <span>{column.label}</span>
+                          {(column.sortable || column.filterable) && (
+                            <div className="ml-2 flex items-center">
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {items.map((item, index) => (
+                    <tr
+                      key={getItemKey(item)}
+                      onClick={() => onSelectItem(item)}
+                      className={`cursor-pointer hover:bg-blue-50 transition-colors duration-200 ${
+                        isItemSelected(item, selectedItem)
+                          ? 'bg-blue-50 border-l-4 border-blue-500 shadow-sm'
+                          : index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                      }`}
+                    >
+                      {columns.map((column) => (
+                        <td key={column.key} className="px-6 py-4">
+                          {column.render(item)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Pagination */}
+            {onPageChange && totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalCount={totalCount}
+                  pageSize={pageSize}
+                  onPageChange={onPageChange}
+                  loading={loading}
+                />
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-12">
             <div className="w-12 h-12 text-gray-400 mb-4 mx-auto">
@@ -287,7 +307,7 @@ export const GenericList = <T,>({
             {(statusFilter !== 'all' || searchTerm) ? (
               <Button
                 onClick={() => {
-                  onStatusFilterChange('all');
+                  onStatusFilterChange?.('all');
                   handleClearSearch();
                 }}
                 variant="secondary"
