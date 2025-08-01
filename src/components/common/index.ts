@@ -9,5 +9,8 @@ export { GenericStats } from './GenericStats';
 export { GenericForm } from './GenericForm';
 export { GenericInlineEdit } from './GenericInlineEdit';
 
+// Permission-based access control
+export { PermissionProtectedRoute } from './PermissionProtectedRoute';
+
 // Export types
 export type { FormField } from './GenericForm';

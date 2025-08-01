@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { GenericList, ExportButtons } from '@/components/common';
-import { useProductExport } from '@/hooks';
+import { ExportService, type ExportOptions } from '@/utils';
 import type { Product } from '@/types';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -112,11 +112,41 @@ export const ProductList: React.FC<ProductListProps> = ({
   }, [products, statusFilter, dateSort, purchasePriceSort, sellingPriceSort]);
 
   // Export functionality
-  const { exportOptions, canExport } = useProductExport({
-    products: filteredAndSortedProducts,
-    title: 'Danh sách sản phẩm',
-    filename: 'danh-sach-san-pham'
-  });
+  const exportOptions: ExportOptions = useMemo(() => {
+    const columns = [
+      { key: 'productId', header: 'ID', width: 10 },
+      { key: 'sku', header: 'Mã SKU', width: 20 },
+      { key: 'productName', header: 'Tên sản phẩm', width: 30 },
+      { key: 'supplierName', header: 'Nhà cung cấp', width: 25, formatter: (value: unknown) => String(value || 'Chưa có') },
+      { key: 'unit', header: 'Đơn vị tính', width: 15, formatter: (value: unknown) => String(value || '') },
+      { key: 'purchasePrice', header: 'Giá mua', width: 20, formatter: (value: unknown) => typeof value === 'number' ? ExportService.formatCurrency(value) : '' },
+      { key: 'sellingPrice', header: 'Giá bán', width: 20, formatter: (value: unknown) => typeof value === 'number' ? ExportService.formatCurrency(value) : '' },
+      { key: 'currentStock', header: 'Tồn kho', width: 15, formatter: (value: unknown) => typeof value === 'number' ? value.toString() : '0' },
+      { key: 'status', header: 'Trạng thái', width: 15, formatter: (value: unknown) => ExportService.formatStatus(value as boolean | string) },
+      { key: 'createdAt', header: 'Ngày tạo', width: 20, formatter: (value: unknown) => ExportService.formatDate(value as string) }
+    ];
+
+    const totalProducts = filteredAndSortedProducts.length;
+    const activeProducts = filteredAndSortedProducts.filter(p => p.status).length;
+    const inactiveProducts = totalProducts - activeProducts;
+    const totalStock = filteredAndSortedProducts.reduce((sum, p) => sum + (p.currentStock || 0), 0);
+
+    const summaryData = {
+      'Tổng số sản phẩm': totalProducts,
+      'Sản phẩm đang hoạt động': activeProducts,
+      'Sản phẩm ngừng hoạt động': inactiveProducts,
+      'Tổng tồn kho': totalStock
+    };
+
+    return {
+      filename: 'danh-sach-san-pham',
+      title: 'Danh sách sản phẩm',
+      columns,
+      data: filteredAndSortedProducts as unknown as Record<string, unknown>[],
+      showSummary: true,
+      summaryData
+    };
+  }, [filteredAndSortedProducts]);
 
   // Handle column header click
   const handleColumnHeaderClick = (column: { key: string; label: string }) => {
@@ -336,12 +366,12 @@ export const ProductList: React.FC<ProductListProps> = ({
     <div className="space-y-6">
       {/* Export Button */}
       <div className="flex justify-end mb-4">
-        <ExportButtons
+        <ExportButtons 
           exportOptions={exportOptions}
-          disabled={!canExport || loading}
+          disabled={loading || filteredAndSortedProducts.length === 0}
         />
       </div>
-
+      
       <GenericList<Product>
         // Data props
         items={filteredAndSortedProducts}

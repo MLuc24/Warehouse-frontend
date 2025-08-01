@@ -49,6 +49,14 @@ export const API_ENDPOINTS = {
     REACTIVATE: (id: number) => `/supplier/${id}/reactivate`,
     ACTIVE: '/supplier/active',
   },
+  WAREHOUSES: {
+    LIST: '/warehouse',
+    CREATE: '/warehouse',
+    UPDATE: (id: number) => `/warehouse/${id}`,
+    DELETE: (id: number) => `/warehouse/${id}`,
+    GET_BY_ID: (id: number) => `/warehouse/${id}`,
+    EXISTS: (id: number) => `/warehouse/${id}/exists`,
+  },
 } as const;
 
 // Application routes
@@ -67,6 +75,12 @@ export const ROUTES = {
     CREATE: '/suppliers/create',
     EDIT: (id: number) => `/suppliers/${id}/edit`,
     VIEW: (id: number) => `/suppliers/${id}`,
+  },
+  WAREHOUSES: {
+    LIST: '/warehouses',
+    CREATE: '/warehouses/create',
+    EDIT: (id: number) => `/warehouses/${id}/edit`,
+    VIEW: (id: number) => `/warehouses/${id}`,
   },
 } as const;
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { GenericList, ExportButtons } from '@/components/common';
-import { useSupplierExport } from '@/hooks';
+import { ExportService, type ExportOptions } from '@/utils';
 import type { Supplier } from '@/types';
 
 type StatusFilter = 'all' | 'Active' | 'Expired';
@@ -82,11 +82,37 @@ export const SupplierList: React.FC<SupplierListProps> = ({
   }, [suppliers, statusFilter, dateSort]);
 
   // Export functionality
-  const { exportOptions, canExport } = useSupplierExport({
-    suppliers: filteredAndSortedSuppliers,
-    title: 'Danh sách nhà cung cấp',
-    filename: 'danh-sach-nha-cung-cap'
-  });
+  const exportOptions: ExportOptions = useMemo(() => {
+    const columns = [
+      { key: 'supplierId', header: 'ID', width: 10 },
+      { key: 'supplierName', header: 'Tên nhà cung cấp', width: 30 },
+      { key: 'email', header: 'Email', width: 25, formatter: (value: unknown) => String(value || '') },
+      { key: 'phoneNumber', header: 'Số điện thoại', width: 20, formatter: (value: unknown) => String(value || '') },
+      { key: 'address', header: 'Địa chỉ', width: 35, formatter: (value: unknown) => String(value || '') },
+      { key: 'taxCode', header: 'Mã số thuế', width: 20, formatter: (value: unknown) => String(value || '') },
+      { key: 'status', header: 'Trạng thái', width: 15, formatter: (value: unknown) => ExportService.formatStatus(value as string) },
+      { key: 'createdAt', header: 'Ngày tạo', width: 20, formatter: (value: unknown) => ExportService.formatDate(value as string) }
+    ];
+
+    const totalSuppliers = filteredAndSortedSuppliers.length;
+    const activeSuppliers = filteredAndSortedSuppliers.filter(s => s.status === 'Active').length;
+    const expiredSuppliers = totalSuppliers - activeSuppliers;
+
+    const summaryData = {
+      'Tổng số nhà cung cấp': totalSuppliers,
+      'Nhà cung cấp hoạt động': activeSuppliers,
+      'Nhà cung cấp hết hạn': expiredSuppliers
+    };
+
+    return {
+      filename: 'danh-sach-nha-cung-cap',
+      title: 'Danh sách nhà cung cấp',
+      columns,
+      data: filteredAndSortedSuppliers as unknown as Record<string, unknown>[],
+      showSummary: true,
+      summaryData
+    };
+  }, [filteredAndSortedSuppliers]);
 
   // Handle column header click
   const handleColumnHeaderClick = (column: { key: string; label: string }) => {
@@ -227,7 +253,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
       <div className="flex justify-end mb-4">
         <ExportButtons 
           exportOptions={exportOptions}
-          disabled={!canExport || loading}
+          disabled={loading || filteredAndSortedSuppliers.length === 0}
         />
       </div>
       

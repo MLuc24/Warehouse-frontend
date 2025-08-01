@@ -28,6 +28,14 @@ export const usePermissions = () => {
         canDelete: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER || userRole === USER_ROLES.EMPLOYEE,
       },
 
+      // Warehouse permissions - Chỉ Admin và Manager
+      warehouses: {
+        canView: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER,
+        canCreate: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER,
+        canEdit: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER,
+        canDelete: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER,
+      },
+
       // General admin functions
       admin: {
         canAccessAll: userRole === USER_ROLES.ADMIN,
