@@ -255,11 +255,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             </div>
           </div>
           
-          <div className="relative w-full h-24 bg-gray-100 rounded-lg overflow-hidden border">
+          <div className="inline-block bg-gray-100 rounded-lg overflow-hidden border">
             <img
               src={previewUrl}
               alt="Preview"
-              className="w-full h-full object-contain"
+              className="max-w-xs max-h-24 object-contain"
               onError={() => {
                 setUploadError('Không thể hiển thị ảnh. Vui lòng kiểm tra URL hoặc file.');
               }}

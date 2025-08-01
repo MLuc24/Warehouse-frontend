@@ -152,7 +152,7 @@ export const GenericForm: React.FC<GenericFormProps> = ({
                 className={`${baseInputClasses} appearance-none pr-8`}
                 disabled={field.disabled || isSubmitting}
               >
-                <option value="" disabled>Chọn {field.label.toLowerCase()}</option>
+                {!formData[field.name] && <option value="" disabled>-- Chọn {field.label.toLowerCase()} --</option>}
                 {field.options?.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -177,7 +177,7 @@ export const GenericForm: React.FC<GenericFormProps> = ({
                 className={`${baseInputClasses} appearance-none pr-8`}
                 disabled={field.disabled || isSubmitting}
               >
-                <option value="" disabled>Chọn đơn vị tính</option>
+                {!formData[field.name] && <option value="" disabled>-- Chọn đơn vị tính --</option>}
                 {unitOptions.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label}
