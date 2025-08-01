@@ -218,7 +218,7 @@ export const GenericInlineEdit = <T,>({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full mx-auto">
       {/* Delete Confirmation Overlay */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
