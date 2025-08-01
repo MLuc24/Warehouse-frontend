@@ -21,8 +21,6 @@ export { default as EntityStats } from './EntityStats';
 export { default as ConfirmationOverlay } from './ConfirmationOverlay';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as EmptyState, NoDataFound, NoSearchResults, CreateFirstItem } from './EmptyState';
-export { default as ActionButton, EditButton, DeleteButton, ViewButton, AddButton } from './ActionButton';
 
 // Export types
 export type { FormField } from './GenericForm';
-export type { ActionButtonProps } from './ActionButton';

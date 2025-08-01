@@ -3,7 +3,8 @@ import { useWarehouses, useWarehouseActions } from '@/hooks/useWarehouse';
 import { WarehouseTable } from './WarehouseTable';
 import { WarehouseFormModal } from './WarehouseFormModal';
 import { SearchAndFilter } from './SearchAndFilter';
-import { ConfirmationOverlay, AddButton, EntityStats } from '@/components/common';
+import { ConfirmationOverlay, EntityStats } from '@/components/common';
+import { Button } from '@/components/ui';
 import type { Warehouse, WarehouseFormData } from '@/types';
 
 interface WarehouseManagementProps {
@@ -166,11 +167,18 @@ export const WarehouseManagement: React.FC<WarehouseManagementProps> = ({
             </p>
           </div>
           <div className="flex space-x-3">
-            <AddButton
+            <Button
+              icon={
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              }
               onClick={handleCreateNew}
-              label="Thêm kho hàng"
               size="md"
-            />
+              variant="primary"
+            >
+              Thêm kho hàng
+            </Button>
           </div>
         </div>
       </div>

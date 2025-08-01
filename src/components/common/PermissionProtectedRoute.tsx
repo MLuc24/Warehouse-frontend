@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
-import { LoadingSpinner } from '@/components/ui';
+import { Spinner } from '@/components/ui';
 
 interface PermissionProtectedRouteProps {
   children: React.ReactNode;
@@ -24,7 +24,7 @@ export const PermissionProtectedRoute: React.FC<PermissionProtectedRouteProps> =
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+        <Spinner size="lg" />
       </div>
     );
   }
