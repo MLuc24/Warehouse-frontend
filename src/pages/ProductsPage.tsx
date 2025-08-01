@@ -84,17 +84,48 @@ export const ProductsPage: React.FC = () => {
   const handleUpdateProduct = useCallback(async (data: Partial<Product>) => {
     if (!selectedProduct) return;
     
-    // Convert to UpdateProduct format
+    // Convert string values to proper types
+    const processedData = {
+      ...data,
+      // Convert status from string to boolean if it exists
+      status: data.status !== undefined 
+        ? (String(data.status) === 'true')
+        : undefined,
+      // Convert numeric fields from string to number if they exist and are strings
+      purchasePrice: data.purchasePrice !== undefined && String(data.purchasePrice) !== '' 
+        ? Number(data.purchasePrice) 
+        : data.purchasePrice,
+      sellingPrice: data.sellingPrice !== undefined && String(data.sellingPrice) !== '' 
+        ? Number(data.sellingPrice) 
+        : data.sellingPrice,
+      supplierId: data.supplierId !== undefined && String(data.supplierId) !== '' 
+        ? Number(data.supplierId) 
+        : data.supplierId,
+      // Convert empty string to undefined for ImageUrl to avoid validation error
+      imageUrl: data.imageUrl !== undefined && String(data.imageUrl).trim() !== '' 
+        ? String(data.imageUrl).trim()
+        : undefined,
+      // Convert empty string to undefined for optional text fields
+      description: data.description !== undefined && String(data.description).trim() !== '' 
+        ? String(data.description).trim()
+        : undefined,
+      unit: data.unit !== undefined && String(data.unit).trim() !== '' 
+        ? String(data.unit).trim()
+        : undefined,
+    };
+    
+    // Convert to UpdateProduct format and filter out undefined/empty values
     const updateData: UpdateProduct = {
-      sku: data.sku || selectedProduct.sku,
-      productName: data.productName || selectedProduct.productName,
-      description: data.description,
-      supplierId: data.supplierId,
-      unit: data.unit,
-      purchasePrice: data.purchasePrice,
-      sellingPrice: data.sellingPrice,
-      imageUrl: data.imageUrl,
-      status: data.status
+      sku: processedData.sku || selectedProduct.sku,
+      productName: processedData.productName || selectedProduct.productName,
+      // Only include optional fields if they have values
+      ...(processedData.description !== undefined && { description: processedData.description }),
+      ...(processedData.supplierId !== undefined && { supplierId: processedData.supplierId }),
+      ...(processedData.unit !== undefined && { unit: processedData.unit }),
+      ...(processedData.purchasePrice !== undefined && { purchasePrice: processedData.purchasePrice }),
+      ...(processedData.sellingPrice !== undefined && { sellingPrice: processedData.sellingPrice }),
+      ...(processedData.imageUrl !== undefined && { imageUrl: processedData.imageUrl }),
+      ...(processedData.status !== undefined && { status: processedData.status })
     };
     
     setIsSubmitting(true);
@@ -111,10 +142,11 @@ export const ProductsPage: React.FC = () => {
   }, [selectedProduct, updateProduct, fetchProducts, searchConfig]);
 
   // Handle product deletion
-  const handleDeleteProduct = useCallback(async (id: number) => {
+  const handleDeleteProduct = useCallback(async (id: number | string) => {
     setIsSubmitting(true);
     try {
-      await deleteProduct(id);
+      const productId = typeof id === 'string' ? parseInt(id) : id;
+      await deleteProduct(productId);
       setSelectedProduct(null); // Close inline edit after successful deletion
       await fetchProducts(searchConfig); // Refresh data
     } catch (error) {
@@ -126,10 +158,11 @@ export const ProductsPage: React.FC = () => {
   }, [deleteProduct, fetchProducts, searchConfig]);
 
   // Handle product reactivation
-  const handleReactivateProduct = useCallback(async (id: number) => {
+  const handleReactivateProduct = useCallback(async (id: number | string) => {
     setIsSubmitting(true);
     try {
-      await reactivateProduct(id);
+      const productId = typeof id === 'string' ? parseInt(id) : id;
+      await reactivateProduct(productId);
       setSelectedProduct(null); // Close inline edit after successful reactivation
       await fetchProducts(searchConfig); // Refresh data
     } catch (error) {
@@ -197,7 +230,9 @@ export const ProductsPage: React.FC = () => {
                 onDelete={permissions.products.canDelete ? handleDeleteProduct : async () => {}}
                 onReactivate={permissions.products.canDelete ? handleReactivateProduct : undefined}
                 onCancel={handleCancelEdit}
-                permissions={permissions}
+                canEdit={permissions.products.canEdit}
+                canDelete={permissions.products.canDelete}
+                isReadOnly={permissions.isReadOnly}
               />
             ) : showCreateForm && permissions.products.canCreate ? (
               <CreateProductForm

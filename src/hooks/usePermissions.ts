@@ -33,8 +33,8 @@ export const usePermissions = () => {
         canAccessAll: userRole === USER_ROLES.ADMIN,
       },
 
-      // Check if user is read-only (can only view)
-      isReadOnly: userRole === USER_ROLES.MANAGER || userRole === USER_ROLES.EMPLOYEE,
+      // Check if user is read-only (currently no role is read-only for products)
+      isReadOnly: false, // Since all roles have edit permissions for products
       
       // Check if user has full access
       isAdmin: userRole === USER_ROLES.ADMIN,
