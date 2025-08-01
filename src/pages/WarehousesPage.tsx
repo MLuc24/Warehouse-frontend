@@ -6,7 +6,6 @@ import { WarehouseManagement } from '@/components/warehouses';
 export const WarehousesPage: React.FC = () => {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  // Handle notification from child component
   const handleNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 5000);
@@ -27,7 +26,7 @@ export const WarehousesPage: React.FC = () => {
             </div>
           )}
 
-          {/* Main Warehouse Management Component */}
+          {/* Main Content */}
           <WarehouseManagement onNotification={handleNotification} />
         </div>
       </div>
