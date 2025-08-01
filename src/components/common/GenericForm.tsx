@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui';
+import { Button, ImageUpload } from '@/components/ui';
+import { getUnitsAsOptions } from '@/constants/units';
 
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox' | 'url';
+  type: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox' | 'url' | 'image' | 'unit';
   placeholder?: string;
   required?: boolean;
   validation?: (value: unknown) => string | null;
@@ -118,12 +119,15 @@ export const GenericForm: React.FC<GenericFormProps> = ({
         : 'border-gray-200 bg-gray-50/50 focus:border-green-400 focus:ring-green-100 focus:bg-white hover:border-gray-300 hover:bg-white'
     }`;
 
-    // Special handling for wide fields (textarea, address, description)
+    // Special handling for wide fields (textarea, address, description, image)
     const isWideField = field.type === 'textarea' || 
+                       field.type === 'image' ||
                        field.name.toLowerCase().includes('address') || 
                        field.name.toLowerCase().includes('địa chỉ') ||
                        field.name.toLowerCase().includes('description') ||
-                       field.name.toLowerCase().includes('mô tả');
+                       field.name.toLowerCase().includes('mô tả') ||
+                       field.name.toLowerCase().includes('image') ||
+                       field.name.toLowerCase().includes('ảnh');
 
     const renderInput = () => {
       switch (field.type) {
@@ -148,7 +152,7 @@ export const GenericForm: React.FC<GenericFormProps> = ({
                 className={`${baseInputClasses} appearance-none pr-8`}
                 disabled={field.disabled || isSubmitting}
               >
-                <option value="">Chọn {field.label.toLowerCase()}</option>
+                <option value="" disabled>Chọn {field.label.toLowerCase()}</option>
                 {field.options?.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -161,6 +165,43 @@ export const GenericForm: React.FC<GenericFormProps> = ({
                 </svg>
               </div>
             </div>
+          );
+
+        case 'unit': {
+          const unitOptions = getUnitsAsOptions();
+          return (
+            <div className="relative">
+              <select
+                value={String(formData[field.name] || '')}
+                onChange={(e) => handleInputChange(field, e.target.value)}
+                className={`${baseInputClasses} appearance-none pr-8`}
+                disabled={field.disabled || isSubmitting}
+              >
+                <option value="" disabled>Chọn đơn vị tính</option>
+                {unitOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          );
+        }
+
+        case 'image':
+          return (
+            <ImageUpload
+              value={String(formData[field.name] || '')}
+              onChange={(value) => handleInputChange(field, value)}
+              disabled={field.disabled || isSubmitting}
+              placeholder={field.placeholder}
+              showPreview={true}
+            />
           );
         
         case 'checkbox':

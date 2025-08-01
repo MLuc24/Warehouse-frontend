@@ -1,6 +1,9 @@
 // API Base URL
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5063/api';
 
+// Export units constants
+export * from './units';
+
 // Local Storage Keys
 export const STORAGE_KEYS = {
   AUTH_TOKEN: 'warehouse_auth_token',

@@ -4,6 +4,7 @@ import type { Product } from '@/types';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
 type DateSort = 'newest' | 'oldest';
+type PriceSort = 'highest' | 'lowest' | 'none';
 
 interface ProductListProps {
   products: Product[];
@@ -55,6 +56,8 @@ export const ProductList: React.FC<ProductListProps> = ({
   // State for filtering and sorting
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [dateSort, setDateSort] = useState<DateSort>('newest');
+  const [purchasePriceSort, setPurchasePriceSort] = useState<PriceSort>('none');
+  const [sellingPriceSort, setSellingPriceSort] = useState<PriceSort>('none');
 
   // Filter and sort products based on current filters
   const filteredAndSortedProducts = useMemo(() => {
@@ -69,8 +72,31 @@ export const ProductList: React.FC<ProductListProps> = ({
       });
     }
 
-    // Apply date sorting
+    // Apply sorting
     filtered.sort((a, b) => {
+      // Priority 1: Purchase price sorting
+      if (purchasePriceSort !== 'none') {
+        const priceA = a.purchasePrice || 0;
+        const priceB = b.purchasePrice || 0;
+        if (purchasePriceSort === 'highest') {
+          if (priceA !== priceB) return priceB - priceA;
+        } else {
+          if (priceA !== priceB) return priceA - priceB;
+        }
+      }
+
+      // Priority 2: Selling price sorting
+      if (sellingPriceSort !== 'none') {
+        const priceA = a.sellingPrice || 0;
+        const priceB = b.sellingPrice || 0;
+        if (sellingPriceSort === 'highest') {
+          if (priceA !== priceB) return priceB - priceA;
+        } else {
+          if (priceA !== priceB) return priceA - priceB;
+        }
+      }
+
+      // Priority 3: Date sorting
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       
@@ -82,7 +108,7 @@ export const ProductList: React.FC<ProductListProps> = ({
     });
 
     return filtered;
-  }, [products, statusFilter, dateSort]);
+  }, [products, statusFilter, dateSort, purchasePriceSort, sellingPriceSort]);
 
   // Handle column header click
   const handleColumnHeaderClick = (column: { key: string; label: string }) => {
@@ -94,6 +120,16 @@ export const ProductList: React.FC<ProductListProps> = ({
       // Toggle date sort
       const nextSort = dateSort === 'newest' ? 'oldest' : 'newest';
       setDateSort(nextSort);
+    } else if (column.key === 'purchasePrice') {
+      // Reset other price sort and toggle purchase price sort
+      setSellingPriceSort('none');
+      const nextSort = purchasePriceSort === 'none' ? 'highest' : purchasePriceSort === 'highest' ? 'lowest' : 'none';
+      setPurchasePriceSort(nextSort);
+    } else if (column.key === 'sellingPrice') {
+      // Reset other price sort and toggle selling price sort
+      setPurchasePriceSort('none');
+      const nextSort = sellingPriceSort === 'none' ? 'highest' : sellingPriceSort === 'highest' ? 'lowest' : 'none';
+      setSellingPriceSort(nextSort);
     }
   };
 
@@ -131,11 +167,6 @@ export const ProductList: React.FC<ProductListProps> = ({
             <div className="text-xs text-gray-500">
               ID: {product.productId}
             </div>
-            {product.description && (
-              <div className="text-xs text-gray-400 mt-1 max-w-xs truncate">
-                {product.description}
-              </div>
-            )}
           </div>
         </div>
       )
@@ -169,8 +200,9 @@ export const ProductList: React.FC<ProductListProps> = ({
       )
     },
     {
-      key: 'price',
-      label: 'Giá',
+      key: 'purchasePrice',
+      label: 'Giá mua',
+      sortable: true,
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
@@ -179,16 +211,30 @@ export const ProductList: React.FC<ProductListProps> = ({
       render: (product: Product) => (
         <div className="text-sm text-gray-900 whitespace-nowrap">
           {product.purchasePrice ? (
-            <div>
-              <div className="font-medium">
-                Mua: {product.purchasePrice.toLocaleString('vi-VN')} ₫
-              </div>
-              {product.sellingPrice && (
-                <div className="text-xs text-gray-500">
-                  Bán: {product.sellingPrice.toLocaleString('vi-VN')} ₫
-                </div>
-              )}
-            </div>
+            <span className="font-medium text-blue-600">
+              {product.purchasePrice.toLocaleString('vi-VN')} ₫
+            </span>
+          ) : (
+            <span className="text-gray-400">Chưa có giá</span>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'sellingPrice',
+      label: 'Giá bán',
+      sortable: true,
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+        </svg>
+      ),
+      render: (product: Product) => (
+        <div className="text-sm text-gray-900 whitespace-nowrap">
+          {product.sellingPrice ? (
+            <span className="font-medium text-green-600">
+              {product.sellingPrice.toLocaleString('vi-VN')} ₫
+            </span>
           ) : (
             <span className="text-gray-400">Chưa có giá</span>
           )}
@@ -253,6 +299,26 @@ export const ProductList: React.FC<ProductListProps> = ({
               <span className="text-gray-400 italic">N/A</span>
             )
           }
+        </div>
+      )
+    },
+    {
+      key: 'description',
+      label: 'Mô tả',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      render: (product: Product) => (
+        <div className="text-sm text-gray-900 max-w-xs">
+          {product.description ? (
+            <span className="truncate" title={product.description}>
+              {product.description}
+            </span>
+          ) : (
+            <span className="text-gray-400 italic">Không có mô tả</span>
+          )}
         </div>
       )
     }

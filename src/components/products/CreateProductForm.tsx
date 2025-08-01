@@ -93,8 +93,8 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
     {
       name: 'unit',
       label: 'Đơn vị tính',
-      type: 'text',
-      placeholder: 'VD: Cái, Kg, Lít...',
+      type: 'unit',
+      description: 'Chọn đơn vị tính phù hợp cho sản phẩm',
       validation: (value: unknown) => {
         const strValue = String(value || '');
         if (strValue.length > 50) {
@@ -135,20 +135,13 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
     },
     {
       name: 'imageUrl',
-      label: 'URL hình ảnh',
-      type: 'url',
-      placeholder: 'Nhập URL hình ảnh sản phẩm',
+      label: 'Hình ảnh sản phẩm',
+      type: 'image',
+      description: 'Tải ảnh lên hoặc nhập URL hình ảnh sản phẩm',
       validation: (value: unknown) => {
         const strValue = String(value || '');
-        if (strValue) {
-          try {
-            new URL(strValue);
-          } catch {
-            return 'URL hình ảnh không hợp lệ';
-          }
-          if (strValue.length > 500) {
-            return 'URL hình ảnh không được vượt quá 500 ký tự';
-          }
+        if (strValue && strValue.length > 1000) {
+          return 'URL hình ảnh không được vượt quá 1000 ký tự';
         }
         return null;
       }

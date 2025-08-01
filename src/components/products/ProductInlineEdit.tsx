@@ -54,9 +54,9 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
     {
       name: 'unit',
       label: 'Đơn vị tính',
-      type: 'text',
+      type: 'unit',
       required: false,
-      placeholder: 'VD: cái, kg, hộp, lít...'
+      description: 'Chọn đơn vị tính phù hợp cho sản phẩm'
     },
     {
       name: 'purchasePrice',
@@ -92,10 +92,10 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
     },
     {
       name: 'imageUrl',
-      label: 'URL hình ảnh',
-      type: 'url',
+      label: 'Hình ảnh sản phẩm',
+      type: 'image',
       required: false,
-      placeholder: 'Nhập đường dẫn hình ảnh sản phẩm'
+      placeholder: 'Tải ảnh lên hoặc nhập URL hình ảnh'
     }
   ];
 
