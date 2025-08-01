@@ -25,7 +25,17 @@ export const CreateSupplierForm: React.FC<CreateSupplierFormProps> = ({
       label: 'Tên nhà cung cấp',
       type: 'text',
       placeholder: 'Nhập tên nhà cung cấp',
-      required: true
+      required: true,
+      validation: (value: unknown) => {
+        const strValue = String(value || '');
+        if (strValue.length < 2) {
+          return 'Tên nhà cung cấp phải có ít nhất 2 ký tự';
+        }
+        if (strValue.length > 200) {
+          return 'Tên nhà cung cấp không được vượt quá 200 ký tự';
+        }
+        return null;
+      }
     },
     {
       name: 'email',
@@ -61,7 +71,17 @@ export const CreateSupplierForm: React.FC<CreateSupplierFormProps> = ({
       type: 'textarea',
       placeholder: 'Nhập địa chỉ',
       required: true,
-      rows: 3
+      rows: 3,
+      validation: (value: unknown) => {
+        const strValue = String(value || '');
+        if (strValue.length < 10) {
+          return 'Địa chỉ phải có ít nhất 10 ký tự';
+        }
+        if (strValue.length > 500) {
+          return 'Địa chỉ không được vượt quá 500 ký tự';
+        }
+        return null;
+      }
     },
     {
       name: 'taxCode',

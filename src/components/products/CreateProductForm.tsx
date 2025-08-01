@@ -46,6 +46,9 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
       required: true,
       validation: (value: unknown) => {
         const strValue = String(value || '');
+        if (strValue.length < 2) {
+          return 'Mã SKU phải có ít nhất 2 ký tự';
+        }
         if (strValue.length > 50) {
           return 'Mã SKU không được vượt quá 50 ký tự';
         }
@@ -60,6 +63,9 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
       required: true,
       validation: (value: unknown) => {
         const strValue = String(value || '');
+        if (strValue.length < 2) {
+          return 'Tên sản phẩm phải có ít nhất 2 ký tự';
+        }
         if (strValue.length > 200) {
           return 'Tên sản phẩm không được vượt quá 200 ký tự';
         }
@@ -84,6 +90,7 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
       name: 'supplierId',
       label: 'Nhà cung cấp',
       type: 'select',
+      required: true,
       options: suppliers.map(supplier => ({
         label: supplier.supplierName,
         value: supplier.supplierId
@@ -94,6 +101,7 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
       name: 'unit',
       label: 'Đơn vị tính',
       type: 'unit',
+      required: true,
       description: 'Chọn đơn vị tính phù hợp cho sản phẩm',
       validation: (value: unknown) => {
         const strValue = String(value || '');
@@ -108,12 +116,14 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
       label: 'Giá mua',
       type: 'number',
       placeholder: 'Nhập giá mua',
+      required: true,
       validation: (value: unknown) => {
-        if (value && value !== '') {
-          const numValue = Number(value);
-          if (isNaN(numValue) || numValue < 0) {
-            return 'Giá mua phải là số dương';
-          }
+        if (!value || value === '') {
+          return 'Giá mua là bắt buộc';
+        }
+        const numValue = Number(value);
+        if (isNaN(numValue) || numValue <= 0) {
+          return 'Giá mua phải là số dương lớn hơn 0';
         }
         return null;
       }
@@ -123,12 +133,14 @@ export const CreateProductForm: React.FC<CreateProductFormProps> = ({
       label: 'Giá bán',
       type: 'number',
       placeholder: 'Nhập giá bán',
+      required: true,
       validation: (value: unknown) => {
-        if (value && value !== '') {
-          const numValue = Number(value);
-          if (isNaN(numValue) || numValue < 0) {
-            return 'Giá bán phải là số dương';
-          }
+        if (!value || value === '') {
+          return 'Giá bán là bắt buộc';
+        }
+        const numValue = Number(value);
+        if (isNaN(numValue) || numValue <= 0) {
+          return 'Giá bán phải là số dương lớn hơn 0';
         }
         return null;
       }

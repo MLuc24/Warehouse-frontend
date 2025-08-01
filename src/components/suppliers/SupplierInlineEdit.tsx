@@ -42,36 +42,78 @@ export const SupplierInlineEdit: React.FC<SupplierInlineEditProps> = ({
       label: 'Tên nhà cung cấp',
       type: 'text',
       required: true,
-      placeholder: 'Nhập tên nhà cung cấp'
+      placeholder: 'Nhập tên nhà cung cấp',
+      validation: (value: unknown) => {
+        const strValue = String(value || '');
+        if (strValue.length < 2) {
+          return 'Tên nhà cung cấp phải có ít nhất 2 ký tự';
+        }
+        if (strValue.length > 200) {
+          return 'Tên nhà cung cấp không được vượt quá 200 ký tự';
+        }
+        return null;
+      }
     },
     {
       name: 'email',
       label: 'Email',
       type: 'email',
-      required: false,
-      placeholder: 'Nhập email liên hệ'
+      required: true,
+      placeholder: 'Nhập email liên hệ',
+      validation: (value: unknown) => {
+        const strValue = String(value || '');
+        if (strValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(strValue)) {
+          return 'Email không hợp lệ';
+        }
+        return null;
+      }
     },
     {
       name: 'phoneNumber',
       label: 'Số điện thoại',
       type: 'tel',
-      required: false,
-      placeholder: 'Nhập số điện thoại'
+      required: true,
+      placeholder: 'Nhập số điện thoại',
+      validation: (value: unknown) => {
+        const strValue = String(value || '');
+        if (strValue && !/^[0-9]{10,11}$/.test(strValue.replace(/\s/g, ''))) {
+          return 'Số điện thoại không hợp lệ (10-11 chữ số)';
+        }
+        return null;
+      }
+    },
+    {
+      name: 'address',
+      label: 'Địa chỉ',
+      type: 'textarea',
+      required: true,
+      placeholder: 'Nhập địa chỉ chi tiết của nhà cung cấp',
+      rows: 3,
+      validation: (value: unknown) => {
+        const strValue = String(value || '');
+        if (strValue.length < 10) {
+          return 'Địa chỉ phải có ít nhất 10 ký tự';
+        }
+        if (strValue.length > 500) {
+          return 'Địa chỉ không được vượt quá 500 ký tự';
+        }
+        return null;
+      }
     },
     {
       name: 'taxCode',
       label: 'Mã số thuế',
       type: 'text',
       required: false,
-      placeholder: 'Nhập mã số thuế'
-    },
-    {
-      name: 'address',
-      label: 'Địa chỉ',
-      type: 'textarea',
-      required: false,
-      placeholder: 'Nhập địa chỉ chi tiết của nhà cung cấp',
-      rows: 3
+      placeholder: 'Nhập mã số thuế (tùy chọn)',
+      description: '10-13 chữ số',
+      validation: (value: unknown) => {
+        const strValue = String(value || '');
+        if (strValue && !/^[0-9]{10,13}$/.test(strValue.replace(/\s/g, ''))) {
+          return 'Mã số thuế không hợp lệ (10-13 chữ số)';
+        }
+        return null;
+      }
     },
     {
       name: 'status',
