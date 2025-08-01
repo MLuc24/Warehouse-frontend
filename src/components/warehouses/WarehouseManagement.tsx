@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useWarehouses, useWarehouseActions } from '@/hooks/useWarehouse';
 import { WarehouseTable } from './WarehouseTable';
 import { WarehouseFormModal } from './WarehouseFormModal';
-import { DeleteConfirmModal } from '@/components/common';
+import { SearchAndFilter } from './SearchAndFilter';
+import { ConfirmationOverlay, AddButton, EntityStats } from '@/components/common';
 import type { Warehouse, WarehouseFormData } from '@/types';
 
 interface WarehouseManagementProps {
@@ -22,6 +23,56 @@ export const WarehouseManagement: React.FC<WarehouseManagementProps> = ({
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedWarehouse, setSelectedWarehouse] = useState<Warehouse | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    hasInventory: 'all' as 'all' | 'with-items' | 'empty',
+    sortBy: 'name' as 'name' | 'createdAt' | 'totalItems',
+    sortOrder: 'asc' as 'asc' | 'desc'
+  });
+
+  // Filter and search warehouses
+  const filteredWarehouses = useMemo(() => {
+    let filtered = warehouses.filter(warehouse =>
+      warehouse.warehouseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      warehouse.address.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Apply inventory filter
+    if (filters.hasInventory === 'with-items') {
+      filtered = filtered.filter(w => w.totalInventoryItems > 0);
+    } else if (filters.hasInventory === 'empty') {
+      filtered = filtered.filter(w => w.totalInventoryItems === 0);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue: string | number | Date, bValue: string | number | Date;
+      
+      switch (filters.sortBy) {
+        case 'name':
+          aValue = a.warehouseName.toLowerCase();
+          bValue = b.warehouseName.toLowerCase();
+          break;
+        case 'createdAt':
+          aValue = new Date(a.createdAt || 0);
+          bValue = new Date(b.createdAt || 0);
+          break;
+        case 'totalItems':
+          aValue = a.totalInventoryItems;
+          bValue = b.totalInventoryItems;
+          break;
+        default:
+          return 0;
+      }
+
+      if (filters.sortOrder === 'desc') {
+        return aValue < bValue ? 1 : -1;
+      }
+      return aValue > bValue ? 1 : -1;
+    });
+
+    return filtered;
+  }, [warehouses, searchTerm, filters]);
 
   // Helper to show notification
   const showNotification = (message: string, type: 'success' | 'error') => {
@@ -115,15 +166,11 @@ export const WarehouseManagement: React.FC<WarehouseManagementProps> = ({
             </p>
           </div>
           <div className="flex space-x-3">
-            <button
+            <AddButton
               onClick={handleCreateNew}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Thêm kho hàng
-            </button>
+              label="Thêm kho hàng"
+              size="md"
+            />
           </div>
         </div>
       </div>
@@ -156,79 +203,65 @@ export const WarehouseManagement: React.FC<WarehouseManagementProps> = ({
 
       {/* Statistics */}
       <div className="mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Tổng số kho</dt>
-                    <dd className="text-lg font-medium text-gray-900">{warehouses.length}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
+        <EntityStats
+          data={{
+            total: warehouses.length,
+            current: filteredWarehouses.length,
+            active: warehouses.filter(w => w.totalInventoryItems > 0).length,
+            inactive: warehouses.filter(w => w.totalInventoryItems === 0).length,
+            currentPage: 1,
+            totalPages: 1
+          }}
+          entityName="kho hàng"
+          entityIcon={
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+            </svg>
+          }
+          showActiveInactive={true}
+          columns={4}
+          customStats={[
+            {
+              label: 'Tổng sản phẩm',
+              value: warehouses.reduce((sum, w) => sum + w.totalInventoryItems, 0).toString(),
+              color: 'purple',
+              icon: (
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              )
+            }
+          ]}
+        />
+      </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Tổng tồn kho</dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {warehouses.reduce((total, warehouse) => total + warehouse.totalInventoryItems, 0)} sản phẩm
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Kho có hàng</dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {warehouses.filter(w => w.totalInventoryItems > 0).length}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Search and Filter */}
+      <div className="mb-6">
+        <SearchAndFilter
+          onSearch={(term) => setSearchTerm(term)}
+          onFilter={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
+          onExport={() => {
+            // TODO: Implement export functionality
+            showNotification('Tính năng xuất Excel sẽ được triển khai sớm', 'success');
+          }}
+        />
       </div>
 
       {/* Warehouse Table */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Danh sách kho hàng</h2>
-        </div>
-        <div className="p-6">
-          <WarehouseTable
-            warehouses={warehouses}
-            loading={loading}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+      <div className="mb-8">
+        <div className="bg-white shadow-sm rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Danh sách kho hàng</h2>
+          </div>
+          <div className="p-6">
+            <WarehouseTable
+              warehouses={filteredWarehouses}
+              loading={loading}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onCreateNew={handleCreateNew}
+            />
+          </div>
         </div>
       </div>
 
@@ -241,15 +274,23 @@ export const WarehouseManagement: React.FC<WarehouseManagementProps> = ({
         loading={actionLoading}
       />
 
-      {/* Delete Modal */}
-      <DeleteConfirmModal
+      {/* Delete Confirmation */}
+      <ConfirmationOverlay
         isOpen={isDeleteModalOpen}
         onClose={handleModalClose}
         onConfirm={handleDeleteConfirm}
-        title="Xác nhận xóa kho hàng"
-        message={`Bạn có chắc chắn muốn xóa kho hàng "${selectedWarehouse?.warehouseName}"? Hành động này không thể hoàn tác.`}
-        itemName={selectedWarehouse?.warehouseName}
         loading={actionLoading}
+        title="Xác nhận xóa kho hàng"
+        message="Bạn có chắc chắn muốn xóa kho hàng này? Hành động này không thể hoàn tác."
+        itemName={selectedWarehouse?.warehouseName}
+        confirmText="Xóa kho"
+        cancelText="Hủy bỏ"
+        confirmVariant="danger"
+        icon={
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        }
       />
     </>
   );
