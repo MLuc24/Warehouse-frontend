@@ -133,9 +133,6 @@ export const ProductsPage: React.FC = () => {
       await updateProduct(selectedProduct.productId, updateData);
       setSelectedProduct(null); // Close inline edit after successful update
       await fetchProducts(searchConfig); // Refresh data
-    } catch (error) {
-      console.error('Error updating product:', error);
-      // You might want to show an error message to the user here
     } finally {
       setIsSubmitting(false);
     }
@@ -149,9 +146,6 @@ export const ProductsPage: React.FC = () => {
       await deleteProduct(productId);
       setSelectedProduct(null); // Close inline edit after successful deletion
       await fetchProducts(searchConfig); // Refresh data
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      // You might want to show an error message to the user here
     } finally {
       setIsSubmitting(false);
     }
@@ -193,9 +187,6 @@ export const ProductsPage: React.FC = () => {
       await createProduct(createData);
       setShowCreateForm(false); // Close create form after successful creation
       await fetchProducts(searchConfig); // Refresh data
-    } catch (error) {
-      console.error('Error creating product:', error);
-      // You might want to show an error message to the user here
     } finally {
       setIsSubmitting(false);
     }

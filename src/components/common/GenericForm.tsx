@@ -14,7 +14,9 @@ export interface FormField {
   disabled?: boolean;
   description?: string;
   productName?: string; // For Cloudinary context
-}interface GenericFormProps {
+}
+
+interface GenericFormProps {
   title: string;
   description?: string;
   titleIcon: React.ReactNode;
@@ -29,6 +31,7 @@ export interface FormField {
   showActionButtons?: boolean; // Control whether to show action buttons
   showFullTitle?: boolean; // Control whether to show full title or just name
   customActionButtons?: (handleSave: () => Promise<void>, onCancel: () => void, isSubmitting: boolean) => React.ReactNode; // Custom action buttons
+  headerImageUrl?: string; // URL of image to show in header
 }
 
 /**
@@ -49,7 +52,8 @@ export const GenericForm: React.FC<GenericFormProps> = ({
   layout = 'double',
   showActionButtons = true,
   showFullTitle = true,
-  customActionButtons
+  customActionButtons,
+  headerImageUrl
 }) => {
   // Initialize form data
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
@@ -61,6 +65,7 @@ export const GenericForm: React.FC<GenericFormProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState<string>(''); // API error state
 
   // Validation function
   const validateForm = () => {
@@ -101,12 +106,30 @@ export const GenericForm: React.FC<GenericFormProps> = ({
     if (errors[field.name]) {
       setErrors(prev => ({ ...prev, [field.name]: '' }));
     }
+    
+    // Clear API error when user starts typing
+    if (apiError) {
+      setApiError('');
+    }
   };
 
   // Handle save
   const handleSave = async () => {
+    // Clear previous API error
+    setApiError('');
+    
     if (!validateForm()) return;
-    await onSave(formData);
+    
+    try {
+      await onSave(formData);
+    } catch (error) {
+      // Handle API errors
+      if (error instanceof Error) {
+        setApiError(error.message);
+      } else {
+        setApiError('Đã xảy ra lỗi. Vui lòng thử lại.');
+      }
+    }
   };
 
   // Render form field
@@ -200,6 +223,7 @@ export const GenericForm: React.FC<GenericFormProps> = ({
               disabled={field.disabled || isSubmitting}
               placeholder={field.placeholder}
               productName={field.productName}
+              hidePreview={!!headerImageUrl} // Hide preview if image is shown in header
             />
           );
         
@@ -270,12 +294,27 @@ export const GenericForm: React.FC<GenericFormProps> = ({
         {/* Enhanced Header with Gradient Background */}
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-3">
           <div className="flex items-center">
-            <div className="flex-shrink-0 h-10 w-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center mr-3 shadow-lg">
-              <div className="w-5 h-5 text-white">
-                {titleIcon}
+            {/* Product Image or Icon */}
+            {headerImageUrl ? (
+              <div className="flex-shrink-0 h-14 w-14 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden border-2 border-white/20 shadow-lg mr-3">
+                <img
+                  src={headerImageUrl}
+                  alt="Ảnh sản phẩm"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Hide image if it fails to load
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
               </div>
-            </div>
-            <div>
+            ) : (
+              <div className="flex-shrink-0 h-10 w-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center mr-3 shadow-lg">
+                <div className="w-5 h-5 text-white">
+                  {titleIcon}
+                </div>
+              </div>
+            )}
+            <div className="flex-1">
               <h3 className="text-xl font-bold text-white mb-1">
                 {showFullTitle ? title : title.split(' ').slice(-1).join(' ')}
               </h3>
@@ -288,6 +327,21 @@ export const GenericForm: React.FC<GenericFormProps> = ({
 
         {/* Enhanced Form Content */}
         <div className="p-4">
+          {/* API Error Display */}
+          {apiError && (
+            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-red-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <h4 className="text-sm font-medium text-red-800">Lỗi xảy ra khi lưu</h4>
+                  <p className="text-sm text-red-700 mt-1">{apiError}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className={layout === 'double' ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : 'space-y-4'}>
             {fields.map(renderField)}
           </div>

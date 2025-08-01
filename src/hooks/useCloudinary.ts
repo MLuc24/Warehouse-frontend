@@ -58,6 +58,40 @@ export const useCloudinary = () => {
   }, []);
 
   /**
+   * Upload image from URL to Cloudinary
+   */
+  const uploadImageFromUrl = useCallback(async (
+    imageUrl: string, 
+    options: UploadOptions = {}
+  ): Promise<CloudinaryUploadResponse | null> => {
+    setUploadState({ isUploading: true, progress: 0, error: null });
+
+    try {
+      // Validate URL
+      if (!cloudinaryService.isValidImageUrl(imageUrl)) {
+        throw new Error('URL không hợp lệ hoặc không phải là hình ảnh');
+      }
+
+      setUploadState(prev => ({ ...prev, progress: 25 }));
+
+      const result = await cloudinaryService.uploadImageFromUrl(imageUrl, options);
+      
+      setUploadState(prev => ({ ...prev, progress: 100 }));
+      
+      // Reset state after successful upload
+      setTimeout(() => {
+        setUploadState({ isUploading: false, progress: 0, error: null });
+      }, 500);
+
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Upload from URL failed';
+      setUploadState({ isUploading: false, progress: 0, error: errorMessage });
+      return null;
+    }
+  }, []);
+
+  /**
    * Upload multiple images to Cloudinary
    */
   const uploadMultipleImages = useCallback(async (
@@ -153,6 +187,7 @@ export const useCloudinary = () => {
     
     // Actions
     uploadImage,
+    uploadImageFromUrl,
     uploadMultipleImages,
     deleteImage,
     generateImageUrl,

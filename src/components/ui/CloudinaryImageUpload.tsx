@@ -9,6 +9,7 @@ interface CloudinaryImageUploadProps {
   placeholder?: string;
   className?: string;
   productName?: string; // For contextual tagging
+  hidePreview?: boolean; // Hide preview section
 }
 
 /**
@@ -21,7 +22,8 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
   disabled = false,
   placeholder = 'Nhập URL hình ảnh hoặc tải ảnh lên Cloudinary',
   className = '',
-  productName = ''
+  productName = '',
+  hidePreview = false
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string>(value);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -32,6 +34,7 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
   // Cloudinary hook
   const { 
     uploadImage, 
+    uploadImageFromUrl,
     isUploading, 
     uploadProgress, 
     uploadError: cloudinaryError,
@@ -42,13 +45,43 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
   // Sync error state
   const displayError = uploadError || cloudinaryError;
 
-  // Handle URL input change
-  const handleUrlChange = useCallback((url: string) => {
+  // Handle URL input change and upload to Cloudinary
+  const handleUrlChange = useCallback(async (url: string) => {
     setUploadError('');
     clearError();
-    onChange(url);
-    setPreviewUrl(url);
-  }, [onChange, clearError]);
+    
+    if (!url.trim()) {
+      onChange('');
+      setPreviewUrl('');
+      return;
+    }
+
+    // If it's already a Cloudinary URL, use it directly
+    if (isCloudinaryUrl(url)) {
+      onChange(url);
+      setPreviewUrl(url);
+      return;
+    }
+
+    // Otherwise, upload the image from URL to Cloudinary
+    try {
+      const result = await uploadImageFromUrl(url, {
+        folder: 'warehouse_products',
+        tags: productName ? [productName] : ['product']
+        // Remove problematic transformations
+      });
+
+      if (result) {
+        onChange(result.secure_url);
+        setPreviewUrl(result.secure_url);
+      } else {
+        setUploadError('Không thể tải ảnh từ URL này');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Lỗi khi tải ảnh từ URL';
+      setUploadError(errorMessage);
+    }
+  }, [onChange, clearError, isCloudinaryUrl, uploadImageFromUrl, productName]);
 
   // Handle file upload
   const handleFileUpload = useCallback(async (file: File) => {
@@ -62,9 +95,9 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
       }
 
       const result = await uploadImage(file, {
-        folder: 'warehouse-manage/products',
+        folder: 'warehouse_products',
         tags
-        // Không dùng transformation để test trước
+        // Remove transformations to avoid errors
       });
 
       if (result) {
@@ -131,7 +164,7 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
           disabled={disabled}
         >
           <Upload className="w-3 h-3 inline mr-1" />
-          Tải lên Cloudinary
+          Upload
         </button>
         <button
           type="button"
@@ -151,16 +184,50 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
       {/* URL Input */}
       {inputMethod === 'url' && (
         <div className="space-y-2">
-          <input
-            type="url"
-            value={value}
-            onChange={(e) => handleUrlChange(e.target.value)}
-            placeholder={placeholder}
-            disabled={disabled}
-            className="w-full px-3 py-2 border-2 rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 placeholder:text-gray-400 text-sm border-gray-200 bg-gray-50/50 focus:border-green-400 focus:ring-green-100 focus:bg-white hover:border-gray-300 hover:bg-white"
-          />
+          <div className="relative">
+            <input
+              type="url"
+              value={value}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              placeholder={placeholder}
+              disabled={disabled || isUploading}
+              className={`w-full px-3 py-2 border-2 rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 placeholder:text-gray-400 text-sm ${
+                isUploading
+                  ? 'border-blue-300 bg-blue-50 cursor-not-allowed'
+                  : 'border-gray-200 bg-gray-50/50 focus:border-green-400 focus:ring-green-100 focus:bg-white hover:border-gray-300 hover:bg-white'
+              }`}
+            />
+            {isUploading && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              </div>
+            )}
+          </div>
+          
+          {isUploading && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-center space-x-3">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-blue-700">Đang tải ảnh lên Cloudinary...</p>
+                  {uploadProgress > 0 && (
+                    <div className="w-full bg-blue-200 rounded-full h-1.5 mt-2">
+                      <div 
+                        className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" 
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          
           <p className="text-xs text-gray-500">
-            Hỗ trợ URL từ Cloudinary hoặc các nguồn khác. Nhập đường dẫn trực tiếp đến hình ảnh.
+            {isUploading 
+              ? 'Ảnh từ URL sẽ được tải lên Cloudinary và tối ưu hóa tự động'
+              : 'Nhập URL hình ảnh. Ảnh sẽ được tự động tải lên Cloudinary để tối ưu hóa.'
+            }
           </p>
         </div>
       )}
@@ -247,7 +314,7 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
       )}
 
       {/* Preview Section */}
-      {previewUrl && (
+      {previewUrl && !hidePreview && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">Xem trước:</span>
@@ -291,6 +358,29 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
               }}
             />
           </div>
+        </div>
+      )}
+
+      {/* Simple action buttons when preview is hidden but image exists */}
+      {previewUrl && hidePreview && (
+        <div className="flex justify-end space-x-2 pt-2">
+          <button
+            type="button"
+            onClick={() => setShowPreviewModal(true)}
+            className="p-2 text-gray-500 hover:text-gray-700 transition-colors rounded-lg hover:bg-gray-100"
+            title="Xem ảnh lớn"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleClear}
+            className="p-2 text-red-500 hover:text-red-700 transition-colors rounded-lg hover:bg-red-50"
+            title="Xóa ảnh"
+            disabled={disabled}
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 

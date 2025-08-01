@@ -102,39 +102,32 @@ export const SuppliersPage: React.FC = () => {
       await updateSupplier(selectedSupplier.supplierId, updateData);
       setSelectedSupplier(null); // Close inline edit after successful update
       await fetchSuppliers(searchConfig); // Refresh data
-    } catch (error) {
-      console.error('Error updating supplier:', error);
-      // You might want to show an error message to the user here
     } finally {
       setIsSubmitting(false);
     }
   }, [selectedSupplier, updateSupplier, fetchSuppliers, searchConfig]);
 
   // Handle supplier deletion
-  const handleDeleteSupplier = useCallback(async (id: number) => {
+  const handleDeleteSupplier = useCallback(async (id: number | string) => {
     setIsSubmitting(true);
     try {
-      await deleteSupplier(id);
+      const supplierId = typeof id === 'string' ? parseInt(id) : id;
+      await deleteSupplier(supplierId);
       setSelectedSupplier(null); // Close inline edit after successful deletion
       await fetchSuppliers(searchConfig); // Refresh data
-    } catch (error) {
-      console.error('Error deleting supplier:', error);
-      // You might want to show an error message to the user here
     } finally {
       setIsSubmitting(false);
     }
   }, [deleteSupplier, fetchSuppliers, searchConfig]);
 
   // Handle supplier reactivation
-  const handleReactivateSupplier = useCallback(async (id: number) => {
+  const handleReactivateSupplier = useCallback(async (id: number | string) => {
     setIsSubmitting(true);
     try {
-      await reactivateSupplier(id);
+      const supplierId = typeof id === 'string' ? parseInt(id) : id;
+      await reactivateSupplier(supplierId);
       setSelectedSupplier(null); // Close inline edit after successful reactivation
       await fetchSuppliers(searchConfig); // Refresh data
-    } catch (error) {
-      console.error('Error reactivating supplier:', error);
-      // You might want to show an error message to the user here
     } finally {
       setIsSubmitting(false);
     }
@@ -156,9 +149,6 @@ export const SuppliersPage: React.FC = () => {
       await createSupplier(createData);
       setShowCreateForm(false); // Close create form after successful creation
       await fetchSuppliers(searchConfig); // Refresh data
-    } catch (error) {
-      console.error('Error creating supplier:', error);
-      // You might want to show an error message to the user here
     } finally {
       setIsSubmitting(false);
     }
@@ -206,7 +196,6 @@ export const SuppliersPage: React.FC = () => {
                 onDelete={permissions.suppliers.canDelete ? handleDeleteSupplier : async () => {}}
                 onReactivate={permissions.suppliers.canDelete ? handleReactivateSupplier : undefined}
                 onCancel={handleCancelEdit}
-                permissions={permissions}
               />
             ) : showCreateForm && permissions.suppliers.canCreate ? (
               <CreateSupplierForm

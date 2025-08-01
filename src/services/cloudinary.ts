@@ -113,6 +113,72 @@ export class CloudinaryService {
   }
 
   /**
+   * Upload image from URL to Cloudinary
+   * @param imageUrl - URL of the image to upload
+   * @param options - Upload options
+   * @returns Promise with upload response
+   */
+  async uploadImageFromUrl(imageUrl: string, options: UploadOptions = {}): Promise<CloudinaryUploadResponse> {
+    if (!validateCloudinaryConfig()) {
+      throw new Error('Cloudinary configuration is incomplete');
+    }
+
+    if (!imageUrl || !this.isValidImageUrl(imageUrl)) {
+      throw new Error('Invalid image URL provided');
+    }
+
+    const formData = new FormData();
+    formData.append('file', imageUrl);
+    formData.append('upload_preset', this.config.uploadPreset);
+    
+    // Add optional parameters
+    if (options.folder || this.config.folder) {
+      formData.append('folder', options.folder || this.config.folder!);
+    }
+    
+    if (options.resourceType) {
+      formData.append('resource_type', options.resourceType);
+    }
+    
+    if (options.tags && options.tags.length > 0) {
+      formData.append('tags', options.tags.join(','));
+    }
+    
+    if (options.context) {
+      formData.append('context', JSON.stringify(options.context));
+    }
+
+    // Add transformations for optimization
+    if (options.transformation) {
+      const transformationString = Object.entries(options.transformation)
+        .map(([key, value]) => `${key}_${value}`)
+        .join(',');
+      formData.append('transformation', transformationString);
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${this.config.cloudName}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || 'URL upload failed');
+      }
+
+      const result: CloudinaryUploadResponse = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Cloudinary URL upload error:', error);
+      throw new Error(error instanceof Error ? error.message : 'URL upload failed');
+    }
+  }
+
+  /**
    * Upload multiple files
    * @param files - Array of files to upload
    * @param options - Upload options
@@ -199,6 +265,33 @@ export class CloudinaryService {
    */
   isCloudinaryUrl(url: string): boolean {
     return url.includes('res.cloudinary.com') || url.includes('cloudinary.com');
+  }
+
+  /**
+   * Validate if URL is a valid image URL
+   * @param url - URL to validate
+   * @returns Boolean indicating if URL is valid image URL
+   */
+  isValidImageUrl(url: string): boolean {
+    try {
+      const parsedUrl = new URL(url);
+      
+      // Check for common image extensions
+      const imageExtensions = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i;
+      const pathname = parsedUrl.pathname.toLowerCase();
+      
+      // Check if URL has image extension or is from known image hosting services
+      return imageExtensions.test(pathname) || 
+             this.isCloudinaryUrl(url) ||
+             url.includes('imgur.com') ||
+             url.includes('unsplash.com') ||
+             url.includes('pexels.com') ||
+             url.includes('pixabay.com') ||
+             // Accept URLs without extensions if they're from trusted sources
+             parsedUrl.protocol === 'https:';
+    } catch {
+      return false;
+    }
   }
 
   /**

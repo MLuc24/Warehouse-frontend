@@ -290,6 +290,7 @@ export const GenericInlineEdit = <T,>({
             showActionButtons={false} // Hide default action buttons
             showFullTitle={false} // Only show name, not full title
             customActionButtons={isReadOnly ? undefined : renderCustomActionButtons} // Use custom action buttons for edit mode
+            headerImageUrl={(item as Record<string, unknown>).imageUrl as string || ''} // Pass image URL to show in header
           />
         </div>
 
