@@ -31,13 +31,6 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
 }) => {
   const productFields: FormField[] = [
     {
-      name: 'sku',
-      label: 'Mã sản phẩm (SKU)',
-      type: 'text',
-      required: true,
-      placeholder: 'Nhập mã sản phẩm'
-    },
-    {
       name: 'productName',
       label: 'Tên sản phẩm',
       type: 'text',
@@ -45,46 +38,64 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
       placeholder: 'Nhập tên sản phẩm'
     },
     {
-      name: 'description',
-      label: 'Mô tả',
-      type: 'textarea',
-      required: false,
-      placeholder: 'Nhập mô tả sản phẩm'
+      name: 'sku',
+      label: 'Mã sản phẩm (SKU)',
+      type: 'text',
+      required: true,
+      placeholder: 'Nhập mã sản phẩm duy nhất'
     },
     {
       name: 'unit',
       label: 'Đơn vị tính',
       type: 'text',
       required: false,
-      placeholder: 'Nhập đơn vị tính (VD: cái, kg, hộp)'
+      placeholder: 'VD: cái, kg, hộp, lít...'
     },
     {
       name: 'purchasePrice',
       label: 'Giá mua',
       type: 'number',
       required: false,
-      placeholder: 'Nhập giá mua'
+      placeholder: 'Nhập giá mua (VND)'
     },
     {
       name: 'sellingPrice',
       label: 'Giá bán',
       type: 'number',
       required: false,
-      placeholder: 'Nhập giá bán'
+      placeholder: 'Nhập giá bán (VND)'
+    },
+    {
+      name: 'status',
+      label: 'Trạng thái',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'true', label: 'Hoạt động' },
+        { value: 'false', label: 'Ngừng kinh doanh' }
+      ]
+    },
+    {
+      name: 'description',
+      label: 'Mô tả sản phẩm',
+      type: 'textarea',
+      required: false,
+      placeholder: 'Nhập mô tả chi tiết về sản phẩm',
+      rows: 3
     },
     {
       name: 'imageUrl',
       label: 'URL hình ảnh',
       type: 'url',
       required: false,
-      placeholder: 'Nhập URL hình ảnh sản phẩm'
+      placeholder: 'Nhập đường dẫn hình ảnh sản phẩm'
     }
   ];
 
   return (
     <GenericInlineEdit
       item={product}
-      title="Chỉnh sửa sản phẩm"
+      title={product.productName} // Chỉ hiển thị tên, không có "Chỉnh sửa"
       titleIcon={<Package className="w-5 h-5" />}
       fields={productFields}
       onSave={onSave}
@@ -99,6 +110,17 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
       deleteConfirmTitle="Xác nhận xóa sản phẩm"
       deleteConfirmMessage="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."
       reactivateButtonText="Kích hoạt lại sản phẩm"
+      getAdditionalInfo={(item) => [
+        { label: "ID", value: `#${item.productId}` },
+        { label: "Mã SKU", value: item.sku },
+        { label: "Nhà cung cấp", value: item.supplierName || "Chưa có" },
+        { label: "Tồn kho", value: `${item.currentStock} ${item.unit || ''}` },
+        { label: "Tổng nhập", value: `${item.totalReceived} ${item.unit || ''}` },
+        { label: "Tổng xuất", value: `${item.totalIssued} ${item.unit || ''}` },
+        { label: "Giá trị tồn", value: item.totalValue ? `${item.totalValue.toLocaleString('vi-VN')} VNĐ` : "Chưa có" },
+        { label: "Ngày tạo", value: item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : "Chưa có" },
+        { label: "Trạng thái", value: item.status ? 'Đang kinh doanh' : 'Ngừng kinh doanh' }
+      ]}
     />
   );
 };

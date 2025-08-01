@@ -20,6 +20,7 @@ interface GenericInlineEditProps<T> {
   deleteConfirmTitle?: string;
   deleteConfirmMessage?: string;
   reactivateButtonText?: string;
+  getAdditionalInfo?: (item: T) => Array<{label: string, value: string | number}>; // Additional info display
 }
 
 /**
@@ -42,7 +43,8 @@ export const GenericInlineEdit = <T,>({
   isActive = () => true,
   deleteConfirmTitle = "Xác nhận xóa",
   deleteConfirmMessage = "Bạn có chắc chắn muốn xóa mục này?",
-  reactivateButtonText = "Kích hoạt lại"
+  reactivateButtonText = "Kích hoạt lại",
+  getAdditionalInfo
 }: GenericInlineEditProps<T>) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,6 +69,89 @@ export const GenericInlineEdit = <T,>({
       setIsSubmitting(false);
     }
   };
+
+  // Custom action buttons renderer
+  const renderCustomActionButtons = (formHandleSave: () => Promise<void>, formOnCancel: () => void, formIsSubmitting: boolean) => (
+    <div className="bg-gray-50 px-8 py-6 border-t border-gray-200">
+      <div className="flex items-center space-x-4">
+        {/* Left side - Delete/Reactivate button (aligned) */}
+        <div className="flex items-center">
+          {/* Show reactivate button for inactive items */}
+          {onReactivate && !isActive(item) ? (
+            <Button
+              onClick={handleReactivate}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Đang kích hoạt...
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {reactivateButtonText}
+                </div>
+              )}
+            </Button>
+          ) : (
+            /* Show delete button only for active items */
+            canDelete && isActive(item) && (
+              <Button
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isSubmitting}
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Xóa
+                </div>
+              </Button>
+            )
+          )}
+        </div>
+
+        {/* Spacer to push Cancel/Save buttons to the right */}
+        <div className="flex-1"></div>
+
+        {/* Right side - Cancel and Save buttons */}
+        <div className="flex items-center space-x-3">
+          <Button
+            onClick={formOnCancel}
+            variant="secondary"
+            disabled={formIsSubmitting}
+            className="px-6 py-3 font-semibold border-2 hover:bg-gray-50 transition-all duration-200"
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={formHandleSave}
+            disabled={formIsSubmitting}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            {formIsSubmitting ? (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Đang lưu...
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Lưu thay đổi
+              </div>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
   // Handle delete
   const handleDelete = async () => {
@@ -95,107 +180,119 @@ export const GenericInlineEdit = <T,>({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-4xl mx-auto">
       {/* Delete Confirmation Overlay */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex items-center mb-4">
-              <div className="flex-shrink-0 h-10 w-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
-                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">{deleteConfirmTitle}</h3>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">{deleteConfirmTitle}</h3>
-            </div>
-            
-            <p className="text-gray-600 mb-6">{deleteConfirmMessage}</p>
-            
-            <div className="flex justify-end space-x-3">
-              <Button
-                onClick={() => setShowDeleteConfirm(false)}
-                variant="secondary"
-                disabled={isSubmitting}
-              >
-                Hủy
-              </Button>
-              <Button
-                onClick={handleDelete}
-                disabled={isSubmitting}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Đang xóa...
-                  </div>
-                ) : (
-                  'Xóa'
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Form */}
-      <GenericForm
-        title={title}
-        titleIcon={titleIcon}
-        fields={fields.map(field => ({
-          ...field,
-          disabled: field.disabled || isReadOnly || !canEdit
-        }))}
-        initialData={getInitialData()}
-        onSave={handleSave}
-        onCancel={onCancel}
-        isSubmitting={isSubmitting}
-        submitButtonText={isReadOnly ? "Đóng" : "Lưu thay đổi"}
-        cancelButtonText="Hủy"
-      />
-
-      {/* Action Buttons */}
-      {!isReadOnly && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="flex justify-between items-center">
-            {/* Left side - Reactivate button (if item is inactive) */}
-            <div>
-              {onReactivate && !isActive(item) && (
+              
+              <p className="text-gray-600 mb-6 leading-relaxed">{deleteConfirmMessage}</p>
+              
+              <div className="flex justify-end space-x-3">
                 <Button
-                  onClick={handleReactivate}
+                  onClick={() => setShowDeleteConfirm(false)}
+                  variant="secondary"
                   disabled={isSubmitting}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="px-6 py-2.5 font-medium"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  disabled={isSubmitting}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 font-medium shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Đang kích hoạt...
+                      Đang xóa...
                     </div>
                   ) : (
-                    reactivateButtonText
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Xóa
+                    </div>
                   )}
                 </Button>
-              )}
-            </div>
-
-            {/* Right side - Delete button */}
-            <div>
-              {canDelete && (
-                <Button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={isSubmitting}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Xóa
-                </Button>
-              )}
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Main Form Container */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="p-8">
+          {/* Enhanced GenericForm */}
+          <GenericForm
+            title={title}
+            titleIcon={titleIcon}
+            fields={fields.map(field => ({
+              ...field,
+              disabled: field.disabled || isReadOnly || !canEdit
+            }))}
+            initialData={getInitialData()}
+            onSave={handleSave}
+            onCancel={onCancel}
+            isSubmitting={isSubmitting}
+            submitButtonText={isReadOnly ? "Đóng" : "Lưu thay đổi"}
+            cancelButtonText="Hủy"
+            layout="double" // Use double column with smart wide field handling
+            showActionButtons={false} // Hide default action buttons
+            showFullTitle={false} // Only show name, not full title
+            customActionButtons={isReadOnly ? undefined : renderCustomActionButtons} // Use custom action buttons for edit mode
+          />
+
+          {/* Enhanced Additional Info Section - Moved below form fields */}
+          {getAdditionalInfo && (
+            <div className="mt-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-3">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-semibold text-white">Thông tin chi tiết</h4>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {getAdditionalInfo(item).map((info, index) => (
+                    <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-3">
+                          <span className="text-xs font-bold text-white">{index + 1}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                            {info.label}
+                          </dt>
+                          <dd className="text-sm font-semibold text-gray-900 break-words">
+                            {info.value}
+                          </dd>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
