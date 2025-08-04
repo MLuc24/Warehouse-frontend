@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Layout } from '@/components/layout'
 import { ProductMasterLayout, ProductTabContent } from '@/features/products'
+import { ProductPageHeader } from '@/features/products/ProductPageHeader'
 import { useProduct } from '@/hooks/useProduct'
 
 /**
@@ -11,16 +12,11 @@ import { useProduct } from '@/hooks/useProduct'
  */
 export const ProductsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all-products')
-  const [quickStats, setQuickStats] = useState({
-    total: 0,
-    active: 0,
-    lowStock: 0,
-    categories: 0
-  })
+  const [showImportExport, setShowImportExport] = useState(false)
 
-  const { products, fetchProducts } = useProduct()
+  const { fetchProducts } = useProduct()
 
-  // Fetch initial data and stats
+  // Fetch initial data
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -33,33 +29,35 @@ export const ProductsPage: React.FC = () => {
     loadInitialData()
   }, [fetchProducts])
 
-  // Update stats when products change
-  useEffect(() => {
-    if (products.length > 0) {
-      const total = products.length
-      const active = products.filter(p => p.status).length
-      const lowStock = products.filter(p => p.currentStock < 10).length
-      
-      setQuickStats({
-        total,
-        active,
-        lowStock,
-        categories: 12 // TODO: Fetch from categories API
-      })
-    }
-  }, [products])
-
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId)
     console.log('Active tab:', tabId)
   }
 
+  const TABS = [
+    { id: 'all-products', label: '📦 All Products', description: 'Quản lý tất cả sản phẩm' },
+    { id: 'analytics', label: '📊 Analytics & Reports', description: 'Báo cáo và phân tích' },
+    { id: 'categories', label: '📋 Categories', description: 'Quản lý danh mục' },
+    { id: 'stock', label: '📦 Stock Management', description: 'Quản lý tồn kho' },
+    { id: 'pricing', label: '💰 Pricing', description: 'Quản lý giá cả' },
+    { id: 'expiry', label: '⏰ Expiry Management', description: 'Quản lý hạn sử dụng' },
+    { id: 'settings', label: '⚙️ Settings', description: 'Cài đặt hệ thống' }
+  ]
+
   return (
-    <Layout>
+    <Layout 
+      headerContent={
+        <ProductPageHeader
+          tabs={TABS}
+          activeTab={activeTab}
+          onTabClick={handleTabChange}
+        />
+      }
+    >
       <ProductMasterLayout
-        quickStats={quickStats}
-        onTabChange={handleTabChange}
         activeTab={activeTab}
+        showImportExport={showImportExport}
+        onCloseImportExport={() => setShowImportExport(false)}
       >
         {/* Tab Content Rendering */}
         {activeTab === 'all-products' && <ProductTabContent />}

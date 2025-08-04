@@ -4,10 +4,13 @@ import {
   CubeIcon, 
   BuildingStorefrontIcon, 
   ChartBarIcon,
-  Cog6ToothIcon 
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 import { ROUTES } from '@/constants';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,6 +27,16 @@ interface NavItem {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
   const permissions = usePermissions();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      onClose();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const navigationItems: NavItem[] = [
     {
@@ -124,23 +137,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           {/* Divider */}
           <div className="mx-4 border-t border-gray-200"></div>
 
-          {/* User Info / Footer */}
-          <div className="flex-shrink-0 p-4">
-            <div className="flex items-center p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
-              <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-sm">
-                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+          {/* User Info & Logout */}
+          <div className="flex-shrink-0 p-4 space-y-3">
+            {/* User Info */}
+            <div className="flex items-center p-3 rounded-xl bg-gray-50">
+              <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-sm">
+                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
               </div>
               <div className="ml-3 flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 truncate">
-                  Warehouse Manager
+                  {user?.fullName || user?.username || 'Warehouse Manager'}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {permissions.isAdmin ? 'Administrator' : 'User'}
                 </p>
               </div>
             </div>
+
+            {/* Logout Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="w-full justify-center text-gray-600 hover:text-gray-900 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
+            >
+              <ArrowRightOnRectangleIcon className="w-4 h-4 mr-2" />
+              Đăng xuất
+            </Button>
           </div>
         </div>
       </div>

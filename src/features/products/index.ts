@@ -1,6 +1,7 @@
 // Product Master Layout Components
 export { ProductMasterLayout } from './ProductMasterLayout'
 export { ProductHeader } from './ProductHeader'
+export { ProductPageHeader } from './ProductPageHeader'
 export { ProductTabNavigation } from './ProductTabNavigation'
 export { ComingSoonPlaceholder } from './ComingSoonPlaceholder'
 

@@ -5,9 +5,10 @@ import { Sidebar } from './Sidebar';
 
 interface LayoutProps {
   children: ReactNode;
+  headerContent?: ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, headerContent }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -19,7 +20,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       {/* Main content area */}
       <div className="flex flex-col flex-1">
-        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)}>
+          {headerContent}
+        </Header>
         
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
