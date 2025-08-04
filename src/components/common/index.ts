@@ -7,7 +7,9 @@ export { Notification } from './Notification';
 // Generic Modal Components (for create/update forms)
 export { GenericModal } from './GenericModal';
 
-// Enhanced Common Components
+// Enhanced Common Components (Tuần 10)
+export { ErrorBoundary } from './ErrorBoundary';
+export { Skeleton, TableSkeleton, CardSkeleton, FormSkeleton, ChartSkeleton } from './Skeleton';
 export { GenericList } from './GenericList';
 export { GenericStats } from './GenericStats';
 

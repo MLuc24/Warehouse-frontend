@@ -144,6 +144,84 @@ export interface ProductInventory {
   lastUpdated: string;
 }
 
+// Category types (Tuần 4-5)
+export interface ProductCategory {
+  category: string;
+  productCount: number;
+  totalValue: number;
+  totalStock: number;
+}
+
+export interface CategoryStatistics {
+  category: string;
+  totalProducts: number;
+  activeProducts: number;
+  inactiveProducts: number;
+  lowStockProducts: number;
+  expiredProducts: number;
+  totalPurchaseValue: number;
+  totalSellingValue: number;
+  averagePurchasePrice: number;
+  averageSellingPrice: number;
+}
+
+export interface BulkUpdateCategory {
+  productIds: number[];
+  newCategory: string;
+}
+
+// Stock types (Tuần 4-5)
+export interface ProductStock {
+  productId: number;
+  sku: string;
+  productName: string;
+  category?: string;
+  currentStock: number;
+  minStockLevel?: number;
+  maxStockLevel?: number;
+  unit?: string;
+  purchasePrice?: number;
+  sellingPrice?: number;
+  totalValue?: number;
+  lastUpdated: string;
+  stockStatus: 'in-stock' | 'low-stock' | 'out-of-stock' | 'overstock';
+}
+
+export interface StockAdjustment {
+  productId: number;
+  adjustmentType: 'increase' | 'decrease' | 'set';
+  quantity: number;
+  reason: string;
+  notes?: string;
+}
+
+export interface StockHistory {
+  id: number;
+  productId: number;
+  date: string;
+  type: 'receive' | 'issue' | 'adjust' | 'transfer';
+  quantity: number;
+  previousStock: number;
+  newStock: number;
+  reason?: string;
+  notes?: string;
+  createdBy: string;
+}
+
+export interface BulkStockUpdate {
+  updates: Array<{
+    productId: number;
+    adjustmentType: 'increase' | 'decrease' | 'set';
+    quantity: number;
+    reason: string;
+  }>;
+}
+
+export interface ReorderPointUpdate {
+  minStockLevel: number;
+  maxStockLevel?: number;
+}
+
 // Supplier types
 export interface Supplier {
   supplierId: number;
@@ -227,3 +305,12 @@ export interface SortParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+// Export pricing types
+export * from './pricing'
+
+// Export expiry types
+export * from './expiry'
+
+// Export dashboard types
+export * from './dashboard'

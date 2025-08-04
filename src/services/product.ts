@@ -142,6 +142,13 @@ export class ProductService {
   }
 
   /**
+   * Check if product has inventory movements
+   */
+  async hasInventoryMovements(id: number): Promise<boolean> {
+    return apiService.get<boolean>(API_ENDPOINTS.PRODUCTS.HAS_INVENTORY_MOVEMENTS(id));
+  }
+
+  /**
    * Build search parameters for API call
    * Map frontend parameters to backend DTO format
    */

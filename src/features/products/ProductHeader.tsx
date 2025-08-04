@@ -1,5 +1,6 @@
 import React from 'react'
-import { Card } from '@/components/ui'
+import { Card, Button } from '@/components/ui'
+import { Download, Upload, Plus } from 'lucide-react'
 
 interface ProductHeaderProps {
   quickStats: {
@@ -8,6 +9,8 @@ interface ProductHeaderProps {
     lowStock: number
     categories: number
   }
+  onImportExportClick?: () => void
+  onAddProductClick?: () => void
 }
 
 interface StatCardProps {
@@ -50,7 +53,11 @@ const StatCard: React.FC<StatCardProps> = ({
   )
 }
 
-export const ProductHeader: React.FC<ProductHeaderProps> = ({ quickStats }) => {
+export const ProductHeader: React.FC<ProductHeaderProps> = ({ 
+  quickStats, 
+  onImportExportClick, 
+  onAddProductClick 
+}) => {
   return (
     <div className="space-y-6">
       {/* Page Title & Description */}
@@ -66,15 +73,20 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({ quickStats }) => {
         
         {/* Action Buttons */}
         <div className="mt-4 sm:mt-0 flex space-x-3">
-          <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
-            📤 Export
-          </button>
-          <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
-            📥 Import
-          </button>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-            ➕ Thêm sản phẩm
-          </button>
+          <Button 
+            variant="outline" 
+            onClick={onImportExportClick}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Import/Export
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={onAddProductClick}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Thêm sản phẩm
+          </Button>
         </div>
       </div>
 

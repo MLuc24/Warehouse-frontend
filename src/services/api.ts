@@ -142,12 +142,32 @@ export class ApiService {
 
   private handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
-      // Nếu backend trả về response với format { success: false, message: "..." }
-      if (error.response?.data?.message) {
-        return new Error(error.response.data.message);
+      // Handle different HTTP status codes
+      if (error.response) {
+        const status = error.response.status;
+        const data = error.response.data;
+        
+        // Use backend error message if available
+        if (data?.message) {
+          return new Error(`${status}: ${data.message}`);
+        }
+        
+        // Default messages for different status codes
+        switch (status) {
+          case 401:
+            return new Error('401: Unauthorized - Please login again');
+          case 403:
+            return new Error('403: Forbidden - You do not have permission to perform this action');
+          case 404:
+            return new Error('404: Not Found - The requested resource was not found');
+          case 500:
+            return new Error('500: Internal Server Error - Please try again later');
+          default:
+            return new Error(`${status}: ${error.message || 'An error occurred'}`);
+        }
       }
       
-      // Fallback to general error messages
+      // Network or other errors
       const message = error.message || 'An unexpected error occurred';
       return new Error(message);
     }

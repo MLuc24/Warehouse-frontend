@@ -17,7 +17,7 @@ export const usePermissions = () => {
         canView: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER || userRole === USER_ROLES.EMPLOYEE,
         canCreate: userRole === USER_ROLES.ADMIN,
         canEdit: userRole === USER_ROLES.ADMIN,
-        canDelete: userRole === USER_ROLES.ADMIN,
+        canDelete: userRole === USER_ROLES.ADMIN || userRole === USER_ROLES.MANAGER, // Manager can also delete/reactivate
       },
       
       // Product permissions - Tất cả role đều có toàn quyền

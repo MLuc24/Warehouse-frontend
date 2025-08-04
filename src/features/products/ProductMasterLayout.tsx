@@ -2,9 +2,14 @@ import React, { useState } from 'react'
 import { Card } from '@/components/ui'
 import { ProductHeader } from './ProductHeader'
 import { ProductTabNavigation } from './ProductTabNavigation'
-import { ComingSoonPlaceholder } from './ComingSoonPlaceholder'
 import { CategoryTable } from './CategoryTable'
 import { StockTable } from './StockTable'
+import { PricingManagement } from './PricingManagement'
+import { ExpiryManagement } from './ExpiryManagement'
+import { AnalyticsManagement } from './AnalyticsManagement'
+import { SettingsManagement } from './SettingsManagement'
+import { ImportExportModal } from './ImportExportModal'
+import { exportImportService } from '@/services/exportImport'
 
 interface ProductMasterLayoutProps {
   quickStats: {
@@ -20,12 +25,12 @@ interface ProductMasterLayoutProps {
 
 const TABS = [
   { id: 'all-products', label: '📦 All Products', description: 'Quản lý tất cả sản phẩm' },
-  { id: 'analytics', label: '📊 Analytics & Reports', description: 'Báo cáo và phân tích', isPlaceholder: true },
+  { id: 'analytics', label: '📊 Analytics & Reports', description: 'Báo cáo và phân tích' },
   { id: 'categories', label: '📋 Categories', description: 'Quản lý danh mục' },
   { id: 'stock', label: '📦 Stock Management', description: 'Quản lý tồn kho' },
-  { id: 'pricing', label: '💰 Pricing', description: 'Quản lý giá cả', isPlaceholder: true },
-  { id: 'expiry', label: '⏰ Expiry Management', description: 'Quản lý hạn sử dụng', isPlaceholder: true },
-  { id: 'settings', label: '⚙️ Settings', description: 'Cài đặt sản phẩm', isPlaceholder: true }
+  { id: 'pricing', label: '💰 Pricing', description: 'Quản lý giá cả' },
+  { id: 'expiry', label: '⏰ Expiry Management', description: 'Quản lý hạn sử dụng' },
+  { id: 'settings', label: '⚙️ Settings', description: 'Cài đặt hệ thống' }
 ]
 
 export const ProductMasterLayout: React.FC<ProductMasterLayoutProps> = ({
@@ -35,6 +40,7 @@ export const ProductMasterLayout: React.FC<ProductMasterLayoutProps> = ({
   children
 }) => {
   const [currentTab, setCurrentTab] = useState(activeTab)
+  const [showImportExport, setShowImportExport] = useState(false)
 
   const handleTabClick = (tabId: string) => {
     setCurrentTab(tabId)
@@ -42,8 +48,6 @@ export const ProductMasterLayout: React.FC<ProductMasterLayoutProps> = ({
   }
 
   const renderTabContent = () => {
-    const currentTabInfo = TABS.find(tab => tab.id === currentTab)
-    
     if (currentTab === 'all-products') {
       return children
     }
@@ -57,35 +61,36 @@ export const ProductMasterLayout: React.FC<ProductMasterLayoutProps> = ({
       return <StockTable />
     }
     
-    if (currentTabInfo?.isPlaceholder) {
-      return (
-        <ComingSoonPlaceholder
-          title={currentTabInfo.label}
-          description={currentTabInfo.description}
-          expectedWeeks={getExpectedWeeks(currentTab)}
-        />
-      )
+    if (currentTab === 'pricing') {
+      return <PricingManagement />
+    }
+    
+    if (currentTab === 'expiry') {
+      return <ExpiryManagement />
+    }
+    
+    if (currentTab === 'analytics') {
+      return <AnalyticsManagement />
+    }
+    
+    if (currentTab === 'settings') {
+      return <SettingsManagement />
     }
 
     return children
   }
 
-  const getExpectedWeeks = (tabId: string): number => {
-    const weekMap: Record<string, number> = {
-      'analytics': 8,
-      'categories': 4,
-      'stock': 5,
-      'pricing': 6,
-      'expiry': 7,
-      'settings': 10
-    }
-    return weekMap[tabId] || 10
-  }
-
   return (
     <div className="space-y-6 p-6">
       {/* Header Section với Quick Stats */}
-      <ProductHeader quickStats={quickStats} />
+      <ProductHeader 
+        quickStats={quickStats} 
+        onImportExportClick={() => setShowImportExport(true)}
+        onAddProductClick={() => {
+          // Handle add product - would typically open a form modal
+          console.log('Add product clicked')
+        }}
+      />
 
       {/* Main Content Card */}
       <Card className="min-h-[600px]">
@@ -103,6 +108,19 @@ export const ProductMasterLayout: React.FC<ProductMasterLayoutProps> = ({
           {renderTabContent()}
         </div>
       </Card>
+
+      {/* Import/Export Modal */}
+      <ImportExportModal
+        isOpen={showImportExport}
+        onClose={() => setShowImportExport(false)}
+        title="Sản phẩm"
+        data={[]} // Would pass actual product data
+        exportFields={exportImportService.getProductExportFields()}
+        onImportComplete={(result) => {
+          console.log('Import completed:', result)
+          // Handle import result - refresh data, show notifications, etc.
+        }}
+      />
     </div>
   )
 }

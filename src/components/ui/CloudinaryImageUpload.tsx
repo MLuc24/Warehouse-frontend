@@ -79,7 +79,18 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Lỗi khi tải ảnh từ URL';
-      setUploadError(errorMessage);
+      let friendlyMessage = errorMessage;
+      
+      // Make error messages more user-friendly
+      if (errorMessage.includes('timeout')) {
+        friendlyMessage = 'Kết nối mạng chậm hoặc không ổn định. Vui lòng thử lại.';
+      } else if (errorMessage.includes('Failed to fetch')) {
+        friendlyMessage = 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra kết nối mạng.';
+      } else if (errorMessage.includes('invalid') || errorMessage.includes('Invalid')) {
+        friendlyMessage = 'URL ảnh không hợp lệ. Vui lòng kiểm tra lại đường dẫn.';
+      }
+      
+      setUploadError(friendlyMessage);
     }
   }, [onChange, clearError, isCloudinaryUrl, uploadImageFromUrl, productName]);
 
@@ -107,7 +118,20 @@ export const CloudinaryImageUpload: React.FC<CloudinaryImageUploadProps> = ({
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-      setUploadError(errorMessage);
+      let friendlyMessage = errorMessage;
+      
+      // Make error messages more user-friendly
+      if (errorMessage.includes('timeout')) {
+        friendlyMessage = 'Upload bị timeout. Hãy thử ảnh nhỏ hơn hoặc kiểm tra kết nối mạng.';
+      } else if (errorMessage.includes('Failed to fetch')) {
+        friendlyMessage = 'Không thể kết nối tới dịch vụ upload. Vui lòng thử lại sau.';
+      } else if (errorMessage.includes('file too large') || errorMessage.includes('size')) {
+        friendlyMessage = 'File ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 10MB.';
+      } else if (errorMessage.includes('Invalid')) {
+        friendlyMessage = 'File không phải là ảnh hợp lệ. Vui lòng chọn file JPG, PNG hoặc WebP.';
+      }
+      
+      setUploadError(friendlyMessage);
     }
   }, [uploadImage, onChange, clearError, productName]);
 

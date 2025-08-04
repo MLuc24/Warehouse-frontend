@@ -27,6 +27,61 @@ export interface UploadOptions {
 }
 
 /**
+ * Create a fetch request with timeout
+ */
+const fetchWithTimeout = async (url: string, options: RequestInit & { timeout?: number }) => {
+  const { timeout = 30000, ...fetchOptions } = options;
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout - Please check your internet connection and try again');
+    }
+    throw error;
+  }
+};
+
+/**
+ * Retry logic for network requests
+ */
+const retryRequest = async <T>(
+  requestFn: () => Promise<T>,
+  maxRetries: number = 3,
+  delay: number = 1000
+): Promise<T> => {
+  let lastError: Error;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await requestFn();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error');
+      
+      if (attempt === maxRetries) {
+        throw lastError;
+      }
+      
+      // Exponential backoff delay
+      const waitTime = delay * Math.pow(2, attempt - 1);
+      console.log(`Upload attempt ${attempt} failed, retrying in ${waitTime}ms...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+  
+  throw lastError!;
+};
+
+/**
  * Cloudinary Service Class
  * Xử lý upload ảnh và quản lý ảnh thông qua Cloudinary
  */
@@ -61,9 +116,26 @@ export class CloudinaryService {
       throw new Error('Cloudinary configuration is incomplete');
     }
 
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      throw new Error('File must be an image');
+    }
+
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      throw new Error('File size must be less than 10MB');
+    }
+
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', this.config.uploadPreset);
+    
+    // Use primary preset, with fallbacks
+    const uploadPresets = ['warehouse_products', 'warehouse_upload', 'ml_default'];
+    const currentPreset = this.config.uploadPreset || uploadPresets[0];
+    formData.append('upload_preset', currentPreset);
+    
+    console.log('Using upload preset:', currentPreset);
     
     // Add optional parameters
     if (options.folder || this.config.folder) {
@@ -90,22 +162,54 @@ export class CloudinaryService {
       formData.append('transformation', transformationString);
     }
 
+    console.log('Uploading to Cloudinary:', {
+      cloudName: this.config.cloudName,
+      uploadPreset: this.config.uploadPreset,
+      folder: options.folder || this.config.folder,
+      fileSize: file.size,
+      fileType: file.type
+    });
+
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${this.config.cloudName}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
+      return await retryRequest(async () => {
+        const response = await fetchWithTimeout(
+          `https://api.cloudinary.com/v1_1/${this.config.cloudName}/image/upload`,
+          {
+            method: 'POST',
+            body: formData,
+            timeout: 60000, // 60 seconds timeout for file uploads
+          }
+        );
+
+        console.log('Cloudinary response status:', response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Cloudinary error response:', errorText);
+          
+          let error;
+          try {
+            error = JSON.parse(errorText);
+          } catch {
+            error = { error: { message: errorText } };
+          }
+          
+          // Handle specific error cases
+          if (errorText.includes('Invalid upload preset')) {
+            throw new Error('Upload preset không hợp lệ. Vui lòng liên hệ quản trị viên.');
+          } else if (errorText.includes('Invalid cloud name')) {
+            throw new Error('Cấu hình Cloudinary không hợp lệ.');
+          } else if (errorText.includes('Request Entity Too Large')) {
+            throw new Error('File quá lớn. Vui lòng chọn ảnh nhỏ hơn.');
+          }
+          
+          throw new Error(error.error?.message || `Upload failed with status ${response.status}`);
         }
-      );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'Upload failed');
-      }
-
-      const result: CloudinaryUploadResponse = await response.json();
-      return result;
+        const result: CloudinaryUploadResponse = await response.json();
+        console.log('Cloudinary upload success:', result.public_id);
+        return result;
+      }, 3); // Retry up to 3 times
     } catch (error) {
       console.error('Cloudinary upload error:', error);
       throw new Error(error instanceof Error ? error.message : 'Upload failed');
@@ -129,7 +233,13 @@ export class CloudinaryService {
 
     const formData = new FormData();
     formData.append('file', imageUrl);
-    formData.append('upload_preset', this.config.uploadPreset);
+    
+    // Use primary preset, with fallbacks
+    const uploadPresets = ['warehouse_products', 'warehouse_upload', 'ml_default'];
+    const currentPreset = this.config.uploadPreset || uploadPresets[0];
+    formData.append('upload_preset', currentPreset);
+    
+    console.log('Using upload preset for URL:', currentPreset);
     
     // Add optional parameters
     if (options.folder || this.config.folder) {
@@ -157,21 +267,40 @@ export class CloudinaryService {
     }
 
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${this.config.cloudName}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
+      return await retryRequest(async () => {
+        const response = await fetchWithTimeout(
+          `https://api.cloudinary.com/v1_1/${this.config.cloudName}/image/upload`,
+          {
+            method: 'POST',
+            body: formData,
+            timeout: 45000, // 45 seconds timeout for URL uploads
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Cloudinary URL upload error response:', errorText);
+          
+          let error;
+          try {
+            error = JSON.parse(errorText);
+          } catch {
+            error = { error: { message: errorText } };
+          }
+          
+          // Handle specific error cases
+          if (errorText.includes('Invalid upload preset')) {
+            throw new Error('Upload preset không hợp lệ. Vui lòng liên hệ quản trị viên.');
+          } else if (errorText.includes('Invalid image URL')) {
+            throw new Error('URL ảnh không hợp lệ hoặc không thể truy cập.');
+          }
+          
+          throw new Error(error.error?.message || `URL upload failed with status ${response.status}`);
         }
-      );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'URL upload failed');
-      }
-
-      const result: CloudinaryUploadResponse = await response.json();
-      return result;
+        const result: CloudinaryUploadResponse = await response.json();
+        return result;
+      }, 2); // Retry up to 2 times for URL uploads
     } catch (error) {
       console.error('Cloudinary URL upload error:', error);
       throw new Error(error instanceof Error ? error.message : 'URL upload failed');

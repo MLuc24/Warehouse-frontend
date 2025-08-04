@@ -69,7 +69,21 @@ export const useSupplier = (): UseSupplierReturn => {
 
   // Helper function to handle errors
   const handleError = useCallback((err: unknown, defaultMessage: string) => {
-    const errorMessage = err instanceof Error ? err.message : defaultMessage;
+    let errorMessage = defaultMessage;
+    
+    if (err instanceof Error) {
+      errorMessage = err.message;
+      
+      // Handle specific HTTP errors
+      if (err.message.includes('403') || err.message.includes('Forbidden')) {
+        errorMessage = 'Bạn không có quyền thực hiện thao tác này. Vui lòng liên hệ quản trị viên.';
+      } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+        errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+      } else if (err.message.includes('500') || err.message.includes('Internal Server Error')) {
+        errorMessage = 'Có lỗi xảy ra trên máy chủ. Vui lòng thử lại sau.';
+      }
+    }
+    
     setError(errorMessage);
     console.error('Supplier operation error:', err);
   }, []);

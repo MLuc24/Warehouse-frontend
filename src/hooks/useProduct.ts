@@ -39,6 +39,7 @@ interface UseProductReturn {
   deleteProduct: (id: number) => Promise<boolean>;
   reactivateProduct: (id: number) => Promise<boolean>;
   canDeleteProduct: (id: number) => Promise<boolean>;
+  hasInventoryMovements: (id: number) => Promise<boolean>;
   getTopProducts: (count?: number) => Promise<Product[]>;
   getLowStockProducts: () => Promise<ProductInventory[]>;
   getProductsBySupplier: (supplierId: number) => Promise<Product[]>;
@@ -311,6 +312,17 @@ export const useProduct = (): UseProductReturn => {
     }
   }, [handleError]);
 
+  // Check if product has inventory movements
+  const hasInventoryMovements = useCallback(async (id: number): Promise<boolean> => {
+    try {
+      const hasMovements = await productService.hasInventoryMovements(id);
+      return hasMovements;
+    } catch (err) {
+      handleError(err, 'Đã xảy ra lỗi khi kiểm tra chuyển động kho của sản phẩm');
+      return false;
+    }
+  }, [handleError]);
+
   // Clear error
   const clearError = useCallback(() => {
     setError(null);
@@ -355,6 +367,7 @@ export const useProduct = (): UseProductReturn => {
     deleteProduct,
     reactivateProduct,
     canDeleteProduct,
+    hasInventoryMovements,
     getTopProducts,
     getLowStockProducts,
     getProductsBySupplier,
