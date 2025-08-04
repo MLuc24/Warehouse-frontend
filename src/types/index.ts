@@ -217,7 +217,7 @@ export interface BulkStockUpdate {
   }>;
 }
 
-export interface ReorderPointUpdate {
+export interface StockLevelsUpdate {
   minStockLevel: number;
   maxStockLevel?: number;
 }

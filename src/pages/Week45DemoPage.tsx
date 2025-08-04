@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Card, Button, Alert, Tabs } from '@/components/ui'
 import { CategoryTable } from '@/features/products/CategoryTable'
-import { StockTable } from '@/features/products/StockTable'
+import { StockTable } from '@/features/products'
 import { useCategory, useStock } from '@/hooks'
 
 /**

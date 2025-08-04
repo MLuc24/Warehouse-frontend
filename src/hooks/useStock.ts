@@ -5,7 +5,7 @@ import type {
   StockAdjustment,
   StockHistory,
   BulkStockUpdate,
-  ReorderPointUpdate,
+  StockLevelsUpdate,
   ProductInventory
 } from '@/types';
 
@@ -32,7 +32,7 @@ interface UseStockReturn {
   updateStock: (productId: number, data: StockAdjustment) => Promise<boolean>;
   bulkUpdateStock: (data: BulkStockUpdate) => Promise<boolean>;
   adjustStock: (productId: number, data: StockAdjustment) => Promise<boolean>;
-  setReorderPoint: (productId: number, data: ReorderPointUpdate) => Promise<boolean>;
+    setStockLevels: (productId: number, data: StockLevelsUpdate) => Promise<boolean>;
   clearError: () => void;
   clearHistory: () => void;
 }
@@ -151,17 +151,17 @@ export const useStock = (): UseStockReturn => {
     }
   }, [fetchAllStock, fetchStockHistory]);
 
-  // Set reorder point
-  const setReorderPoint = useCallback(async (productId: number, data: ReorderPointUpdate): Promise<boolean> => {
+  // Set stock levels
+  const setStockLevels = useCallback(async (productId: number, data: StockLevelsUpdate): Promise<boolean> => {
     setUpdating(true);
     setError(null);
     try {
-      await stockService.setReorderPoint(productId, data);
+      await stockService.setStockLevels(productId, data);
       // Refresh stock data
       await fetchAllStock();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi thiết lập điểm đặt hàng lại');
+      setError(err instanceof Error ? err.message : 'Lỗi khi thiết lập mức tồn kho');
       return false;
     } finally {
       setUpdating(false);
@@ -201,7 +201,7 @@ export const useStock = (): UseStockReturn => {
     updateStock,
     bulkUpdateStock,
     adjustStock,
-    setReorderPoint,
+    setStockLevels,
     clearError,
     clearHistory,
   };

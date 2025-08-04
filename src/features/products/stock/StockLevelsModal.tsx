@@ -65,7 +65,7 @@ export const StockLevelsModal: React.FC<StockLevelsModalProps> = ({
     <GenericModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Cài đặt điểm đặt hàng lại"
+      title="Cài đặt mức tồn kho"
       size="md"
     >
       <div className="space-y-6">

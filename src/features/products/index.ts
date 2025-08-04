@@ -19,7 +19,7 @@ export * from './components'
 
 // Categories & Stock Management (Tuần 4-5) - PLACEHOLDER
 export { CategoryTable } from './CategoryTable'
-export { StockTable } from './StockTable'
+export { StockTable } from './stock'
 
 // Pricing Management (Tuần 6) - IMPLEMENTED
 export { PricingManagement } from './PricingManagement'

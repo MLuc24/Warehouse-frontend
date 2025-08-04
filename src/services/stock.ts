@@ -5,7 +5,7 @@ import type {
   StockAdjustment,
   StockHistory,
   BulkStockUpdate,
-  ReorderPointUpdate,
+  StockLevelsUpdate,
   ProductInventory
 } from '@/types';
 
@@ -71,11 +71,11 @@ export class StockService {
   }
 
   /**
-   * Set reorder point for a product
+   * Set stock levels for a product
    */
-  async setReorderPoint(productId: number, data: ReorderPointUpdate): Promise<{ message: string }> {
+  async setStockLevels(productId: number, data: StockLevelsUpdate): Promise<{ message: string }> {
     return apiService.put<{ message: string }>(
-      API_ENDPOINTS.PRODUCTS.STOCK.SET_REORDER_POINT(productId), 
+      API_ENDPOINTS.PRODUCTS.STOCK.SET_STOCK_LEVELS(productId), 
       data
     );
   }

@@ -5,9 +5,9 @@ import { useStock } from '@/hooks'
 import { StockFilters } from './StockFilters'
 import { StockList } from './StockList'
 import { StockAdjustmentModal } from './StockAdjustmentModal'
-import { ReorderPointModal } from './ReorderPointModal'
+import { StockLevelsModal } from './StockLevelsModal'
 import { StockHistoryModal } from './StockHistoryModal'
-import type { ProductStock, StockAdjustment, ReorderPointUpdate } from '@/types'
+import type { ProductStock, StockAdjustment, StockLevelsUpdate } from '@/types'
 
 /**
  * Stock Table Component - Refactored thành modules
@@ -31,7 +31,7 @@ export const StockTable: React.FC = () => {
     fetchLowStockProducts,
     fetchStockHistory,
     adjustStock,
-    setReorderPoint,
+    setStockLevels,
     clearError
   } = useStock()
 
@@ -92,7 +92,7 @@ export const StockTable: React.FC = () => {
     setShowAdjustModal(true)
   }
 
-  const handleSetReorderPoint = (stock: ProductStock) => {
+  const handleSetStockLevels = (stock: ProductStock) => {
     setSelectedStock(stock)
     setShowReorderModal(true)
   }
@@ -108,9 +108,9 @@ export const StockTable: React.FC = () => {
     return success
   }
 
-  const handleReorderPointUpdate = async (reorderData: ReorderPointUpdate) => {
+  const handleStockLevelsUpdate = async (stockLevelsData: StockLevelsUpdate) => {
     if (!selectedStock) return false
-    const success = await setReorderPoint(selectedStock.productId, reorderData)
+    const success = await setStockLevels(selectedStock.productId, stockLevelsData)
     return success
   }
 
@@ -189,7 +189,7 @@ export const StockTable: React.FC = () => {
           sortOrder={sortOrder}
           onSort={handleSort}
           onAdjustStock={handleAdjustStock}
-          onSetReorderPoint={handleSetReorderPoint}
+          onSetStockLevels={handleSetStockLevels}
           onViewHistory={handleViewHistory}
         />
       </Card>
@@ -203,11 +203,11 @@ export const StockTable: React.FC = () => {
         adjusting={adjusting}
       />
 
-      <ReorderPointModal
+      <StockLevelsModal
         isOpen={showReorderModal}
         onClose={() => setShowReorderModal(false)}
         stock={selectedStock}
-        onUpdate={handleReorderPointUpdate}
+        onUpdate={handleStockLevelsUpdate}
         updating={updating}
       />
 

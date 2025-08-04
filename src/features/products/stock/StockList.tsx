@@ -13,7 +13,7 @@ interface StockListProps {
   sortOrder?: 'asc' | 'desc'
   onSort?: (field: keyof ProductStock) => void
   onAdjustStock: (stock: ProductStock) => void
-  onSetReorderPoint: (stock: ProductStock) => void
+  onSetStockLevels: (stock: ProductStock) => void
   onViewHistory: (stock: ProductStock) => void
 }
 
@@ -24,7 +24,7 @@ export const StockList: React.FC<StockListProps> = ({
   sortOrder,
   onSort,
   onAdjustStock,
-  onSetReorderPoint,
+  onSetStockLevels,
   onViewHistory
 }) => {
   if (loading) {
@@ -203,11 +203,11 @@ export const StockList: React.FC<StockListProps> = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onSetReorderPoint(stock)}
+                    onClick={() => onSetStockLevels(stock)}
                     className="text-xs"
                   >
                     <Package className="w-3 h-3 mr-1" />
-                    Điểm đặt hàng
+                    Mức tồn kho
                   </Button>
                   
                   <Button
