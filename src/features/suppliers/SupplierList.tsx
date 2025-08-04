@@ -307,7 +307,7 @@ export const SupplierList: React.FC<SupplierListProps> = ({
       }
       emptyStateMessage="Không có nhà cung cấp nào"
       emptySearchMessage={(term) => `Không tìm thấy nhà cung cấp nào với từ khóa "${term}"`}
-      emptyFilterMessage={(filter) => `Không có nhà cung cấp nào ${filter === 'Active' ? 'đang hoạt động' : 'hết hạn'}`}
+      emptyFilterMessage={(filter) => `Không có nhá cung cấp nào ${filter === 'Active' ? 'đang hoạt động' : 'hết hạn'}`}
     />
     </div>
   );

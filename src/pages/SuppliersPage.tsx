@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Pagination } from '@/components/common';
 import { Layout } from '@/components/layout';
-import { SupplierList, SupplierInlineEdit, CreateSupplierForm } from '@/components/suppliers';
+import { SupplierList, SupplierInline } from '@/features/suppliers';
 import { useSupplier, usePermissions } from '@/hooks';
 import type { Supplier, SupplierSearch, CreateSupplier, UpdateSupplier } from '@/types';
 
@@ -190,7 +190,7 @@ export const SuppliersPage: React.FC = () => {
           <div className="p-6">
             {/* Show either the supplier list or the inline edit form */}
             {selectedSupplier ? (
-              <SupplierInlineEdit
+              <SupplierInline
                 supplier={selectedSupplier}
                 onSave={permissions.suppliers.canEdit ? handleUpdateSupplier : async () => {}}
                 onDelete={permissions.suppliers.canDelete ? handleDeleteSupplier : async () => {}}
@@ -198,7 +198,8 @@ export const SuppliersPage: React.FC = () => {
                 onCancel={handleCancelEdit}
               />
             ) : showCreateForm && permissions.suppliers.canCreate ? (
-              <CreateSupplierForm
+              <SupplierInline
+                mode="create"
                 onSave={handleCreateSupplier}
                 onCancel={handleCancelCreate}
                 isSubmitting={isSubmitting}

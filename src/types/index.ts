@@ -210,35 +210,6 @@ export interface MonthlyPurchase {
   receipts: number;
 }
 
-// Warehouse types
-export interface Warehouse {
-  warehouseId?: number;
-  warehouseName: string;
-  address: string;
-  contactPhone?: string;
-  createdAt?: string;
-  totalInventoryItems: number;
-}
-
-export interface WarehouseFormData {
-  warehouseId?: number;
-  warehouseName: string;
-  address: string;
-  contactPhone?: string;
-}
-
-export interface WarehouseResponse {
-  success: boolean;
-  message: string;
-  data?: Warehouse;
-}
-
-export interface WarehouseListResponse {
-  success: boolean;
-  message: string;
-  data?: Warehouse[];
-}
-
 // Common types
 export interface ApiResponse<T = unknown> {
   success: boolean;

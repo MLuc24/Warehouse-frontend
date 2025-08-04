@@ -3,12 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/ui';
-import { PermissionProtectedRoute } from '@/components/common';
 import { 
   HomePage, 
   ProductsPage, 
   SuppliersPage, 
-  WarehousesPage,
   AuthTestPage 
 } from '@/pages';
 import { ROUTES } from '@/constants';
@@ -68,16 +66,7 @@ const AppRoutes: React.FC = () => {
       />
       <Route 
         path={ROUTES.WAREHOUSES.LIST} 
-        element={
-          <ProtectedRoute>
-            <PermissionProtectedRoute 
-              requiredPermission={(permissions) => permissions.warehouses.canView}
-              fallbackMessage="Chỉ có Admin và Manager mới có thể truy cập quản lý kho hàng."
-            >
-              <WarehousesPage />
-            </PermissionProtectedRoute>
-          </ProtectedRoute>
-        } 
+        element={<div>Warehouse page under development</div>} 
       />
       <Route 
         path="/auth-test" 

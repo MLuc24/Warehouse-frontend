@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Package } from 'lucide-react';
-import { GenericInlineEdit } from '@/components/common';
+import { GenericInline } from '@/components/common';
 import type { FormField } from '@/components/common';
 import type { Product, Supplier } from '@/types';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useSupplier } from '@/hooks';
 
-interface ProductInlineEditProps {
-  product: Product;
+interface ProductInlineProps {
+  product?: Product; // Optional for create mode
   onSave: (data: Partial<Product>) => Promise<void>;
-  onDelete: (id: number | string) => Promise<void>;
+  onDelete?: (id: number | string) => Promise<void>;
   onReactivate?: (id: number | string) => Promise<void>;
   onCancel: () => void;
   canEdit?: boolean;
   canDelete?: boolean;
   isReadOnly?: boolean;
+  mode?: 'edit' | 'create'; // Add mode prop
+  isSubmitting?: boolean; // Add submitting state
 }
 
 /**
  * Product Inline Edit Component
- * Wraps GenericInlineEdit with product-specific configuration
+ * Handles both creating and editing products with GenericInline
  */
-export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
+export const ProductInline: React.FC<ProductInlineProps> = ({
   product,
   onSave,
   onDelete,
@@ -29,7 +31,9 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
   onCancel,
   canEdit = true,
   canDelete = true,
-  isReadOnly = false
+  isReadOnly = false,
+  mode = product ? 'edit' : 'create',
+  isSubmitting = false
 }) => {
   const { products: productPermissions } = usePermissions();
   const { getActiveSuppliers } = useSupplier();
@@ -52,6 +56,7 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
   const effectiveCanEdit = canEdit && productPermissions.canEdit;
   const effectiveCanDelete = canDelete && productPermissions.canDelete;
   const effectiveIsReadOnly = isReadOnly;
+  
   const productFields: FormField[] = [
     {
       name: 'productName',
@@ -67,7 +72,7 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
         if (strValue.length > 200) {
           return 'Tên sản phẩm không được vượt quá 200 ký tự';
         }
-        return null;
+        return undefined;
       }
     },
     {
@@ -84,7 +89,7 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
         if (strValue.length > 50) {
           return 'Mã SKU không được vượt quá 50 ký tự';
         }
-        return null;
+        return undefined;
       }
     },
     {
@@ -98,7 +103,7 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
         if (strValue.length > 50) {
           return 'Đơn vị tính không được vượt quá 50 ký tự';
         }
-        return null;
+        return undefined;
       }
     },
     {
@@ -108,7 +113,7 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
       required: true,
       options: suppliers.map(supplier => ({
         label: supplier.supplierName,
-        value: supplier.supplierId
+        value: String(supplier.supplierId)
       })),
       description: 'Chọn nhà cung cấp cho sản phẩm này'
     },
@@ -126,7 +131,7 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
         if (isNaN(numValue) || numValue <= 0) {
           return 'Giá mua phải là số dương lớn hơn 0';
         }
-        return null;
+        return undefined;
       }
     },
     {
@@ -143,18 +148,8 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
         if (isNaN(numValue) || numValue <= 0) {
           return 'Giá bán phải là số dương lớn hơn 0';
         }
-        return null;
+        return undefined;
       }
-    },
-    {
-      name: 'status',
-      label: 'Trạng thái',
-      type: 'select',
-      required: true,
-      options: [
-        { value: 'true', label: 'Hoạt động' },
-        { value: 'false', label: 'Ngừng kinh doanh' }
-      ]
     },
     {
       name: 'description',
@@ -168,7 +163,7 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
         if (strValue.length > 1000) {
           return 'Mô tả không được vượt quá 1000 ký tự';
         }
-        return null;
+        return undefined;
       }
     },
     {
@@ -182,40 +177,106 @@ export const ProductInlineEdit: React.FC<ProductInlineEditProps> = ({
         if (strValue && strValue.length > 1000) {
           return 'URL hình ảnh không được vượt quá 1000 ký tự';
         }
-        return null;
+        return undefined;
       }
     }
   ];
 
+  // Add status field only in edit mode
+  if (mode === 'edit') {
+    productFields.push({
+      name: 'status',
+      label: 'Trạng thái',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'true', label: 'Hoạt động' },
+        { value: 'false', label: 'Ngừng kinh doanh' }
+      ]
+    });
+  }
+
+  // Handle save with data transformation for create mode
+  const handleSave = async (formData: Record<string, unknown>) => {
+    if (mode === 'create') {
+      // Transform data to match Product type
+      const productData: Partial<Product> = {
+        productName: String(formData.productName || ''),
+        sku: String(formData.sku || ''),
+        unit: String(formData.unit || ''),
+        supplierId: Number(formData.supplierId),
+        purchasePrice: Number(formData.purchasePrice),
+        sellingPrice: Number(formData.sellingPrice),
+        description: formData.description ? String(formData.description) : undefined,
+        imageUrl: formData.imageUrl ? String(formData.imageUrl) : undefined
+      };
+      await onSave(productData);
+    } else {
+      await onSave(formData as Partial<Product>);
+    }
+  };
+
+  // Determine title and icon based on mode
+  const title = mode === 'create' ? 'Thêm sản phẩm mới' : product?.productName || 'Chỉnh sửa sản phẩm';
+  const description = mode === 'create' ? 'Điền thông tin để thêm sản phẩm mới vào hệ thống' : undefined;
+
+  // Initial data for create mode  
+  const initialData = mode === 'create' ? {
+    productName: '',
+    sku: '',
+    unit: '',
+    supplierId: '',
+    purchasePrice: '',
+    sellingPrice: '',
+    description: '',
+    imageUrl: ''
+  } : undefined;
+
   return (
-    <GenericInlineEdit
+    <GenericInline
+      mode={mode}
       item={product}
-      title={product.productName} // Chỉ hiển thị tên, không có "Chỉnh sửa"
-      titleIcon={<Package className="w-5 h-5" />}
+      title={title}
+      description={description}
+      titleIcon={
+        mode === 'create' ? (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        ) : (
+          <Package className="w-5 h-5" />
+        )
+      }
       fields={productFields}
-      onSave={onSave}
-      onDelete={onDelete}
+      initialData={initialData}
+      onSave={handleSave}
+      onDelete={mode === 'edit' && onDelete ? onDelete : (() => Promise.resolve())}
       onReactivate={onReactivate}
       onCancel={onCancel}
-      getItemId={(item) => item.productId}
-      canEdit={effectiveCanEdit}
-      canDelete={effectiveCanDelete}
-      isReadOnly={effectiveIsReadOnly}
-      isActive={(item) => item.status === true}
+      isSubmitting={isSubmitting}
+      getItemId={mode === 'edit' && product ? (item: unknown) => (item as Product).productId : () => 0}
+      canEdit={mode === 'create' ? true : effectiveCanEdit}
+      canDelete={mode === 'create' ? false : effectiveCanDelete}
+      isReadOnly={mode === 'create' ? false : effectiveIsReadOnly}
+      isActive={mode === 'edit' ? (item: unknown) => (item as Product).status === true : undefined}
       deleteConfirmTitle="Xác nhận xóa sản phẩm"
       deleteConfirmMessage="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."
       reactivateButtonText="Kích hoạt lại sản phẩm"
-      getAdditionalInfo={(item) => [
-        { label: "ID", value: `#${item.productId}` },
-        { label: "Mã SKU", value: item.sku },
-        { label: "Nhà cung cấp", value: item.supplierName || "Chưa có" },
-        { label: "Tồn kho", value: `${item.currentStock} ${item.unit || ''}` },
-        { label: "Tổng nhập", value: `${item.totalReceived} ${item.unit || ''}` },
-        { label: "Tổng xuất", value: `${item.totalIssued} ${item.unit || ''}` },
-        { label: "Giá trị tồn", value: item.totalValue ? `${item.totalValue.toLocaleString('vi-VN')} VNĐ` : "Chưa có" },
-        { label: "Ngày tạo", value: item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : "Chưa có" },
-        { label: "Trạng thái", value: item.status ? 'Đang kinh doanh' : 'Ngừng kinh doanh' }
-      ]}
+      layout="double"
+      getAdditionalInfo={mode === 'edit' ? (item: unknown) => {
+        const productItem = item as Product;
+        return [
+          { label: "ID", value: `#${productItem.productId}` },
+          { label: "Mã SKU", value: productItem.sku },
+          { label: "Nhà cung cấp", value: productItem.supplierName || "Chưa có" },
+          { label: "Tồn kho", value: `${productItem.currentStock} ${productItem.unit || ''}` },
+          { label: "Tổng nhập", value: `${productItem.totalReceived} ${productItem.unit || ''}` },
+          { label: "Tổng xuất", value: `${productItem.totalIssued} ${productItem.unit || ''}` },
+          { label: "Giá trị tồn", value: productItem.totalValue ? `${productItem.totalValue.toLocaleString('vi-VN')} VNĐ` : "Chưa có" },
+          { label: "Ngày tạo", value: productItem.createdAt ? new Date(productItem.createdAt).toLocaleDateString('vi-VN') : "Chưa có" },
+          { label: "Trạng thái", value: productItem.status ? 'Đang kinh doanh' : 'Ngừng kinh doanh' }
+        ];
+      } : undefined}
     />
   );
 };
