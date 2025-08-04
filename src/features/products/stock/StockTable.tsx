@@ -1,0 +1,224 @@
+import React, { useState, useEffect, useMemo } from 'react'
+import { Card, Button } from '@/components/ui'
+import { Plus, Download } from 'lucide-react'
+import { useStock } from '@/hooks'
+import { StockFilters } from './StockFilters'
+import { StockList } from './StockList'
+import { StockAdjustmentModal } from './StockAdjustmentModal'
+import { ReorderPointModal } from './ReorderPointModal'
+import { StockHistoryModal } from './StockHistoryModal'
+import type { ProductStock, StockAdjustment, ReorderPointUpdate } from '@/types'
+
+/**
+ * Stock Table Component - Refactored thành modules
+ * Full-featured stock management with:
+ * - Stock level management
+ * - Low stock alerts  
+ * - Stock adjustment tools
+ * - Stock history tracking
+ * - Reorder point management
+ */
+export const StockTable: React.FC = () => {
+  const {
+    stocks,
+    stockHistory,
+    loading,
+    loadingHistory,
+    updating,
+    adjusting,
+    error,
+    fetchAllStock,
+    fetchLowStockProducts,
+    fetchStockHistory,
+    adjustStock,
+    setReorderPoint,
+    clearError
+  } = useStock()
+
+  // Modal states
+  const [selectedStock, setSelectedStock] = useState<ProductStock | null>(null)
+  const [showAdjustModal, setShowAdjustModal] = useState(false)
+  const [showReorderModal, setShowReorderModal] = useState(false)
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'in-stock' | 'low-stock' | 'out-of-stock' | 'overstock'>('all')
+  const [sortBy, setSortBy] = useState<keyof ProductStock>('productName')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+
+  // Load data on mount
+  useEffect(() => {
+    fetchAllStock()
+    fetchLowStockProducts()
+  }, [fetchAllStock, fetchLowStockProducts])
+
+  // Filter and sort stocks
+  const filteredAndSortedStocks = useMemo(() => {
+    const result = stocks.filter(stock => {
+      const matchesSearch = stock.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           stock.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (stock.category && stock.category.toLowerCase().includes(searchTerm.toLowerCase()))
+      
+      const matchesStatus = statusFilter === 'all' || stock.stockStatus === statusFilter
+      
+      return matchesSearch && matchesStatus
+    })
+
+    // Sort stocks
+    result.sort((a, b) => {
+      const aValue = a[sortBy]
+      const bValue = b[sortBy]
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortOrder === 'asc' 
+          ? aValue.localeCompare(bValue, 'vi') 
+          : bValue.localeCompare(aValue, 'vi')
+      }
+      
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue
+      }
+      
+      return 0
+    })
+
+    return result
+  }, [stocks, searchTerm, statusFilter, sortBy, sortOrder])
+
+  // Handlers
+  const handleAdjustStock = (stock: ProductStock) => {
+    setSelectedStock(stock)
+    setShowAdjustModal(true)
+  }
+
+  const handleSetReorderPoint = (stock: ProductStock) => {
+    setSelectedStock(stock)
+    setShowReorderModal(true)
+  }
+
+  const handleViewHistory = (stock: ProductStock) => {
+    setSelectedStock(stock)
+    setShowHistoryModal(true)
+  }
+
+  const handleStockAdjustment = async (adjustmentData: StockAdjustment) => {
+    if (!selectedStock) return false
+    const success = await adjustStock(selectedStock.productId, adjustmentData)
+    return success
+  }
+
+  const handleReorderPointUpdate = async (reorderData: ReorderPointUpdate) => {
+    if (!selectedStock) return false
+    const success = await setReorderPoint(selectedStock.productId, reorderData)
+    return success
+  }
+
+  // Sort handling
+  const handleSort = (field: keyof ProductStock) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortOrder('asc')
+    }
+  }
+
+  const handleRefresh = () => {
+    fetchAllStock()
+    fetchLowStockProducts()
+    if (error) clearError()
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Quản lý tồn kho</h1>
+          <p className="text-gray-600">Theo dõi và quản lý tồn kho sản phẩm</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" />
+            Xuất báo cáo
+          </Button>
+          
+          <Button variant="outline" size="sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Nhập kho mới
+          </Button>
+        </div>
+      </div>
+
+      {/* Error Display */}
+      {error && (
+        <Card className="p-4 bg-red-50 border-red-200">
+          <div className="flex items-center justify-between">
+            <p className="text-red-700">Lỗi: {error}</p>
+            <Button variant="outline" size="sm" onClick={clearError}>
+              Đóng
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Filters */}
+      <Card className="p-6">
+        <StockFilters
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          sortOrder={sortOrder}
+          onSortOrderChange={setSortOrder}
+          onRefresh={handleRefresh}
+          loading={loading}
+        />
+      </Card>
+
+      {/* Stock List */}
+      <Card className="p-6">
+        <StockList
+          stocks={filteredAndSortedStocks}
+          loading={loading}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          onAdjustStock={handleAdjustStock}
+          onSetReorderPoint={handleSetReorderPoint}
+          onViewHistory={handleViewHistory}
+        />
+      </Card>
+
+      {/* Modals */}
+      <StockAdjustmentModal
+        isOpen={showAdjustModal}
+        onClose={() => setShowAdjustModal(false)}
+        stock={selectedStock}
+        onAdjust={handleStockAdjustment}
+        adjusting={adjusting}
+      />
+
+      <ReorderPointModal
+        isOpen={showReorderModal}
+        onClose={() => setShowReorderModal(false)}
+        stock={selectedStock}
+        onUpdate={handleReorderPointUpdate}
+        updating={updating}
+      />
+
+      <StockHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        stock={selectedStock}
+        stockHistory={stockHistory}
+        onFetchHistory={fetchStockHistory}
+        loading={loadingHistory}
+      />
+    </div>
+  )
+}

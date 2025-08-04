@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Card, Button, Input, Select, Alert, Badge, Tooltip } from '@/components/ui'
-import { GenericList, GenericModal, EmptyState } from '@/components/common'
+import { GenericModal, EmptyState } from '@/components/common'
 import { useCategory } from '@/hooks'
 import type { ProductCategory, CategoryStatistics, BulkUpdateCategory } from '@/types'
 
@@ -222,7 +222,23 @@ export const CategoryTable: React.FC = () => {
 
       {/* Error Alert */}
       {error && (
-        <Alert variant="danger" title="Lỗi" message={error} onClose={clearError} />
+        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-r-md text-sm mb-4">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start">
+              <span className="mr-3 text-lg flex-shrink-0 mt-0.5">❌</span>
+              <div className="flex-1">
+                <div className="font-semibold mb-1">Lỗi</div>
+                <div>{error}</div>
+              </div>
+            </div>
+            <button
+              onClick={clearError}
+              className="ml-4 text-red-500 hover:text-red-700 flex-shrink-0"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Quick Stats */}
@@ -369,28 +385,10 @@ export const CategoryTable: React.FC = () => {
         isOpen={showBulkModal}
         onClose={() => setShowBulkModal(false)}
         title="Cập nhật danh mục hàng loạt"
-        showFooter={true}
-        footerContent={
-          <div className="flex justify-end space-x-3">
-            <Button
-              variant="secondary"
-              onClick={() => setShowBulkModal(false)}
-            >
-              Hủy
-            </Button>
-            <Button
-              onClick={handleBulkUpdate}
-              loading={updating}
-              disabled={!newCategoryName.trim()}
-            >
-              Cập nhật
-            </Button>
-          </div>
-        }
       >
         <div className="space-y-4">
           <Alert 
-            variant="info" 
+            type="info" 
             title="Thông tin" 
             message={`Bạn đã chọn ${selectedCategories.length} danh mục. Tất cả sản phẩm trong các danh mục này sẽ được chuyển sang danh mục mới.`}
           />
@@ -416,6 +414,22 @@ export const CategoryTable: React.FC = () => {
                 </Badge>
               ))}
             </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6 pt-4 border-t">
+            <Button
+              variant="secondary"
+              onClick={() => setShowBulkModal(false)}
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={handleBulkUpdate}
+              loading={updating}
+              disabled={!newCategoryName.trim()}
+            >
+              Cập nhật
+            </Button>
           </div>
         </div>
       </GenericModal>

@@ -16,11 +16,12 @@ export const ProductsPage: React.FC = () => {
 
   const { fetchProducts } = useProduct()
 
-  // Fetch initial data
+  // Fetch initial data without any filters - explicit empty params to avoid backend default filters
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        await fetchProducts()
+        // Explicitly pass empty object to ensure no filters are applied
+        await fetchProducts({})
       } catch (error) {
         console.error('Error loading initial data:', error)
       }

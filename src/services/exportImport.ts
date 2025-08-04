@@ -1,5 +1,3 @@
-import type { Product } from '@/types'
-
 export interface ExportOptions {
   format: 'csv' | 'json' | 'xlsx'
   fields: string[]

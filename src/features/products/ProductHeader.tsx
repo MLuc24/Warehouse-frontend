@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, Button } from '@/components/ui'
-import { Download, Upload, Plus } from 'lucide-react'
+import { Download, Plus } from 'lucide-react'
 
 interface ProductHeaderProps {
   quickStats: {

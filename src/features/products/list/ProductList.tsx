@@ -54,24 +54,24 @@ export const ProductList: React.FC<ProductListProps> = ({
   // Permission props
   permissions
 }) => {
-  // State for filtering and sorting
+  // State for filtering and sorting - No default filtering, show ALL products initially
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [dateSort, setDateSort] = useState<DateSort>('newest');
   const [purchasePriceSort, setPurchasePriceSort] = useState<PriceSort>('none');
   const [sellingPriceSort, setSellingPriceSort] = useState<PriceSort>('none');
 
-  // Filter and sort products based on current filters
+  // Filter and sort products - Default behavior: show ALL products without any filtering
   const filteredAndSortedProducts = useMemo(() => {
+    // Start with all products - NO FILTERING BY DEFAULT
     let filtered = [...products];
 
-    // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(product => {
-        if (statusFilter === 'active') return product.status === true;
-        if (statusFilter === 'inactive') return product.status === false;
-        return true;
-      });
+    // Only apply status filter if user explicitly selects something other than 'all'
+    if (statusFilter === 'active') {
+      filtered = filtered.filter(product => product.status === true);
+    } else if (statusFilter === 'inactive') {
+      filtered = filtered.filter(product => product.status === false);
     }
+    // When statusFilter is 'all' (default), show ALL products without filtering
 
     // Apply sorting
     filtered.sort((a, b) => {

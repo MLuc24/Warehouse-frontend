@@ -101,7 +101,6 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
       isOpen={isOpen} 
       onClose={onClose}
       title={`Import/Export ${title}`}
-      size="lg"
     >
       <div className="space-y-6">
         {/* Tab Navigation */}
@@ -140,11 +139,12 @@ export const ImportExportModal: React.FC<ImportExportModalProps> = ({
                 </label>
                 <Select
                   value={exportFormat}
-                  onValueChange={(value) => setExportFormat(value as 'csv' | 'json')}
-                >
-                  <option value="csv">CSV</option>
-                  <option value="json">JSON</option>
-                </Select>
+                  onChange={(value: string) => setExportFormat(value as 'csv' | 'json')}
+                  options={[
+                    { value: 'csv', label: 'CSV' },
+                    { value: 'json', label: 'JSON' }
+                  ]}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

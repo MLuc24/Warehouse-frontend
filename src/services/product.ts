@@ -42,9 +42,13 @@ export class ProductService {
 
   /**
    * Get paginated list of products with optional search
+   * Ensure no default filters are applied
    */
   async getProducts(searchParams?: ProductSearch): Promise<ProductListResponse> {
-    const params = searchParams ? this.buildSearchParams(searchParams) : undefined;
+    // Only build params if searchParams is provided and has actual values
+    const params = searchParams && Object.keys(searchParams).length > 0 
+      ? this.buildSearchParams(searchParams) 
+      : undefined;
     const response = await apiService.get<BackendProductListResponse>(API_ENDPOINTS.PRODUCTS.LIST, params);
     
     // Map backend response to frontend type
@@ -151,20 +155,22 @@ export class ProductService {
   /**
    * Build search parameters for API call
    * Map frontend parameters to backend DTO format
+   * Only add parameters that have actual values to avoid default filtering
    */
   private buildSearchParams(searchParams: ProductSearch): Record<string, unknown> {
     const params: Record<string, unknown> = {};
     
-    // Map 'keyword' to 'SearchTerm' for backend compatibility
-    if (searchParams.keyword) params.SearchTerm = searchParams.keyword;
-    if (searchParams.sku) params.Sku = searchParams.sku;
-    if (searchParams.supplierId) params.SupplierId = searchParams.supplierId;
-    if (searchParams.minPrice) params.MinPrice = searchParams.minPrice;
-    if (searchParams.maxPrice) params.MaxPrice = searchParams.maxPrice;
-    if (searchParams.status !== undefined) params.Status = searchParams.status;
-    if (searchParams.page) params.Page = searchParams.page;
-    if (searchParams.pageSize) params.PageSize = searchParams.pageSize;
-    if (searchParams.sortBy) params.SortBy = searchParams.sortBy;
+    // Only add parameters that have valid values
+    if (searchParams.keyword && searchParams.keyword.trim()) params.SearchTerm = searchParams.keyword.trim();
+    if (searchParams.sku && searchParams.sku.trim()) params.Sku = searchParams.sku.trim();
+    if (searchParams.supplierId && searchParams.supplierId > 0) params.SupplierId = searchParams.supplierId;
+    if (searchParams.minPrice && searchParams.minPrice > 0) params.MinPrice = searchParams.minPrice;
+    if (searchParams.maxPrice && searchParams.maxPrice > 0) params.MaxPrice = searchParams.maxPrice;
+    // Only add status filter if explicitly set (not undefined or null)
+    if (searchParams.status !== undefined && searchParams.status !== null) params.Status = searchParams.status;
+    if (searchParams.page && searchParams.page > 0) params.Page = searchParams.page;
+    if (searchParams.pageSize && searchParams.pageSize > 0) params.PageSize = searchParams.pageSize;
+    if (searchParams.sortBy && searchParams.sortBy.trim()) params.SortBy = searchParams.sortBy.trim();
     if (searchParams.sortOrder) params.SortDescending = searchParams.sortOrder === 'desc';
     
     return params;

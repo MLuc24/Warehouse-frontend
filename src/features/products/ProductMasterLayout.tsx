@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card } from '@/components/ui'
 import { CategoryTable } from './CategoryTable'
-import { StockTable } from './StockTable'
+import { StockTable } from './stock'
 import { PricingManagement } from './PricingManagement'
 import { ExpiryManagement } from './ExpiryManagement'
 import { AnalyticsManagement } from './AnalyticsManagement'
@@ -57,16 +57,6 @@ export const ProductMasterLayout: React.FC<ProductMasterLayoutProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Page Title */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Quản lý sản phẩm
-        </h1>
-        <p className="mt-2 text-gray-600">
-          Quản lý toàn bộ sản phẩm, danh mục, tồn kho và báo cáo chi tiết
-        </p>
-      </div>
-
       {/* Main Content Card */}
       <Card className="min-h-[600px]">
         {/* Tab Content Area */}
