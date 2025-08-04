@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  HomeIcon, 
   CubeIcon, 
   BuildingStorefrontIcon, 
   ChartBarIcon,
@@ -27,11 +26,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const permissions = usePermissions();
 
   const navigationItems: NavItem[] = [
-    {
-      name: 'Trang chủ',
-      href: ROUTES.HOME,
-      icon: HomeIcon,
-    },
     {
       name: 'Sản phẩm',
       href: ROUTES.PRODUCTS.LIST,
@@ -77,23 +71,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       <div
         className={`fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } lg:flex lg:flex-col`}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-center h-16 px-4 bg-gradient-to-r from-blue-600 to-indigo-600">
+          {/* Logo - clickable to go home */}
+          <Link 
+            to={ROUTES.HOME}
+            className="flex items-center justify-center h-16 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200"
+            onClick={onClose}
+          >
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center mr-3">
-                <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+              <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center mr-3 shadow-sm">
+                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15l-.75 18H5.25L4.5 3zm0 0L5.25 21M19.5 3l-.75 18M9 21V9l3-3 3 3v12M12 9v12" />
                 </svg>
               </div>
-              <h1 className="text-lg font-bold text-white">Warehouse</h1>
+              <h1 className="text-xl font-bold text-white">Warehouse</h1>
             </div>
-          </div>
+          </Link>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-4 pt-8 pb-6 space-y-2 overflow-y-auto">
             {visibleItems.map((item) => {
               const isActive = location.pathname === item.href;
               const IconComponent = item.icon;
@@ -103,10 +101,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   key={item.name}
                   to={item.href}
                   onClick={onClose}
-                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                     isActive
-                      ? "bg-blue-50 text-blue-700 border-r-3 border-blue-600 shadow-sm"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
                   }`}
                 >
                   <IconComponent
@@ -115,24 +113,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     }`}
                   />
                   <span className="truncate">{item.name}</span>
+                  {isActive && (
+                    <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full"></div>
+                  )}
                 </Link>
               );
             })}
           </nav>
 
           {/* Divider */}
-          <div className="border-t border-gray-200"></div>
+          <div className="mx-4 border-t border-gray-200"></div>
 
           {/* User Info / Footer */}
           <div className="flex-shrink-0 p-4">
-            <div className="flex items-center">
-              <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+            <div className="flex items-center p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+              <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-sm">
+                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
               </div>
               <div className="ml-3 flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-semibold text-gray-900 truncate">
                   Warehouse Manager
                 </p>
                 <p className="text-xs text-gray-500 truncate">
