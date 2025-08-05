@@ -144,7 +144,60 @@ export interface ProductInventory {
   lastUpdated: string;
 }
 
-// Category types (Tuần 4-5)
+// Category types (Updated - Using new Category model)
+export interface Category {
+  categoryId: number;
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  storageType?: string;
+  isPerishable: boolean;
+  defaultMinStock?: number;
+  defaultMaxStock?: number;
+  status: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  productCount: number;
+}
+
+export interface CreateCategory {
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  storageType?: string;
+  isPerishable?: boolean;
+  defaultMinStock?: number;
+  defaultMaxStock?: number;
+  status?: boolean;
+}
+
+export interface UpdateCategory {
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  storageType?: string;
+  isPerishable?: boolean;
+  defaultMinStock?: number;
+  defaultMaxStock?: number;
+  status?: boolean;
+}
+
+export interface DefaultCategory {
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  exampleProducts: string[];
+  storageType: string;
+  isPerishable: boolean;
+  defaultMinStock: number;
+  defaultMaxStock: number;
+}
+
+// Legacy types for backward compatibility
 export interface ProductCategory {
   category: string;
   productCount: number;

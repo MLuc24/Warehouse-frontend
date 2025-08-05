@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card } from '@/components/ui'
-import { CategoryTable } from './CategoryTable'
+import { CategoryTable } from './category'
 import { StockTable } from './stock'
 import { PricingManagement } from './pricing'
 import { ExpiryManagement } from './expire'

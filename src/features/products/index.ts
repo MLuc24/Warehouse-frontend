@@ -17,8 +17,8 @@ export * from './inline'
 // Product UI Components
 export * from './components'
 
-// Categories & Stock Management (Tuần 4-5) - PLACEHOLDER
-export { CategoryTable } from './CategoryTable'
+// Categories & Stock Management (Tuần 4-5) - MOVED TO CATEGORY FOLDER
+export * from './category'
 export { StockTable } from './stock'
 
 // Pricing Management (Tuần 6) - IMPLEMENTED
@@ -30,7 +30,6 @@ export { ExpiryManagement, ExpiryTable, ExpiryAlerts, EditExpiryModal } from './
 // Analytics & Reports (Tuần 8) - IMPLEMENTED
 export { AnalyticsManagement } from './AnalyticsManagement'
 export { AnalyticsCards } from './AnalyticsCards'
-export { CategoryChart } from './CategoryChart'
 export { AlertsDashboard } from './AlertsDashboard'
 export { ProfitabilityInsights } from './ProfitabilityInsights'
 

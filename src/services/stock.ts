@@ -66,7 +66,7 @@ export class StockService {
   /**
    * Adjust stock (specific adjustment endpoint)
    */
-  async adjustStock(productId: number, data: StockAdjustment): Promise<{ message: string }> {
+  async adjustStock(_productId: number, data: StockAdjustment): Promise<{ message: string }> {
     return apiService.post<{ message: string }>(API_ENDPOINTS.PRODUCTS.STOCK.ADJUST, data);
   }
 

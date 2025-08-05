@@ -5,6 +5,7 @@ export { Modal } from './Modal';
 export { Alert } from './Alert';
 export { LoadingButton } from './LoadingButton';
 export { CloudinaryImageUpload } from './CloudinaryImageUpload';
+export { ConfirmDialog } from './ConfirmDialog';
 
 // New UI Components
 export { Badge } from './Badge';

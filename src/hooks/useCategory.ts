@@ -1,165 +1,124 @@
-import { useState, useCallback } from 'react';
-import { categoryService } from '@/services';
-import type { 
-  ProductCategory,
-  CategoryStatistics,
-  BulkUpdateCategory
-} from '@/types';
+import { useState, useEffect } from 'react'
+import { categoryApi } from '../services/category'
+import type { Category, CreateCategoryDto, UpdateCategoryDto, DefaultCategory } from '../types/category'
 
-interface UseCategoryReturn {
-  // Data state
-  categories: ProductCategory[];
-  categoryNames: string[];
-  categoryStats: CategoryStatistics[];
-  selectedCategoryStats: CategoryStatistics | null;
-  
-  // Loading states
-  loading: boolean;
-  loadingNames: boolean;
-  loadingStats: boolean;
-  updating: boolean;
-  
-  // Error state
-  error: string | null;
-  
-  // Actions
-  fetchCategories: () => Promise<void>;
-  fetchCategoryNames: () => Promise<void>;
-  fetchAllCategoryStats: () => Promise<void>;
-  fetchCategoryStats: (category: string) => Promise<void>;
-  bulkUpdateCategories: (data: BulkUpdateCategory) => Promise<boolean>;
-  clearError: () => void;
-  clearStats: () => void;
-}
+// Hook để quản lý danh sách danh mục
+export const useCategories = () => {
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-/**
- * Hook for category management operations
- * Following hook structure template from guidelines
- */
-export const useCategory = (): UseCategoryReturn => {
-  // Data state
-  const [categories, setCategories] = useState<ProductCategory[]>([]);
-  const [categoryNames, setCategoryNames] = useState<string[]>([]);
-  const [categoryStats, setCategoryStats] = useState<CategoryStatistics[]>([]);
-  const [selectedCategoryStats, setSelectedCategoryStats] = useState<CategoryStatistics | null>(null);
-  
-  // Loading states
-  const [loading, setLoading] = useState(false);
-  const [loadingNames, setLoadingNames] = useState(false);
-  const [loadingStats, setLoadingStats] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  
-  // Error state
-  const [error, setError] = useState<string | null>(null);
-
-  // Fetch all categories
-  const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchCategories = async () => {
     try {
-      const result = await categoryService.getAllCategories();
-      setCategories(result);
+      setLoading(true)
+      setError(null)
+      const data = await categoryApi.getAll()
+      setCategories(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tải danh mục');
+      setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }
 
-  // Fetch category names only
-  const fetchCategoryNames = useCallback(async () => {
-    setLoadingNames(true);
-    setError(null);
-    try {
-      const result = await categoryService.getCategoryList();
-      setCategoryNames(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tải danh sách danh mục');
-    } finally {
-      setLoadingNames(false);
-    }
-  }, []);
+  useEffect(() => {
+    fetchCategories()
+  }, [])
 
-  // Fetch all category statistics
-  const fetchAllCategoryStats = useCallback(async () => {
-    setLoadingStats(true);
-    setError(null);
-    try {
-      const result = await categoryService.getAllCategoryStatistics();
-      setCategoryStats(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tải thống kê danh mục');
-    } finally {
-      setLoadingStats(false);
-    }
-  }, []);
+  const createCategory = async (data: CreateCategoryDto): Promise<Category> => {
+    const newCategory = await categoryApi.create(data)
+    setCategories(prev => [...prev, newCategory])
+    return newCategory
+  }
 
-  // Fetch specific category statistics
-  const fetchCategoryStats = useCallback(async (category: string) => {
-    setLoadingStats(true);
-    setError(null);
-    try {
-      const result = await categoryService.getCategoryStatistics(category);
-      setSelectedCategoryStats(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi tải thống kê danh mục');
-    } finally {
-      setLoadingStats(false);
-    }
-  }, []);
+  const updateCategory = async (id: number, data: UpdateCategoryDto): Promise<Category> => {
+    const updatedCategory = await categoryApi.update(id, data)
+    setCategories(prev => prev.map(cat => 
+      cat.categoryId === id ? updatedCategory : cat
+    ))
+    return updatedCategory
+  }
 
-  // Bulk update categories
-  const bulkUpdateCategories = useCallback(async (data: BulkUpdateCategory): Promise<boolean> => {
-    setUpdating(true);
-    setError(null);
-    try {
-      await categoryService.bulkUpdateCategories(data);
-      // Refresh categories after update
-      await fetchCategories();
-      await fetchAllCategoryStats();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Lỗi khi cập nhật danh mục');
-      return false;
-    } finally {
-      setUpdating(false);
-    }
-  }, [fetchCategories, fetchAllCategoryStats]);
-
-  // Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  // Clear stats
-  const clearStats = useCallback(() => {
-    setCategoryStats([]);
-    setSelectedCategoryStats(null);
-  }, []);
+  const deleteCategory = async (id: number): Promise<void> => {
+    await categoryApi.delete(id)
+    setCategories(prev => prev.filter(cat => cat.categoryId !== id))
+  }
 
   return {
-    // Data state
     categories,
-    categoryNames,
-    categoryStats,
-    selectedCategoryStats,
-    
-    // Loading states
     loading,
-    loadingNames,
-    loadingStats,
-    updating,
-    
-    // Error state
     error,
-    
-    // Actions
-    fetchCategories,
-    fetchCategoryNames,
-    fetchAllCategoryStats,
-    fetchCategoryStats,
-    bulkUpdateCategories,
-    clearError,
-    clearStats,
-  };
-};
+    refetch: fetchCategories,
+    createCategory,
+    updateCategory,
+    deleteCategory
+  }
+}
+
+// Hook để quản lý danh mục đang hoạt động
+export const useActiveCategories = () => {
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchActiveCategories = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await categoryApi.getActive()
+      setCategories(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchActiveCategories()
+  }, [])
+
+  return {
+    categories,
+    loading,
+    error,
+    refetch: fetchActiveCategories
+  }
+}
+
+// Hook để quản lý danh mục mặc định
+export const useDefaultCategories = () => {
+  const [categories, setCategories] = useState<DefaultCategory[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchDefaultCategories = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await categoryApi.getDefault()
+      setCategories(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const seedDefaultCategories = async (): Promise<void> => {
+    await categoryApi.seedDefault()
+    await fetchDefaultCategories()
+  }
+
+  useEffect(() => {
+    fetchDefaultCategories()
+  }, [])
+
+  return {
+    categories,
+    loading,
+    error,
+    refetch: fetchDefaultCategories,
+    seedDefault: seedDefaultCategories
+  }
+}

@@ -37,7 +37,7 @@ export const API_ENDPOINTS = {
     CAN_DELETE: (id: number) => `/product/${id}/can-delete`,
     REACTIVATE: (id: number) => `/product/${id}/reactivate`,
     HAS_INVENTORY_MOVEMENTS: (id: number) => `/product/${id}/has-inventory-movements`,
-    // Categories endpoints (Tuần 4-5)
+    // Categories endpoints (legacy)
     CATEGORIES: {
       LIST: '/productcategory',
       LIST_NAMES: '/productcategory/list',
@@ -45,7 +45,7 @@ export const API_ENDPOINTS = {
       CATEGORY_STATS: (category: string) => `/productcategory/${encodeURIComponent(category)}/statistics`,
       BULK_UPDATE: '/productcategory/bulk-update',
     },
-    // Stock endpoints (Tuần 4-5)
+    // Stock endpoints
     STOCK: {
       LIST: '/productstock',
       LOW_STOCK: '/productstock/low-stock',
@@ -55,6 +55,15 @@ export const API_ENDPOINTS = {
       ADJUST: '/productstock/adjust',
       SET_STOCK_LEVELS: (id: number) => `/productstock/${id}/reorder-point`,
     },
+  },
+  CATEGORIES: {
+    LIST: '/category',
+    CREATE: '/category',
+    UPDATE: (id: number) => `/category/${id}`,
+    DELETE: (id: number) => `/category/${id}`,
+    GET_BY_ID: (id: number) => `/category/${id}`,
+    DEFAULT: '/category/default',
+    SEED: '/category/seed',
   },
   SUPPLIERS: {
     LIST: '/supplier',

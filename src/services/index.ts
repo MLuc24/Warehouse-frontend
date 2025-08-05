@@ -5,7 +5,7 @@ export { supplierService } from './supplier';
 export { cloudinaryService } from './cloudinary';
 
 // Tuần 4-5: Categories & Stock Management Services
-export { categoryService } from './category';
+export { categoryApi } from './category';
 export { stockService } from './stock';
 
 // Tuần 6: Pricing Management Services

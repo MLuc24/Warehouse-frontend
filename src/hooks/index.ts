@@ -5,7 +5,7 @@ export { usePermissions } from './usePermissions';
 export { useCloudinary } from './useCloudinary';
 
 // Tuần 4-5: Categories & Stock Management Hooks
-export { useCategory } from './useCategory';
+export { useCategories, useActiveCategories, useDefaultCategories } from './useCategory';
 export { useStock } from './useStock';
 
 // Tuần 6: Pricing Management Hooks
