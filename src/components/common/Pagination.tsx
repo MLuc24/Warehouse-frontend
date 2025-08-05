@@ -48,9 +48,9 @@ export const Pagination: React.FC<PaginationProps> = ({
   }
 
   return (
-    <div className="flex justify-between items-center mt-6">
+    <div className="flex flex-col items-center mt-6 space-y-3">
       <p className="text-sm text-gray-600">
-        Hiển thị {Math.min((currentPage - 1) * pageSize + 1, totalCount)} - {Math.min(currentPage * pageSize, totalCount)} trong tổng số {totalCount} nhà cung cấp
+        Hiển thị {Math.min((currentPage - 1) * pageSize + 1, totalCount)} - {Math.min(currentPage * pageSize, totalCount)} trong tổng số {totalCount} mục
       </p>
       <div className="flex items-center space-x-2">
         <Button

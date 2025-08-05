@@ -354,7 +354,7 @@ export const ProductInline: React.FC<ProductInlineProps> = ({
           isPerishable: formData.isPerishable === 'true', // 🔥 FIXED: Add missing isPerishable
           description: safeStringConvert(formData.description),
           imageUrl: safeStringConvert(formData.imageUrl),
-          status: formData.status ? formData.status === 'true' : undefined
+          status: formData.status === 'true' // Convert string to boolean directly
         };
         
         console.log('Transformed product data (edit):', productData); // Debug log
@@ -404,50 +404,60 @@ export const ProductInline: React.FC<ProductInlineProps> = ({
   } : undefined;
 
   return (
-    <GenericInline
-      mode={mode}
-      item={product}
-      title={title}
-      description={description}
-      titleIcon={
-        mode === 'create' ? (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-        ) : (
-          <Package className="w-5 h-5" />
-        )
-      }
-      fields={productFields}
-      initialData={initialData}
-      onSave={handleSave}
-      onDelete={mode === 'edit' && onDelete ? onDelete : (() => Promise.resolve())}
-      onReactivate={onReactivate}
-      onCancel={onCancel}
-      isSubmitting={isSubmitting}
-      getItemId={mode === 'edit' && product ? (item: unknown) => (item as Product).productId : () => 0}
-      canEdit={mode === 'create' ? true : effectiveCanEdit}
-      canDelete={mode === 'create' ? false : effectiveCanDelete}
-      isReadOnly={mode === 'create' ? false : effectiveIsReadOnly}
-      isActive={mode === 'edit' ? (item: unknown) => (item as Product).status === true : undefined}
-      deleteConfirmTitle="Xác nhận xóa sản phẩm"
-      deleteConfirmMessage="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."
-      reactivateButtonText="Kích hoạt lại sản phẩm"
-      layout="double"
-      getAdditionalInfo={mode === 'edit' ? (item: unknown) => {
-        const productItem = item as Product;
-        return [
-          { label: "ID", value: `#${productItem.productId}` },
-          { label: "Mã SKU", value: productItem.sku },
-          { label: "Nhà cung cấp", value: productItem.supplierName || "Chưa có" },
-          { label: "Tồn kho", value: `${productItem.currentStock} ${productItem.unit || ''}` },
-          { label: "Tổng nhập", value: `${productItem.totalReceived} ${productItem.unit || ''}` },
-          { label: "Tổng xuất", value: `${productItem.totalIssued} ${productItem.unit || ''}` },
-          { label: "Giá trị tồn", value: productItem.totalValue ? `${productItem.totalValue.toLocaleString('vi-VN')} VNĐ` : "Chưa có" },
-          { label: "Ngày tạo", value: productItem.createdAt ? new Date(productItem.createdAt).toLocaleDateString('vi-VN') : "Chưa có" },
-          { label: "Trạng thái", value: productItem.status ? 'Đang kinh doanh' : 'Ngừng kinh doanh' }
-        ];
-      } : undefined}
-    />
+    <>
+      {mode === 'create' ? (
+        <GenericInline
+          mode="create"
+          title={title}
+          description={description}
+          titleIcon={
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          }
+          fields={productFields}
+          initialData={initialData}
+          onSave={handleSave}
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+          layout="double"
+        />
+      ) : product ? (
+        <GenericInline
+          mode="edit"
+          item={product}
+          title={title}
+          description={description}
+          titleIcon={<Package className="w-5 h-5" />}
+          fields={productFields}
+          initialData={initialData}
+          onSave={handleSave}
+          onDelete={onDelete || (() => Promise.resolve())}
+          onReactivate={onReactivate}
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+          getItemId={(item: Product) => item.productId}
+          canEdit={effectiveCanEdit}
+          canDelete={effectiveCanDelete}
+          isReadOnly={effectiveIsReadOnly}
+          isActive={(item: Product) => item.status === true}
+          deleteConfirmTitle="Xác nhận xóa sản phẩm"
+          deleteConfirmMessage="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."
+          reactivateButtonText="Kích hoạt lại sản phẩm"
+          layout="double"
+          getAdditionalInfo={(item: Product) => [
+            { label: "ID", value: `#${item.productId}` },
+            { label: "Mã SKU", value: item.sku },
+            { label: "Nhà cung cấp", value: item.supplierName || "Chưa có" },
+            { label: "Tồn kho", value: `${item.currentStock} ${item.unit || ''}` },
+            { label: "Tổng nhập", value: `${item.totalReceived} ${item.unit || ''}` },
+            { label: "Tổng xuất", value: `${item.totalIssued} ${item.unit || ''}` },
+            { label: "Giá trị tồn", value: item.totalValue ? `${item.totalValue.toLocaleString('vi-VN')} VNĐ` : "Chưa có" },
+            { label: "Ngày tạo", value: item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : "Chưa có" },
+            { label: "Trạng thái", value: item.status ? 'Đang kinh doanh' : 'Ngừng kinh doanh' }
+          ]}
+        />
+      ) : null}
+    </>
   );
 };

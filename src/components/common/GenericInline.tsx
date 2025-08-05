@@ -38,6 +38,7 @@ interface CreateProps extends BaseProps {
 interface EditProps<T> extends BaseProps {
   mode: 'edit';
   item: T;
+  initialData?: Record<string, unknown>; // Add initialData support for edit mode
   getItemId: (item: T) => string | number;
   canEdit?: boolean;
   canDelete?: boolean;
@@ -66,15 +67,18 @@ export const GenericInline = <T,>(props: GenericInlineProps<T>) => {
   // Initialize form data
   const getInitialData = (): Record<string, unknown> => {
     const initial: Record<string, unknown> = {};
-    if (props.mode === 'create') {
-      props.fields.forEach((field: FormField) => {
-        initial[field.name] = props.initialData?.[field.name] || (field.type === 'checkbox' ? false : '');
-      });
-    } else {
-      props.fields.forEach((field: FormField) => {
-        initial[field.name] = (props.item as Record<string, unknown>)[field.name];
-      });
-    }
+    
+    // Use initialData if provided, otherwise use item data for edit mode
+    const dataSource = props.initialData || (props.mode === 'edit' ? props.item as Record<string, unknown> : {});
+    
+    props.fields.forEach((field: FormField) => {
+      if (props.mode === 'create') {
+        initial[field.name] = dataSource[field.name] || (field.type === 'checkbox' ? false : '');
+      } else {
+        // For edit mode, prefer initialData values if available
+        initial[field.name] = dataSource[field.name];
+      }
+    });
     return initial;
   };
 
