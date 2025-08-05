@@ -7,7 +7,7 @@ import { getUnitsAsOptions } from '../../constants/units';
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'number' | 'password' | 'select' | 'checkbox' | 'textarea' | 'unit' | 'image';
+  type: 'text' | 'email' | 'number' | 'password' | 'select' | 'checkbox' | 'textarea' | 'unit' | 'image' | 'date';
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -242,6 +242,19 @@ export const GenericInline = <T,>(props: GenericInlineProps<T>) => {
             />
             <label className="ml-2 text-sm font-medium text-gray-700">{field.label}</label>
           </div>
+        );
+      
+      case 'date':
+        return (
+          <input
+            type="date"
+            value={formData[field.name] ? String(formData[field.name]).split('T')[0] : ''}
+            onChange={(e) => handleInputChange(field, e.target.value)}
+            className={baseClasses}
+            placeholder={field.placeholder}
+            disabled={isDisabled}
+            min={new Date().toISOString().split('T')[0]} // Set minimum date to today
+          />
         );
       
       default:

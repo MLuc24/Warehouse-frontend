@@ -5,6 +5,7 @@ import type { FormField } from '@/components/common';
 import type { Product, Supplier } from '@/types';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useSupplier } from '@/hooks';
+import { categoryApi } from '@/services/category';
 
 interface ProductInlineProps {
   product?: Product; // Optional for create mode
@@ -38,18 +39,23 @@ export const ProductInline: React.FC<ProductInlineProps> = ({
   const { products: productPermissions } = usePermissions();
   const { getActiveSuppliers } = useSupplier();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [categories, setCategories] = useState<Array<{value: string, label: string}>>([]);
 
-  // Load suppliers on mount
+  // Load suppliers and categories on mount
   useEffect(() => {
-    const loadSuppliers = async () => {
+    const loadData = async () => {
       try {
-        const activeSuppliers = await getActiveSuppliers();
+        const [activeSuppliers, categoryOptions] = await Promise.all([
+          getActiveSuppliers(),
+          categoryApi.getForDropdown()
+        ]);
         setSuppliers(activeSuppliers);
+        setCategories(categoryOptions);
       } catch (error) {
-        console.error('Error loading suppliers:', error);
+        console.error('Error loading data:', error);
       }
     };
-    loadSuppliers();
+    loadData();
   }, [getActiveSuppliers]);
 
   // Override permissions based on user role - Products: tất cả role đều có toàn quyền
@@ -118,6 +124,48 @@ export const ProductInline: React.FC<ProductInlineProps> = ({
       description: 'Chọn nhà cung cấp cho sản phẩm này'
     },
     {
+      name: 'categoryId',
+      label: 'Danh mục sản phẩm',
+      type: 'select',
+      required: true,
+      options: categories,
+      description: 'Chọn danh mục phù hợp cho sản phẩm này'
+    },
+    {
+      name: 'minStockLevel',
+      label: 'Mức tồn kho tối thiểu',
+      type: 'number',
+      required: false,
+      placeholder: 'Nhập số lượng tồn kho tối thiểu',
+      description: 'Hệ thống sẽ cảnh báo khi tồn kho dưới mức này',
+      validation: (value: unknown) => {
+        if (value && value !== '') {
+          const numValue = Number(value);
+          if (isNaN(numValue) || numValue < 0) {
+            return 'Mức tồn kho tối thiểu phải là số không âm';
+          }
+        }
+        return undefined;
+      }
+    },
+    {
+      name: 'maxStockLevel',
+      label: 'Mức tồn kho tối đa',
+      type: 'number',
+      required: false,
+      placeholder: 'Nhập số lượng tồn kho tối đa',
+      description: 'Mức tồn kho tối đa khuyến nghị',
+      validation: (value: unknown) => {
+        if (value && value !== '') {
+          const numValue = Number(value);
+          if (isNaN(numValue) || numValue < 0) {
+            return 'Mức tồn kho tối đa phải là số không âm';
+          }
+        }
+        return undefined;
+      }
+    },
+    {
       name: 'purchasePrice',
       label: 'Giá mua',
       type: 'number',
@@ -152,6 +200,34 @@ export const ProductInline: React.FC<ProductInlineProps> = ({
       }
     },
     {
+      name: 'expiryDate',
+      label: 'Hạn sử dụng',
+      type: 'date',
+      required: false,
+      placeholder: 'Chọn ngày hết hạn',
+      description: 'Ngày hết hạn của sản phẩm',
+      validation: (value: unknown) => {
+        // Allow null, undefined, or empty string for optional field
+        if (value === null || value === undefined || value === '') {
+          return undefined;
+        }
+        
+        const dateValue = new Date(String(value));
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (isNaN(dateValue.getTime())) {
+          return 'Ngày hết hạn không hợp lệ';
+        }
+        
+        if (dateValue <= today) {
+          return 'Ngày hết hạn phải sau ngày hiện tại';
+        }
+        
+        return undefined;
+      }
+    },
+    {
       name: 'description',
       label: 'Mô tả sản phẩm',
       type: 'textarea',
@@ -165,6 +241,30 @@ export const ProductInline: React.FC<ProductInlineProps> = ({
         }
         return undefined;
       }
+    },
+    {
+      name: 'storageType',
+      label: 'Loại bảo quản',
+      type: 'select',
+      required: false,
+      options: [
+        { value: 'Khô', label: 'Khô' },
+        { value: 'Lạnh', label: 'Lạnh' },
+        { value: 'Đông lạnh', label: 'Đông lạnh' },
+        { value: 'Thường', label: 'Thường' }
+      ],
+      description: 'Chọn loại bảo quản phù hợp'
+    },
+    {
+      name: 'isPerishable',
+      label: 'Hàng dễ hỏng',
+      type: 'select',
+      required: false,
+      options: [
+        { value: 'true', label: 'Có' },
+        { value: 'false', label: 'Không' }
+      ],
+      description: 'Sản phẩm có dễ hỏng không?'
     },
     {
       name: 'imageUrl',
@@ -198,21 +298,74 @@ export const ProductInline: React.FC<ProductInlineProps> = ({
 
   // Handle save with data transformation for create mode
   const handleSave = async (formData: Record<string, unknown>) => {
-    if (mode === 'create') {
-      // Transform data to match Product type
-      const productData: Partial<Product> = {
-        productName: String(formData.productName || ''),
-        sku: String(formData.sku || ''),
-        unit: String(formData.unit || ''),
-        supplierId: Number(formData.supplierId),
-        purchasePrice: Number(formData.purchasePrice),
-        sellingPrice: Number(formData.sellingPrice),
-        description: formData.description ? String(formData.description) : undefined,
-        imageUrl: formData.imageUrl ? String(formData.imageUrl) : undefined
+    try {
+      console.log('Raw form data:', formData); // Debug log
+      
+      // Helper function to safely convert to number, allowing 0 as valid value
+      const safeNumberConvert = (value: unknown): number | undefined => {
+        const strValue = String(value || '').trim();
+        if (strValue === '') return undefined;
+        const numValue = Number(strValue);
+        return isNaN(numValue) ? undefined : numValue;
       };
-      await onSave(productData);
-    } else {
-      await onSave(formData as Partial<Product>);
+
+      // Helper function to safely convert to string, allowing empty string
+      const safeStringConvert = (value: unknown): string | undefined => {
+        if (value === null || value === undefined) return undefined;
+        const strValue = String(value).trim();
+        return strValue === '' ? undefined : strValue;
+      };
+      
+      if (mode === 'create') {
+        // Transform data to match Product type
+        const productData: Partial<Product> = {
+          productName: String(formData.productName || ''),
+          sku: String(formData.sku || ''),
+          unit: String(formData.unit || ''),
+          supplierId: safeNumberConvert(formData.supplierId),
+          categoryId: safeNumberConvert(formData.categoryId),
+          purchasePrice: safeNumberConvert(formData.purchasePrice),
+          sellingPrice: safeNumberConvert(formData.sellingPrice),
+          minStockLevel: safeNumberConvert(formData.minStockLevel),
+          maxStockLevel: safeNumberConvert(formData.maxStockLevel),
+          expiryDate: safeStringConvert(formData.expiryDate),
+          storageType: safeStringConvert(formData.storageType), // 🔥 FIXED: Add missing storageType
+          isPerishable: formData.isPerishable === 'true', // 🔥 FIXED: Add missing isPerishable
+          description: safeStringConvert(formData.description),
+          imageUrl: safeStringConvert(formData.imageUrl)
+        };
+        
+        console.log('Transformed product data (create):', productData); // Debug log
+        await onSave(productData);
+      } else {
+        // For edit mode, also transform the data properly
+        const productData: Partial<Product> = {
+          productName: String(formData.productName || ''),
+          sku: String(formData.sku || ''),
+          unit: String(formData.unit || ''),
+          supplierId: safeNumberConvert(formData.supplierId),
+          categoryId: safeNumberConvert(formData.categoryId),
+          purchasePrice: safeNumberConvert(formData.purchasePrice),
+          sellingPrice: safeNumberConvert(formData.sellingPrice),
+          minStockLevel: safeNumberConvert(formData.minStockLevel),
+          maxStockLevel: safeNumberConvert(formData.maxStockLevel),
+          expiryDate: safeStringConvert(formData.expiryDate),
+          storageType: safeStringConvert(formData.storageType), // 🔥 FIXED: Add missing storageType
+          isPerishable: formData.isPerishable === 'true', // 🔥 FIXED: Add missing isPerishable
+          description: safeStringConvert(formData.description),
+          imageUrl: safeStringConvert(formData.imageUrl),
+          status: formData.status ? formData.status === 'true' : undefined
+        };
+        
+        console.log('Transformed product data (edit):', productData); // Debug log
+        await onSave(productData);
+      }
+      
+      console.log('Save completed successfully'); // Debug log
+      
+    } catch (error) {
+      console.error('Error in handleSave:', error); // Debug log
+      throw error; // Re-throw để GenericInline có thể handle
     }
   };
 
@@ -226,10 +379,28 @@ export const ProductInline: React.FC<ProductInlineProps> = ({
     sku: '',
     unit: '',
     supplierId: '',
+    categoryId: '',
     purchasePrice: '',
     sellingPrice: '',
+    minStockLevel: '',
+    maxStockLevel: '',
+    expiryDate: '',
     description: '',
     imageUrl: ''
+  } : product ? {
+    productName: product.productName || '',
+    sku: product.sku || '',
+    unit: product.unit || '',
+    supplierId: product.supplierId ? String(product.supplierId) : '',
+    categoryId: product.categoryId ? String(product.categoryId) : '',
+    purchasePrice: product.purchasePrice ? String(product.purchasePrice) : '',
+    sellingPrice: product.sellingPrice ? String(product.sellingPrice) : '',
+    minStockLevel: product.minStockLevel !== undefined ? String(product.minStockLevel) : '',
+    maxStockLevel: product.maxStockLevel !== undefined ? String(product.maxStockLevel) : '',
+    expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : '', // Format date for input
+    description: product.description || '',
+    imageUrl: product.imageUrl || '',
+    status: product.status !== undefined ? String(product.status) : 'true'
   } : undefined;
 
   return (

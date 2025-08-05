@@ -49,5 +49,14 @@ export const categoryApi = {
   // Khởi tạo dữ liệu mặc định
   seedDefault: async (): Promise<void> => {
     await apiService.post(ENDPOINTS.seed)
+  },
+
+  // Lấy danh mục cho dropdown/select
+  getForDropdown: async (): Promise<Array<{value: string, label: string}>> => {
+    const categories = await apiService.get<Category[]>(ENDPOINTS.active)
+    return categories.map(category => ({
+      value: category.categoryId.toString(),
+      label: category.name
+    }))
   }
 }

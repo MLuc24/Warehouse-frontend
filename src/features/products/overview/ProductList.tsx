@@ -33,7 +33,7 @@ interface ProductListProps {
 
 /**
  * Enhanced Product List Component using GenericList
- * Shows list of products with click to select functionality
+ * Optimized for overview with essential product information
  */
 export const ProductList: React.FC<ProductListProps> = ({
   products,
@@ -122,8 +122,7 @@ export const ProductList: React.FC<ProductListProps> = ({
       { key: 'purchasePrice', header: 'Giá mua', width: 20, formatter: (value: unknown) => typeof value === 'number' ? ExportService.formatCurrency(value) : '' },
       { key: 'sellingPrice', header: 'Giá bán', width: 20, formatter: (value: unknown) => typeof value === 'number' ? ExportService.formatCurrency(value) : '' },
       { key: 'currentStock', header: 'Tồn kho', width: 15, formatter: (value: unknown) => typeof value === 'number' ? value.toString() : '0' },
-      { key: 'status', header: 'Trạng thái', width: 15, formatter: (value: unknown) => ExportService.formatStatus(value as boolean | string) },
-      { key: 'createdAt', header: 'Ngày tạo', width: 20, formatter: (value: unknown) => ExportService.formatDate(value as string) }
+      { key: 'status', header: 'Trạng thái', width: 15, formatter: (value: unknown) => ExportService.formatStatus(value as boolean | string) }
     ];
 
     const totalProducts = filteredAndSortedProducts.length;
@@ -171,7 +170,7 @@ export const ProductList: React.FC<ProductListProps> = ({
     }
   };
 
-  // Define table columns
+  // Define table columns - optimized for overview with essential information
   const columns = [
     {
       key: 'product',
@@ -203,23 +202,31 @@ export const ProductList: React.FC<ProductListProps> = ({
               {product.productName}
             </div>
             <div className="text-xs text-gray-500">
-              ID: {product.productId}
+              SKU: {product.sku}
             </div>
           </div>
         </div>
       )
     },
     {
-      key: 'sku',
-      label: 'SKU',
+      key: 'category',
+      label: 'Danh mục',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 713 12V7a4 4 0 014-4z" />
         </svg>
       ),
       render: (product: Product) => (
-        <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
-          {product.sku}
+        <div className="text-sm text-gray-900 whitespace-nowrap">
+          {product.categoryName ? (
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {product.categoryName}
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+              Chưa phân loại
+            </span>
+          )}
         </div>
       )
     },
@@ -238,28 +245,7 @@ export const ProductList: React.FC<ProductListProps> = ({
       )
     },
     {
-      key: 'purchasePrice',
-      label: 'Giá mua',
-      sortable: true,
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-        </svg>
-      ),
-      render: (product: Product) => (
-        <div className="text-sm text-gray-900 whitespace-nowrap">
-          {product.purchasePrice ? (
-            <span className="font-medium text-blue-600">
-              {product.purchasePrice.toLocaleString('vi-VN')} ₫
-            </span>
-          ) : (
-            <span className="text-gray-400">Chưa có giá</span>
-          )}
-        </div>
-      )
-    },
-    {
-      key: 'sellingPrice',
+      key: 'pricing',
       label: 'Giá bán',
       sortable: true,
       icon: (
@@ -269,13 +255,20 @@ export const ProductList: React.FC<ProductListProps> = ({
       ),
       render: (product: Product) => (
         <div className="text-sm text-gray-900 whitespace-nowrap">
-          {product.sellingPrice ? (
-            <span className="font-medium text-green-600">
-              {product.sellingPrice.toLocaleString('vi-VN')} ₫
-            </span>
-          ) : (
-            <span className="text-gray-400">Chưa có giá</span>
-          )}
+          <div className="space-y-1">
+            {product.sellingPrice ? (
+              <div className="font-medium text-green-600">
+                {product.sellingPrice.toLocaleString('vi-VN')} ₫
+              </div>
+            ) : (
+              <div className="text-gray-400">Chưa có giá</div>
+            )}
+            {product.purchasePrice && (
+              <div className="text-xs text-gray-500">
+                Giá mua: {product.purchasePrice.toLocaleString('vi-VN')} ₫
+              </div>
+            )}
+          </div>
         </div>
       )
     },
@@ -290,16 +283,77 @@ export const ProductList: React.FC<ProductListProps> = ({
       render: (product: Product) => (
         <div className="flex items-center whitespace-nowrap">
           <div className="text-sm text-gray-900">
-            <span className="font-semibold">{product.currentStock}</span>
-            {product.unit && <span className="text-gray-500 ml-1">{product.unit}</span>}
+            <div className="font-semibold">
+              {product.currentStock}
+              {product.unit && <span className="text-gray-500 ml-1">{product.unit}</span>}
+            </div>
+            <div className="text-xs text-gray-500">
+              {product.minStockLevel !== undefined && product.maxStockLevel !== undefined ? (
+                <>Min: {product.minStockLevel} | Max: {product.maxStockLevel}</>
+              ) : (
+                <>Min: N/A | Max: N/A</>
+              )}
+            </div>
           </div>
-          {product.currentStock < 10 && (
+          {product.minStockLevel !== undefined && product.currentStock < product.minStockLevel && (
             <svg className="w-4 h-4 text-red-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           )}
         </div>
       )
+    },
+    {
+      key: 'expiry',
+      label: 'Hạn sử dụng',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      render: (product: Product) => {
+        if (!product.expiryDate) {
+          return (
+            <div className="text-sm text-gray-900 whitespace-nowrap">
+              <div className="text-xs text-gray-500 font-medium">
+                Không có HSD
+              </div>
+              <div className="text-xs text-gray-400">
+                Chưa có dữ liệu
+              </div>
+            </div>
+          );
+        }
+
+        const expiryDate = new Date(product.expiryDate);
+        const today = new Date();
+        const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        
+        let statusColor = 'text-green-600';
+        let statusText = 'Còn hạn';
+        
+        if (daysUntilExpiry < 0) {
+          statusColor = 'text-red-600';
+          statusText = 'Đã hết hạn';
+        } else if (daysUntilExpiry <= 7) {
+          statusColor = 'text-orange-600';
+          statusText = 'Sắp hết hạn';
+        } else if (daysUntilExpiry <= 30) {
+          statusColor = 'text-yellow-600';
+          statusText = 'Cần chú ý';
+        }
+
+        return (
+          <div className="text-sm text-gray-900 whitespace-nowrap">
+            <div className={`text-xs font-medium ${statusColor}`}>
+              {expiryDate.toLocaleDateString('vi-VN')}
+            </div>
+            <div className={`text-xs ${statusColor}`}>
+              {statusText} ({daysUntilExpiry > 0 ? `${daysUntilExpiry} ngày` : `${Math.abs(daysUntilExpiry)} ngày trước`})
+            </div>
+          </div>
+        );
+      }
     },
     {
       key: 'status',
@@ -318,46 +372,6 @@ export const ProductList: React.FC<ProductListProps> = ({
         }`}>
           {product.status ? 'Hoạt động' : 'Ngừng hoạt động'}
         </span>
-      )
-    },
-    {
-      key: 'createdAt',
-      label: 'Ngày tạo',
-      sortable: true,
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      ),
-      render: (product: Product) => (
-        <div className="text-sm text-gray-900 whitespace-nowrap">
-          {product.createdAt 
-            ? new Date(product.createdAt).toLocaleDateString('vi-VN')
-            : (
-              <span className="text-gray-400 italic">N/A</span>
-            )
-          }
-        </div>
-      )
-    },
-    {
-      key: 'description',
-      label: 'Mô tả',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      render: (product: Product) => (
-        <div className="text-sm text-gray-900 max-w-xs">
-          {product.description ? (
-            <span className="truncate" title={product.description}>
-              {product.description}
-            </span>
-          ) : (
-            <span className="text-gray-400 italic">Không có mô tả</span>
-          )}
-        </div>
       )
     }
   ];

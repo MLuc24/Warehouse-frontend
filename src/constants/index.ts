@@ -62,6 +62,7 @@ export const API_ENDPOINTS = {
     UPDATE: (id: number) => `/category/${id}`,
     DELETE: (id: number) => `/category/${id}`,
     GET_BY_ID: (id: number) => `/category/${id}`,
+    ACTIVE: '/category/active',
     DEFAULT: '/category/default',
     SEED: '/category/seed',
   },

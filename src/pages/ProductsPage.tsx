@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { Pagination } from '@/components/common';
 import { Layout } from '@/components/layout';
 import { ProductMasterPage, ProductList, ProductInline } from '@/features/products';
 import { useProduct, usePermissions } from '@/hooks';
@@ -14,7 +13,6 @@ export const ProductsPage: React.FC = () => {
   const {
     products,
     loading,
-    totalCount,
     totalPages,
     fetchProducts,
     createProduct,
@@ -93,9 +91,15 @@ export const ProductsPage: React.FC = () => {
       productName: data.productName || selectedProduct.productName,
       sku: data.sku || selectedProduct.sku,
       supplierId: data.supplierId,
+      categoryId: data.categoryId, // 🔥 FIXED: Add missing categoryId
       unit: data.unit || selectedProduct.unit,
       purchasePrice: data.purchasePrice,
       sellingPrice: data.sellingPrice,
+      minStockLevel: data.minStockLevel, // 🔥 FIXED: Add missing minStockLevel
+      maxStockLevel: data.maxStockLevel, // 🔥 FIXED: Add missing maxStockLevel
+      expiryDate: data.expiryDate, // 🔥 FIXED: Add missing expiryDate
+      storageType: data.storageType, // 🔥 FIXED: Add missing storageType
+      isPerishable: data.isPerishable, // 🔥 FIXED: Add missing isPerishable
       description: data.description,
       imageUrl: data.imageUrl,
       status: data.status
@@ -144,9 +148,15 @@ export const ProductsPage: React.FC = () => {
       productName: data.productName || '',
       sku: data.sku || '',
       supplierId: data.supplierId,
+      categoryId: data.categoryId, // 🔥 FIXED: Add missing categoryId
       unit: data.unit || '',
       purchasePrice: data.purchasePrice,
       sellingPrice: data.sellingPrice,
+      minStockLevel: data.minStockLevel, // 🔥 FIXED: Add missing minStockLevel
+      maxStockLevel: data.maxStockLevel, // 🔥 FIXED: Add missing maxStockLevel
+      expiryDate: data.expiryDate, // 🔥 FIXED: Add missing expiryDate
+      storageType: data.storageType, // 🔥 FIXED: Add missing storageType
+      isPerishable: data.isPerishable, // 🔥 FIXED: Add missing isPerishable
       description: data.description,
       imageUrl: data.imageUrl
     };
@@ -231,19 +241,7 @@ export const ProductsPage: React.FC = () => {
                 />
               )}
 
-              {/* Pagination inside the same card */}
-              {totalPages > 1 && !selectedProduct && !showCreateForm && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalCount={totalCount}
-                    pageSize={pageSize}
-                    onPageChange={handlePageChange}
-                    loading={loading}
-                  />
-                </div>
-              )}
+              {/* Remove duplicate pagination - it's already handled in ProductList */}
             </div>
           </div>
         </div>

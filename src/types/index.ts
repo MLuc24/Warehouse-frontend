@@ -59,6 +59,8 @@ export interface Product {
   description?: string;
   supplierId?: number;
   supplierName?: string;
+  categoryId?: number;
+  categoryName?: string;
   unit?: string;
   purchasePrice?: number;
   sellingPrice?: number;
@@ -69,6 +71,11 @@ export interface Product {
   totalIssued: number;
   totalReceived: number;
   totalValue?: number;
+  minStockLevel?: number;
+  maxStockLevel?: number;
+  expiryDate?: string;
+  storageType?: string; // 🔥 FIXED: Add missing storageType
+  isPerishable?: boolean; // 🔥 FIXED: Add missing isPerishable
 }
 
 export interface CreateProduct {
@@ -76,11 +83,17 @@ export interface CreateProduct {
   productName: string;
   description?: string;
   supplierId?: number;
+  categoryId?: number;
   unit?: string;
   purchasePrice?: number;
   sellingPrice?: number;
   imageUrl?: string;
   status?: boolean;
+  minStockLevel?: number;
+  maxStockLevel?: number;
+  expiryDate?: string;
+  storageType?: string; // 🔥 FIXED: Add missing storageType
+  isPerishable?: boolean; // 🔥 FIXED: Add missing isPerishable
 }
 
 export interface UpdateProduct {
@@ -88,11 +101,17 @@ export interface UpdateProduct {
   productName: string;
   description?: string;
   supplierId?: number;
+  categoryId?: number;
   unit?: string;
   purchasePrice?: number;
   sellingPrice?: number;
   imageUrl?: string;
   status?: boolean;
+  minStockLevel?: number;
+  maxStockLevel?: number;
+  expiryDate?: string;
+  storageType?: string; // 🔥 FIXED: Add missing storageType
+  isPerishable?: boolean; // 🔥 FIXED: Add missing isPerishable
 }
 
 export interface ProductSearch {
