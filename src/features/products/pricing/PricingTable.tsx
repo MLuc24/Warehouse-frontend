@@ -2,29 +2,31 @@ import React, { useState, useEffect } from 'react'
 import { Edit, History, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react'
 import { Button, Input, Badge } from '@/components/ui'
 import { formatCurrency, formatDate } from '@/utils'
-import { usePricing } from '@/hooks/usePricing'
 import type { ProductPricingDto } from '@/types/pricing'
 
 interface PricingTableProps {
+  pricingData: ProductPricingDto[]
+  loading?: boolean
+  error?: string | null
   onEditPrice?: (pricing: ProductPricingDto) => void
   onViewHistory?: (productId: number) => void
+  onRefresh?: () => void
   selectedItems?: number[]
   onSelectionChange?: (selectedIds: number[]) => void
 }
 
 export const PricingTable: React.FC<PricingTableProps> = ({
+  pricingData,
+  loading,
+  error,
   onEditPrice,
   onViewHistory,
+  onRefresh,
   selectedItems = [],
   onSelectionChange
 }) => {
-  const { pricingData, loading, error, fetchAllPricing } = usePricing()
   const [searchTerm, setSearchTerm] = useState('')
   const [filteredData, setFilteredData] = useState<ProductPricingDto[]>([])
-
-  useEffect(() => {
-    fetchAllPricing()
-  }, [fetchAllPricing])
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -75,7 +77,7 @@ export const PricingTable: React.FC<PricingTableProps> = ({
     return (
       <div className="text-center py-8">
         <div className="text-red-600 mb-2">❌ {error}</div>
-        <Button onClick={fetchAllPricing} variant="outline" size="sm">
+        <Button onClick={onRefresh} variant="outline" size="sm">
           Thử lại
         </Button>
       </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Calculator, DollarSign } from 'lucide-react'
 import { Button, Input } from '@/components/ui'
 import { GenericModal } from '@/components/common'
-import { usePricing } from '@/hooks/usePricing'
+import { pricingService } from '@/services/pricing'
 import { formatCurrency } from '@/utils'
 import type { ProductPricingDto, UpdateProductPricingDto } from '@/types/pricing'
 
@@ -17,7 +17,7 @@ export const EditPriceModal: React.FC<EditPriceModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const { updatePricing, loading } = usePricing()
+  const [loading, setLoading] = useState(false)
   const [purchasePrice, setPurchasePrice] = useState(
     product.purchasePrice?.toString() || ''
   )
@@ -68,12 +68,15 @@ export const EditPriceModal: React.FC<EditPriceModalProps> = ({
     }
 
     try {
-      await updatePricing(data)
+      setLoading(true)
+      await pricingService.updatePricing(data)
       onSuccess()
       onClose()
     } catch (error) {
       console.error('Error updating price:', error)
       alert('Có lỗi xảy ra khi cập nhật giá!')
+    } finally {
+      setLoading(false)
     }
   }
 

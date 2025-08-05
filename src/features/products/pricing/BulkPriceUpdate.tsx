@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { DollarSign, Percent, Calculator, Settings } from 'lucide-react'
 import { Button, Input, Select, Badge } from '@/components/ui'
 import { GenericModal } from '@/components/common'
-import { usePricing } from '@/hooks/usePricing'
+import { pricingService } from '@/services/pricing'
 import { PriceUpdateType, type BulkUpdatePricingDto } from '@/types/pricing'
 import { formatCurrency } from '@/utils'
 
@@ -64,7 +64,7 @@ export const BulkPriceUpdate: React.FC<BulkPriceUpdateProps> = ({
   onClose,
   onSuccess
 }) => {
-  const { updatePricingBulk, loading } = usePricing()
+  const [loading, setLoading] = useState(false)
   const [updateType, setUpdateType] = useState<PriceUpdateType>(PriceUpdateType.SetSellingPrice)
   const [value, setValue] = useState('')
   const [reason, setReason] = useState('')
@@ -126,7 +126,8 @@ export const BulkPriceUpdate: React.FC<BulkPriceUpdateProps> = ({
     }
 
     try {
-      const result = await updatePricingBulk(data)
+      setLoading(true)
+      const result = await pricingService.updatePricingBulk(data)
       
       let message = `Đã cập nhật thành công ${result.successCount} sản phẩm`
       if (result.failureCount > 0) {
@@ -139,6 +140,8 @@ export const BulkPriceUpdate: React.FC<BulkPriceUpdateProps> = ({
     } catch (error) {
       console.error('Error in bulk price update:', error)
       alert('Có lỗi xảy ra khi cập nhật giá hàng loạt!')
+    } finally {
+      setLoading(false)
     }
   }
 
