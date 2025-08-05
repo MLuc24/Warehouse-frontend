@@ -22,12 +22,7 @@ export { CategoryTable } from './CategoryTable'
 export { StockTable } from './stock'
 
 // Pricing Management (Tuần 6) - IMPLEMENTED
-export { PricingManagement } from './PricingManagement'
-export { PricingTable } from './PricingTable'
-export { BulkPriceUpdate } from './BulkPriceUpdate'
-export { EditPriceModal } from './EditPriceModal'
-export { PriceHistoryModal } from './PriceHistoryModal'
-export { PricingAnalytics } from './PricingAnalytics'
+export * from './pricing'
 
 // Expiry Management (Tuần 7) - IMPLEMENTED
 export { ExpiryManagement } from './ExpiryManagement'

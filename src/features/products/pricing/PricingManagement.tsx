@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Plus, Upload, Download, Settings } from 'lucide-react'
 import { Button, Badge } from '@/components/ui'
 import { PricingTable } from './PricingTable'
-import { BulkPriceUpdate } from './pricing/BulkPriceUpdate'
+import { BulkPriceUpdate } from './BulkPriceUpdate'
 import { PriceHistoryModal } from './PriceHistoryModal'
-import { EditPriceModal } from './pricing/EditPriceModal'
+import { EditPriceModal } from './EditPriceModal'
 import { PricingAnalytics } from './PricingAnalytics'
 import { usePricing } from '@/hooks/usePricing'
 import type { ProductPricingDto } from '@/types/pricing'
 
 export const PricingManagement: React.FC = () => {
-  const { pricingData, loading, error, fetchAllPricing } = usePricing()
+  const { pricingData } = usePricing()
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([])
   const [activeView, setActiveView] = useState<'table' | 'analytics'>('table')
   
@@ -27,11 +27,6 @@ export const PricingManagement: React.FC = () => {
   const selectedProductNames = selectedProductIds
     .map(id => pricingData.find(p => p.productId === id)?.productName)
     .filter(Boolean) as string[]
-
-  // Load initial data
-  useEffect(() => {
-    fetchAllPricing()
-  }, [fetchAllPricing])
 
   const handleEditPrice = (product: ProductPricingDto) => {
     setSelectedProduct(product)
@@ -144,10 +139,6 @@ export const PricingManagement: React.FC = () => {
       {/* Main Content */}
       {activeView === 'table' ? (
         <PricingTable
-          pricingData={pricingData}
-          loading={loading}
-          error={error}
-          onRefresh={fetchAllPricing}
           onEditPrice={handleEditPrice}
           onViewHistory={handleViewHistory}
           selectedItems={selectedProductIds}

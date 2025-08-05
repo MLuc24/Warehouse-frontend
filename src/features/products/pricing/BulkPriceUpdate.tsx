@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { X, DollarSign, Percent, Calculator } from 'lucide-react'
-import { Button, Input, Select, Card, Badge } from '@/components/ui'
+import { DollarSign, Percent, Calculator, Settings } from 'lucide-react'
+import { Button, Input, Select, Badge } from '@/components/ui'
+import { GenericModal } from '@/components/common'
 import { usePricing } from '@/hooks/usePricing'
 import { PriceUpdateType, type BulkUpdatePricingDto } from '@/types/pricing'
 import { formatCurrency } from '@/utils'
@@ -132,41 +133,39 @@ export const BulkPriceUpdate: React.FC<BulkPriceUpdateProps> = ({
         message += `\nCó ${result.failureCount} sản phẩm không thể cập nhật`
       }
       
-      alert(message)
       onSuccess()
       onClose()
+      alert(message) // Show success message after closing modal
     } catch (error) {
       console.error('Error in bulk price update:', error)
+      alert('Có lỗi xảy ra khi cập nhật giá hàng loạt!')
     }
   }
 
   const isPercentageType = updateType.includes('Percent')
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold">Cập nhật giá hàng loạt</h2>
-            <Button variant="outline" size="sm" onClick={onClose}>
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Selected products info */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="info">{selectedProductIds.length} sản phẩm được chọn</Badge>
+    <GenericModal
+      isOpen={true}
+      onClose={onClose}
+      title="Cập nhật giá hàng loạt"
+      size="xl"
+      icon={<Settings className="w-5 h-5" />}
+      variant="warning"
+    >
+      {/* Selected products info */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Badge variant="info">{selectedProductIds.length} sản phẩm được chọn</Badge>
+        </div>
+        <div className="max-h-32 overflow-y-auto bg-gray-50 rounded-md p-3">
+          {selectedProductNames.map((name, index) => (
+            <div key={index} className="text-sm text-gray-700 py-1">
+              {index + 1}. {name}
             </div>
-            <div className="max-h-32 overflow-y-auto bg-gray-50 rounded-md p-3">
-              {selectedProductNames.map((name, index) => (
-                <div key={index} className="text-sm text-gray-700 py-1">
-                  {index + 1}. {name}
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
+        </div>
+      </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Update Type */}
@@ -254,8 +253,6 @@ export const BulkPriceUpdate: React.FC<BulkPriceUpdateProps> = ({
               </Button>
             </div>
           </form>
-        </div>
-      </Card>
-    </div>
+    </GenericModal>
   )
 }
