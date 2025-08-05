@@ -24,11 +24,8 @@ export { StockTable } from './stock'
 // Pricing Management (Tuần 6) - IMPLEMENTED
 export * from './pricing'
 
-// Expiry Management (Tuần 7) - IMPLEMENTED
-export { ExpiryManagement } from './ExpiryManagement'
-export { ExpiryTable } from './ExpiryTable'
-export { ExpiryAlerts } from './ExpiryAlerts'
-export { EditExpiryModal } from './EditExpiryModal'
+// Expiry Management (Tuần 7) - IMPLEMENTED - Moved to expire folder
+export { ExpiryManagement, ExpiryTable, ExpiryAlerts, EditExpiryModal } from './expire'
 
 // Analytics & Reports (Tuần 8) - IMPLEMENTED
 export { AnalyticsManagement } from './AnalyticsManagement'

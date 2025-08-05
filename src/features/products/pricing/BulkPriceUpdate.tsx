@@ -64,7 +64,6 @@ export const BulkPriceUpdate: React.FC<BulkPriceUpdateProps> = ({
   onClose,
   onSuccess
 }) => {
-  const [loading, setLoading] = useState(false)
   const [updateType, setUpdateType] = useState<PriceUpdateType>(PriceUpdateType.SetSellingPrice)
   const [value, setValue] = useState('')
   const [reason, setReason] = useState('')
@@ -126,7 +125,6 @@ export const BulkPriceUpdate: React.FC<BulkPriceUpdateProps> = ({
     }
 
     try {
-      setLoading(true)
       const result = await pricingService.updatePricingBulk(data)
       
       let message = `Đã cập nhật thành công ${result.successCount} sản phẩm`
@@ -140,8 +138,6 @@ export const BulkPriceUpdate: React.FC<BulkPriceUpdateProps> = ({
     } catch (error) {
       console.error('Error in bulk price update:', error)
       alert('Có lỗi xảy ra khi cập nhật giá hàng loạt!')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -243,16 +239,15 @@ export const BulkPriceUpdate: React.FC<BulkPriceUpdateProps> = ({
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={loading}
               >
                 Hủy
               </Button>
               <Button
                 type="submit"
-                disabled={loading || !value}
+                disabled={!value}
                 className="min-w-[120px]"
               >
-                {loading ? 'Đang xử lý...' : 'Cập nhật'}
+                Cập nhật
               </Button>
             </div>
           </form>
