@@ -2,29 +2,27 @@ import React, { useState, useEffect } from 'react'
 import { Calendar, AlertTriangle, Package, Clock, Edit } from 'lucide-react'
 import { Button, Input, Badge, Select } from '@/components/ui'
 import { formatDate } from '@/utils/formatUtils'
-import { useExpiry } from '@/hooks/useExpiry'
 import { ExpiryStatus } from '@/types/expiry'
 import type { ProductExpiryDto } from '@/types/expiry'
 
 interface ExpiryTableProps {
+  expiryData: ProductExpiryDto[]
+  loading?: boolean
+  error?: string | null
   onEditExpiry?: (product: ProductExpiryDto) => void
+  onRefresh?: () => void
 }
 
-export const ExpiryTable: React.FC<ExpiryTableProps> = ({ onEditExpiry }) => {
-  const { 
-    expiryData, 
-    loading, 
-    error, 
-    fetchExpiryInfo
-  } = useExpiry()
-  
+export const ExpiryTable: React.FC<ExpiryTableProps> = ({ 
+  expiryData, 
+  loading, 
+  error, 
+  onEditExpiry, 
+  onRefresh 
+}) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<ExpiryStatus | ''>('')
   const [filteredData, setFilteredData] = useState<ProductExpiryDto[]>([])
-
-  useEffect(() => {
-    fetchExpiryInfo()
-  }, [fetchExpiryInfo])
 
   useEffect(() => {
     let filtered = expiryData
@@ -98,7 +96,7 @@ export const ExpiryTable: React.FC<ExpiryTableProps> = ({ onEditExpiry }) => {
     return (
       <div className="text-center py-8">
         <div className="text-red-600 mb-2">❌ {error}</div>
-        <Button onClick={() => fetchExpiryInfo()} variant="outline" size="sm">
+        <Button onClick={onRefresh} variant="outline" size="sm">
           Thử lại
         </Button>
       </div>
@@ -241,7 +239,7 @@ export const ExpiryTable: React.FC<ExpiryTableProps> = ({ onEditExpiry }) => {
                 
                 <td className="px-4 py-3">
                   <div className="text-sm text-gray-900">
-                    {item.currentStock} đơn vị
+                    {item.currentStock} {item.unit || 'đơn vị'}
                   </div>
                 </td>
                 

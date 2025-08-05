@@ -7,6 +7,7 @@ export interface ProductExpiryDto {
   isPerishable: boolean
   storageType?: string
   currentStock: number
+  unit?: string  // Added unit field
   daysUntilExpiry: number
   status: ExpiryStatus
 }
@@ -59,6 +60,7 @@ export interface ExpiryAlertDto {
   productName: string
   expiryDate?: string
   currentStock: number
+  unit?: string  // Added unit field
   totalValue?: number
   status: ExpiryStatus
   daysUntilExpiry: number

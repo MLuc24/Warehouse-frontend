@@ -1,23 +1,20 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { AlertTriangle, Bell, Clock, Package, X } from 'lucide-react'
 import { Button, Badge } from '@/components/ui'
 import { formatDate, formatCurrency } from '@/utils/formatUtils'
-import { useExpiry } from '@/hooks/useExpiry'
 import { ExpiryStatus } from '@/types/expiry'
+import type { ExpiryAlertDto } from '@/types/expiry'
 
-export const ExpiryAlerts: React.FC = () => {
-  const { 
-    expiryAlerts, 
-    loading, 
-    error, 
-    fetchExpiryAlerts
-  } = useExpiry()
-  
+interface ExpiryAlertsProps {
+  alerts: ExpiryAlertDto[]
+  loading?: boolean
+}
+
+export const ExpiryAlerts: React.FC<ExpiryAlertsProps> = ({
+  alerts,
+  loading
+}) => {
   const [dismissedAlerts, setDismissedAlerts] = useState<number[]>([])
-
-  useEffect(() => {
-    fetchExpiryAlerts()
-  }, [fetchExpiryAlerts])
 
   const handleDismissAlert = (productId: number) => {
     setDismissedAlerts(prev => [...prev, productId])
@@ -56,24 +53,13 @@ export const ExpiryAlerts: React.FC = () => {
     }
   }
 
-  const activeAlerts = expiryAlerts.filter(alert => !dismissedAlerts.includes(alert.productId))
+  const activeAlerts = alerts.filter(alert => !dismissedAlerts.includes(alert.productId))
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
         <span className="ml-2">Đang tải cảnh báo...</span>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-4">
-        <div className="text-red-600 mb-2">❌ {error}</div>
-        <Button onClick={fetchExpiryAlerts} variant="outline" size="sm">
-          Thử lại
-        </Button>
       </div>
     )
   }
@@ -98,7 +84,7 @@ export const ExpiryAlerts: React.FC = () => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setDismissedAlerts(expiryAlerts.map(a => a.productId))}
+            onClick={() => setDismissedAlerts(alerts.map(a => a.productId))}
           >
             Đóng tất cả
           </Button>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Calendar } from 'lucide-react'
 import { Button, Input, Badge } from '@/components/ui'
 import { GenericModal } from '@/components/common'
-import { useExpiry } from '@/hooks/useExpiry'
+import { expiryService } from '@/services/expiry'
 import type { ProductExpiryDto, UpdateProductExpiryDto } from '@/types/expiry'
 
 interface EditExpiryModalProps {
@@ -16,7 +16,7 @@ export const EditExpiryModal: React.FC<EditExpiryModalProps> = ({
   onClose,
   product
 }) => {
-  const { updateExpiryInfo, loading } = useExpiry()
+  const [loading, setLoading] = useState(false)
   
   const [formData, setFormData] = useState<UpdateProductExpiryDto>({
     productId: 0,
@@ -41,15 +41,19 @@ export const EditExpiryModal: React.FC<EditExpiryModalProps> = ({
     if (!product) return
 
     try {
+      setLoading(true)
       const updateData = {
         ...formData,
         expiryDate: formData.expiryDate ? new Date(formData.expiryDate).toISOString() : undefined
       }
       
-      await updateExpiryInfo(updateData)
+      await expiryService.updateExpiryInfo(updateData)
       onClose()
     } catch (error) {
       console.error('Error updating expiry info:', error)
+      alert('Có lỗi xảy ra khi cập nhật thông tin hạn sử dụng!')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -93,7 +97,7 @@ export const EditExpiryModal: React.FC<EditExpiryModalProps> = ({
           </div>
           <div className="flex justify-between items-center">
             <span className="font-medium">Tồn kho:</span>
-            <span>{product.currentStock} đơn vị</span>
+            <span>{product.currentStock} {product.unit || 'đơn vị'}</span>
           </div>
         </div>
 

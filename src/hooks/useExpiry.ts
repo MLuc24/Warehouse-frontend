@@ -111,15 +111,18 @@ export const useExpiry = (): UseExpiryReturn => {
       setLoading(true)
       setError(null)
       await expiryService.updateExpiryInfo(data)
-      // Refresh data after update
-      await fetchExpiryInfo()
+      // Refresh data after update - like pricing does
+      await Promise.all([
+        fetchExpiryInfo(),
+        fetchExpiryAlerts()
+      ])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Lỗi khi cập nhật thông tin hạn sử dụng')
       throw err
     } finally {
       setLoading(false)
     }
-  }, [fetchExpiryInfo])
+  }, [fetchExpiryInfo, fetchExpiryAlerts])
 
   return {
     // State

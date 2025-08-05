@@ -1,23 +1,50 @@
-import React, { useState } from 'react'
-import { AlertTriangle, Calendar, Package, RefreshCw } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { AlertTriangle, Package } from 'lucide-react'
 import { Button, Card } from '@/components/ui'
 import { ExpiryTable } from './ExpiryTable'
 import { ExpiryAlerts } from './ExpiryAlerts'
 import { EditExpiryModal } from './EditExpiryModal'
-import { useExpiry } from '@/hooks/useExpiry'
-import type { ProductExpiryDto } from '@/types/expiry'
+import { expiryService } from '@/services/expiry'
+import type { ProductExpiryDto, ExpiryAlertDto } from '@/types/expiry'
 
 export const ExpiryManagement: React.FC = () => {
   const [activeView, setActiveView] = useState<'table' | 'alerts'>('table')
   const [selectedProduct, setSelectedProduct] = useState<ProductExpiryDto | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   
-  const { 
-    fetchExpiryInfo, 
-    fetchExpiryAlerts,
-    fetchExpiryReport,
-    loading 
-  } = useExpiry()
+  // State management similar to pricing
+  const [expiryData, setExpiryData] = useState<ProductExpiryDto[]>([])
+  const [expiryAlerts, setExpiryAlerts] = useState<ExpiryAlertDto[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Load initial data - similar to pricing pattern
+  const fetchExpiryData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await expiryService.getExpiryInfo()
+      setExpiryData(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Lỗi khi tải dữ liệu hạn sử dụng')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchAlertsData = async () => {
+    try {
+      const data = await expiryService.getExpiryAlerts()
+      setExpiryAlerts(data)
+    } catch (err) {
+      console.error('Error fetching alerts:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchExpiryData()
+    fetchAlertsData()
+  }, [])
 
   const handleEditExpiry = (product: ProductExpiryDto) => {
     setSelectedProduct(product)
@@ -27,18 +54,14 @@ export const ExpiryManagement: React.FC = () => {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false)
     setSelectedProduct(null)
+    // Refresh data after closing modal (like pricing does)
+    fetchExpiryData()
+    fetchAlertsData()
   }
 
-  const handleRefreshData = async () => {
-    try {
-      await Promise.all([
-        fetchExpiryInfo(),
-        fetchExpiryAlerts(),
-        fetchExpiryReport()
-      ])
-    } catch (error) {
-      console.error('Error refreshing expiry data:', error)
-    }
+  const handleRefresh = () => {
+    fetchExpiryData()
+    fetchAlertsData()
   }
 
   return (
@@ -50,17 +73,6 @@ export const ExpiryManagement: React.FC = () => {
           <p className="text-gray-600 mt-1">
             Theo dõi và quản lý hạn sử dụng sản phẩm
           </p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={handleRefreshData}
-            variant="outline"
-            disabled={loading}
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Làm mới
-          </Button>
         </div>
       </div>
 
@@ -89,87 +101,21 @@ export const ExpiryManagement: React.FC = () => {
       <Card>
         <div className="p-6">
           {activeView === 'table' ? (
-            <ExpiryTable onEditExpiry={handleEditExpiry} />
+            <ExpiryTable 
+              expiryData={expiryData}
+              loading={loading}
+              error={error}
+              onEditExpiry={handleEditExpiry}
+              onRefresh={handleRefresh}
+            />
           ) : (
-            <ExpiryAlerts />
+            <ExpiryAlerts 
+              alerts={expiryAlerts}
+              loading={loading}
+            />
           )}
         </div>
       </Card>
-
-      {/* Quick Actions Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <div className="p-4">
-            <div className="flex items-center">
-              <div className="bg-red-100 rounded-lg p-3">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-900">Sản phẩm hết hạn</h3>
-                <p className="text-xs text-gray-500">Cần xử lý ngay</p>
-              </div>
-            </div>
-            <div className="mt-3">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="w-full"
-                onClick={() => {/* TODO: Filter expired products */}}
-              >
-                Xem chi tiết
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-4">
-            <div className="flex items-center">
-              <div className="bg-yellow-100 rounded-lg p-3">
-                <Calendar className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-900">Sắp hết hạn</h3>
-                <p className="text-xs text-gray-500">Trong 7 ngày tới</p>
-              </div>
-            </div>
-            <div className="mt-3">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="w-full"
-                onClick={() => {/* TODO: Filter expiring soon products */}}
-              >
-                Xem chi tiết
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="p-4">
-            <div className="flex items-center">
-              <div className="bg-blue-100 rounded-lg p-3">
-                <Package className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-900">Báo cáo tổng hợp</h3>
-                <p className="text-xs text-gray-500">Phân tích chi tiết</p>
-              </div>
-            </div>
-            <div className="mt-3">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="w-full"
-                onClick={() => {/* TODO: Show detailed report */}}
-              >
-                Xem báo cáo
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </div>
 
       {/* Edit Modal */}
       <EditExpiryModal
