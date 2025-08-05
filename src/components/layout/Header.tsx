@@ -59,11 +59,11 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Center content - Product tabs or custom children */}
-          <div className="flex-1 flex justify-center">
+          <div className="flex-1 flex justify-start">
             {showProductTabs ? (
               /* Product Tab Navigation */
               <div className="flex-1 max-w-6xl hidden lg:block">
-                <div className="flex justify-center">
+                <div className="flex justify-start ml-8">
                   <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     {PRODUCT_TABS.map((tab) => {
                       const isActive = currentTab === tab.id;

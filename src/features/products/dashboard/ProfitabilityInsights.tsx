@@ -170,3 +170,5 @@ export const ProfitabilityInsights: React.FC<ProfitabilityInsightsProps> = ({ in
     </Card>
   )
 }
+
+export default ProfitabilityInsights

@@ -17,15 +17,8 @@ export * from './pricing'
 // Expiry Management (Tuần 7)
 export { ExpiryManagement, ExpiryTable, ExpiryAlerts, EditExpiryModal } from './expire'
 
-// Analytics & Reports (Tuần 8)
-export { AnalyticsManagement } from './AnalyticsManagement'
-export { AnalyticsCards } from './AnalyticsCards'
-export { AlertsDashboard } from './AlertsDashboard'
-export { ProfitabilityInsights } from './ProfitabilityInsights'
+// Dashboard & Analytics (Tuần 8)
+export * from './dashboard'
 
 // Integration & Polish (Tuần 10)
-export { ImportExportModal } from './ImportExportModal'
 export { SettingsManagement } from './SettingsManagement'
-
-// Utility Components
-export { ComingSoonPlaceholder } from './ComingSoonPlaceholder'

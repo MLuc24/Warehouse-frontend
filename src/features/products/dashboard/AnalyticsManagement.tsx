@@ -3,7 +3,7 @@ import { Button } from '@/components/ui'
 import { RefreshCw, BarChart3, TrendingUp, Calendar, Download } from 'lucide-react'
 import { useDashboard } from '@/hooks/useDashboard'
 import { AnalyticsCards } from './AnalyticsCards'
-import { CategoryChart } from './category'
+import { CategoryChart } from '../category'
 import { AlertsDashboard } from './AlertsDashboard'
 import { ProfitabilityInsights } from './ProfitabilityInsights'
 

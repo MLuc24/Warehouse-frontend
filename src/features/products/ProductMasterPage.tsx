@@ -5,10 +5,8 @@ import { CategoryTable } from './category'
 import { StockTable } from './stock'
 import { PricingManagement } from './pricing'
 import { ExpiryManagement } from './expire'
-import { AnalyticsManagement } from './AnalyticsManagement'
+import { AnalyticsManagement } from './dashboard/AnalyticsManagement'
 import { SettingsManagement } from './SettingsManagement'
-import { ImportExportModal } from './ImportExportModal'
-import { exportImportService } from '@/services/exportImport'
 
 interface ProductMasterPageProps {
   children?: React.ReactNode
@@ -22,7 +20,6 @@ export const ProductMasterPage: React.FC<ProductMasterPageProps> = ({
   children
 }) => {
   const [searchParams] = useSearchParams()
-  const [showImportExport, setShowImportExport] = React.useState(false)
 
   // Get active tab from URL params, default to 'all-products'
   const activeTab = searchParams.get('tab') || 'all-products'
@@ -69,18 +66,6 @@ export const ProductMasterPage: React.FC<ProductMasterPageProps> = ({
             {renderTabContent()}
           </div>
         </Card>
-
-        {/* Import/Export Modal */}
-        <ImportExportModal
-          isOpen={showImportExport}
-          onClose={() => setShowImportExport(false)}
-          title="Sản phẩm"
-          data={[]}
-          exportFields={exportImportService.getProductExportFields()}
-          onImportComplete={(result: unknown) => {
-            console.log('Import completed:', result)
-          }}
-        />
       </div>
     </>
   )
