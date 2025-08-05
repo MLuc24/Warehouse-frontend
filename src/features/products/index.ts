@@ -1,42 +1,31 @@
-// Product Master Layout Components
-export { ProductMasterLayout } from './ProductMasterLayout'
+// Product Master Page (Gộp tất cả header, tab navigation, overview thành 1 component)
+export { ProductMasterPage } from './ProductMasterPage'
+
+// Product Header (Moved out of overview)
 export { ProductHeader } from './ProductHeader'
-export { ProductPageHeader } from './ProductPageHeader'
-export { ProductTabNavigation } from './ProductTabNavigation'
-export { ComingSoonPlaceholder } from './ComingSoonPlaceholder'
 
-// Main Tab Content (Using Original CRUD Components Only)
-export { ProductTabContent } from './ProductTabContent'
+// Product Overview Components (Chỉ chứa 3 lớp chính: ProductList, ProductInline, ProductStats)
+export * from './overview'
 
-// Product List Components
-export * from './list'
-
-// Product Form Components 
-export * from './inline'
-
-// Product UI Components
-export * from './components'
-
-// Categories & Stock Management (Tuần 4-5) - MOVED TO CATEGORY FOLDER
+// Categories & Stock Management (Tuần 4-5)
 export * from './category'
 export { StockTable } from './stock'
 
-// Pricing Management (Tuần 6) - IMPLEMENTED
+// Pricing Management (Tuần 6)
 export * from './pricing'
 
-// Expiry Management (Tuần 7) - IMPLEMENTED - Moved to expire folder
+// Expiry Management (Tuần 7)
 export { ExpiryManagement, ExpiryTable, ExpiryAlerts, EditExpiryModal } from './expire'
 
-// Analytics & Reports (Tuần 8) - IMPLEMENTED
+// Analytics & Reports (Tuần 8)
 export { AnalyticsManagement } from './AnalyticsManagement'
 export { AnalyticsCards } from './AnalyticsCards'
 export { AlertsDashboard } from './AlertsDashboard'
 export { ProfitabilityInsights } from './ProfitabilityInsights'
 
-// Integration & Polish (Tuần 10) - IMPLEMENTED
+// Integration & Polish (Tuần 10)
 export { ImportExportModal } from './ImportExportModal'
 export { SettingsManagement } from './SettingsManagement'
 
-// Future exports (Tuần 7-10)
-// export { ExpiryTable } from './ExpiryTable'
-// export { ProductAnalytics } from './ProductAnalytics'
+// Utility Components
+export { ComingSoonPlaceholder } from './ComingSoonPlaceholder'

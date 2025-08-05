@@ -6,9 +6,14 @@ import { Sidebar } from './Sidebar';
 interface LayoutProps {
   children: ReactNode;
   headerContent?: ReactNode;
+  showProductTabs?: boolean; // Thêm prop để hiển thị product tabs
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, headerContent }) => {
+export const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  headerContent, 
+  showProductTabs = false 
+}) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -20,7 +25,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, headerContent }) => {
       
       {/* Main content area */}
       <div className="flex flex-col flex-1">
-        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)}>
+        <Header 
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+          showProductTabs={showProductTabs}
+        >
           {headerContent}
         </Header>
         
