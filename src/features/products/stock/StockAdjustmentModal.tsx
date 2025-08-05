@@ -18,7 +18,7 @@ export const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({
   onAdjust,
   adjusting = false
 }) => {
-  const [adjustmentType, setAdjustmentType] = useState<'increase' | 'decrease' | 'set'>('increase')
+  const [adjustmentType, setAdjustmentType] = useState<'Increase' | 'Decrease'>('Increase')
   const [adjustmentQuantity, setAdjustmentQuantity] = useState('')
   const [adjustmentReason, setAdjustmentReason] = useState('')
   const [adjustmentNotes, setAdjustmentNotes] = useState('')
@@ -30,7 +30,7 @@ export const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({
   }, [isOpen])
 
   const resetForm = () => {
-    setAdjustmentType('increase')
+    setAdjustmentType('Increase')
     setAdjustmentQuantity('')
     setAdjustmentReason('')
     setAdjustmentNotes('')
@@ -60,12 +60,10 @@ export const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({
     
     const quantity = parseInt(adjustmentQuantity)
     switch (adjustmentType) {
-      case 'increase':
+      case 'Increase':
         return stock.currentStock + quantity
-      case 'decrease':
+      case 'Decrease':
         return Math.max(0, stock.currentStock - quantity)
-      case 'set':
-        return quantity
       default:
         return stock.currentStock
     }
@@ -109,16 +107,15 @@ export const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({
             onChange={(e) => setAdjustmentType(e.target.value as typeof adjustmentType)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
           >
-            <option value="increase">Tăng tồn kho</option>
-            <option value="decrease">Giảm tồn kho</option>
-            <option value="set">Đặt tồn kho</option>
+            <option value="Increase">Tăng tồn kho</option>
+            <option value="Decrease">Giảm tồn kho</option>
           </select>
         </div>
 
         {/* Quantity */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Số lượng {adjustmentType === 'set' ? 'mới' : 'điều chỉnh'}
+            Số lượng điều chỉnh
           </label>
           <Input
             type="number"

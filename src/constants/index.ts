@@ -52,7 +52,7 @@ export const API_ENDPOINTS = {
       UPDATE: (id: number) => `/productstock/${id}`,
       BULK_UPDATE: '/productstock/bulk-update',
       HISTORY: (id: number) => `/productstock/${id}/history`,
-      ADJUST: (id: number) => `/productstock/${id}/adjust`,
+      ADJUST: '/productstock/adjust',
       SET_STOCK_LEVELS: (id: number) => `/productstock/${id}/reorder-point`,
     },
   },

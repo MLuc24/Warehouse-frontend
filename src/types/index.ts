@@ -189,7 +189,7 @@ export interface ProductStock {
 
 export interface StockAdjustment {
   productId: number;
-  adjustmentType: 'increase' | 'decrease' | 'set';
+  adjustmentType: 'Increase' | 'Decrease';
   quantity: number;
   reason: string;
   notes?: string;
@@ -211,7 +211,7 @@ export interface StockHistory {
 export interface BulkStockUpdate {
   updates: Array<{
     productId: number;
-    adjustmentType: 'increase' | 'decrease' | 'set';
+    adjustmentType: 'Increase' | 'Decrease';
     quantity: number;
     reason: string;
   }>;
