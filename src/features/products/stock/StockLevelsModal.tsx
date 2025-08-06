@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Button, Input } from '@/components/ui'
 import { GenericModal } from '@/components/common'
+import { Settings, TrendingDown, TrendingUp, AlertTriangle } from 'lucide-react'
 import type { ProductStock, StockLevelsUpdate } from '@/types'
 
 interface StockLevelsModalProps {
@@ -67,21 +68,33 @@ export const StockLevelsModal: React.FC<StockLevelsModalProps> = ({
       onClose={onClose}
       title="Cài đặt mức tồn kho"
       size="md"
+      variant="warning"
+      icon={<Settings className="w-5 h-5" />}
     >
       <div className="space-y-6">
-        {/* Product Info */}
+        {/* Enhanced Product Info */}
         {stock && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-900">{stock.productName}</h3>
-            <p className="text-sm text-gray-600">SKU: {stock.sku}</p>
-            <p className="text-sm text-gray-600">Tồn kho hiện tại: <span className="font-medium">{stock.currentStock} {stock.unit}</span></p>
+          <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-4 rounded-xl border border-orange-200">
+            <div className="flex items-center space-x-3">
+              <div className="h-12 w-12 bg-gradient-to-r from-orange-500 to-amber-600 rounded-lg flex items-center justify-center">
+                <Settings className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-lg">{stock.productName}</h3>
+                <p className="text-sm text-gray-600">SKU: {stock.sku}</p>
+                <p className="text-sm font-medium text-orange-700">
+                  Tồn kho hiện tại: <span className="text-xl">{stock.currentStock}</span> {stock.unit}
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Min Stock Level */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Mức tồn tối thiểu *
+        {/* Enhanced Min Stock Level */}
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-gray-700 flex items-center space-x-2">
+            <TrendingDown className="w-4 h-4 text-red-500" />
+            <span>Mức tồn tối thiểu <span className="text-red-500">*</span></span>
           </label>
           <Input
             type="number"
@@ -89,16 +102,21 @@ export const StockLevelsModal: React.FC<StockLevelsModalProps> = ({
             onChange={(e) => setMinStockLevel(e.target.value)}
             placeholder="Nhập mức tồn tối thiểu..."
             min="0"
+            className="text-lg font-medium"
           />
-          <p className="mt-1 text-xs text-gray-500">
-            Khi tồn kho xuống dưới mức này, hệ thống sẽ cảnh báo cần đặt hàng lại
-          </p>
+          <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+            <p className="text-xs text-red-700 flex items-center space-x-1">
+              <AlertTriangle className="w-3 h-3" />
+              <span>Khi tồn kho xuống dưới mức này, hệ thống sẽ cảnh báo cần đặt hàng lại</span>
+            </p>
+          </div>
         </div>
 
-        {/* Max Stock Level */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Mức tồn tối đa (tùy chọn)
+        {/* Enhanced Max Stock Level */}
+        <div className="space-y-3">
+          <label className="block text-sm font-semibold text-gray-700 flex items-center space-x-2">
+            <TrendingUp className="w-4 h-4 text-green-500" />
+            <span>Mức tồn tối đa (tùy chọn)</span>
           </label>
           <Input
             type="number"
@@ -106,42 +124,67 @@ export const StockLevelsModal: React.FC<StockLevelsModalProps> = ({
             onChange={(e) => setMaxStockLevel(e.target.value)}
             placeholder="Nhập mức tồn tối đa..."
             min="0"
+            className="text-lg font-medium"
           />
-          <p className="mt-1 text-xs text-gray-500">
-            Mức tồn tối đa để tránh tồn kho quá nhiều. Để trống nếu không giới hạn
-          </p>
+          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-xs text-green-700">
+              Mức tồn tối đa để tránh tồn kho quá nhiều. Để trống nếu không giới hạn
+            </p>
+          </div>
         </div>
 
-        {/* Validation Warning */}
+        {/* Enhanced Validation Warning */}
         {maxStockLevel && parseInt(maxStockLevel) <= parseInt(minStockLevel || '0') && (
-          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-            <p className="text-sm text-yellow-800">
-              ⚠️ Mức tồn tối đa phải lớn hơn mức tồn tối thiểu
-            </p>
+          <div className="p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              <div>
+                <h4 className="text-sm font-semibold text-red-800">Cảnh báo cài đặt</h4>
+                <p className="text-sm text-red-700">
+                  Mức tồn tối đa phải lớn hơn mức tồn tối thiểu
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Current Thresholds Info */}
+        {/* Enhanced Current Settings Info */}
         {stock && (stock.minStockLevel || stock.maxStockLevel) && (
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="text-sm font-medium text-blue-900 mb-2">Cài đặt hiện tại:</h4>
-            <div className="text-sm text-blue-800 space-y-1">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+            <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center space-x-2">
+              <Settings className="w-4 h-4" />
+              <span>Cài đặt hiện tại</span>
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
               {stock.minStockLevel && (
-                <p>Mức tối thiểu: {stock.minStockLevel} {stock.unit}</p>
+                <div className="bg-white p-3 rounded-lg border border-blue-200">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <TrendingDown className="w-4 h-4 text-red-500" />
+                    <span className="text-xs font-medium text-gray-600">Tối thiểu</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900">{stock.minStockLevel} {stock.unit}</p>
+                </div>
               )}
               {stock.maxStockLevel && (
-                <p>Mức tối đa: {stock.maxStockLevel} {stock.unit}</p>
+                <div className="bg-white p-3 rounded-lg border border-blue-200">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    <span className="text-xs font-medium text-gray-600">Tối đa</span>
+                  </div>
+                  <p className="text-lg font-bold text-gray-900">{stock.maxStockLevel} {stock.unit}</p>
+                </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        {/* Enhanced Actions */}
+        <div className="flex justify-end gap-3 pt-6 border-t-2 border-gray-100">
           <Button
             variant="outline"
             onClick={onClose}
             disabled={updating}
+            className="px-6 py-2"
           >
             Hủy
           </Button>
@@ -149,8 +192,9 @@ export const StockLevelsModal: React.FC<StockLevelsModalProps> = ({
             onClick={handleSubmit}
             disabled={!isValidForm() || updating}
             loading={updating}
+            className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white"
           >
-            Cập nhật điểm đặt hàng
+            {updating ? 'Đang cập nhật...' : 'Cập nhật mức tồn kho'}
           </Button>
         </div>
       </div>
