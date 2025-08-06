@@ -66,35 +66,50 @@ export const ExpiryManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Quản lý hạn sử dụng</h2>
-          <p className="text-gray-600 mt-1">
-            Theo dõi và quản lý hạn sử dụng sản phẩm
-          </p>
-        </div>
-      </div>
+      {/* Enhanced Header with Simple Gradient */}
+      <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-red-500 rounded-lg shadow-sm">
+              <AlertTriangle className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Quản lý hạn sử dụng</h2>
+              <p className="text-red-700 mt-1">Theo dõi và quản lý hạn sử dụng sản phẩm</p>
+            </div>
+          </div>
 
-      {/* View Toggle */}
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={() => setActiveView('table')}
-          variant={activeView === 'table' ? 'primary' : 'outline'}
-          size="sm"
-        >
-          <Package className="w-4 h-4 mr-2" />
-          Danh sách sản phẩm
-        </Button>
-        
-        <Button
-          onClick={() => setActiveView('alerts')}
-          variant={activeView === 'alerts' ? 'primary' : 'outline'}
-          size="sm"
-        >
-          <AlertTriangle className="w-4 h-4 mr-2" />
-          Cảnh báo
-        </Button>
+          {/* View Toggle */}
+          <div className="flex items-center gap-2">
+            <div className="flex bg-white rounded-lg p-1 shadow-sm border border-red-200">
+              <Button
+                onClick={() => setActiveView('table')}
+                variant={activeView === 'table' ? 'primary' : 'outline'}
+                size="sm"
+                className={activeView === 'table' 
+                  ? 'bg-red-500 hover:bg-red-600 border-red-500' 
+                  : 'border-red-300 text-red-700 hover:bg-red-50'
+                }
+              >
+                <Package className="w-4 h-4 mr-2" />
+                Danh sách sản phẩm
+              </Button>
+              
+              <Button
+                onClick={() => setActiveView('alerts')}
+                variant={activeView === 'alerts' ? 'primary' : 'outline'}
+                size="sm"
+                className={activeView === 'alerts' 
+                  ? 'bg-red-500 hover:bg-red-600 border-red-500' 
+                  : 'border-red-300 text-red-700 hover:bg-red-50'
+                }
+              >
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                Cảnh báo
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}

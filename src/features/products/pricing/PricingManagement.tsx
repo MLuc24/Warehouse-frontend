@@ -60,53 +60,60 @@ export const PricingManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Actions */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quản lý giá sản phẩm</h1>
-          <p className="text-gray-600">Quản lý giá mua, giá bán và phân tích lợi nhuận</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          {/* View Toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setActiveView('table')}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeView === 'table'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              📋 Bảng giá
-            </button>
-            <button
-              onClick={() => setActiveView('analytics')}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeView === 'analytics'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              📊 Phân tích
-            </button>
+      {/* Enhanced Header with Simple Gradient */}
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-orange-500 rounded-lg shadow-sm">
+              <Settings className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Quản lý giá sản phẩm</h1>
+              <p className="text-orange-700 mt-1">Quản lý giá mua, giá bán và phân tích lợi nhuận</p>
+            </div>
           </div>
+          
+          <div className="flex items-center gap-3">
+            {/* View Toggle */}
+            <div className="flex bg-white rounded-lg p-1 shadow-sm border border-orange-200">
+              <button
+                onClick={() => setActiveView('table')}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeView === 'table'
+                    ? 'bg-orange-500 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                📋 Bảng giá
+              </button>
+              <button
+                onClick={() => setActiveView('analytics')}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeView === 'analytics'
+                    ? 'bg-orange-500 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                📊 Phân tích
+              </button>
+            </div>
 
-          {/* Action Buttons */}
-          <Button variant="outline" size="sm">
-            <Upload className="w-4 h-4 mr-2" />
-            Import
-          </Button>
-          
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-          
-          <Button variant="outline" size="sm">
-            <Settings className="w-4 h-4 mr-2" />
-            Cài đặt
-          </Button>
+            {/* Action Buttons */}
+            <Button variant="outline" size="sm" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+              <Upload className="w-4 h-4 mr-2" />
+              Import
+            </Button>
+            
+            <Button variant="outline" size="sm" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            
+            <Button variant="outline" size="sm" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+              <Settings className="w-4 h-4 mr-2" />
+              Cài đặt
+            </Button>
+          </div>
         </div>
       </div>
 
