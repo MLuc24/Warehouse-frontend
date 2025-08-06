@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button, Card, Badge, ConfirmDialog } from '../../../components/ui'
-import { Plus, Edit2, Trash2, Package, Users, Clock, Search } from 'lucide-react'
+import { Plus, Edit2, Trash2, Package, Users, Clock, Search, Filter, Grid3X3 } from 'lucide-react'
 import { CategoryForm } from './CategoryForm'
 import { useCategories } from '../../../hooks/useCategory'
 import type { Category, CategoryTableColumn, CreateCategoryDto, UpdateCategoryDto } from '../../../types/category'
@@ -115,40 +115,70 @@ export const CategoryTable: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-semibold flex items-center">
-              <Package className="w-5 h-5 mr-2" />
-              Quản lý danh mục sản phẩm
-            </h2>
-            <p className="text-gray-500 mt-1">
-              Quản lý các danh mục cho cửa hàng TocoToco
-            </p>
-          </div>
+      {/* Enhanced Header */}
+      <Card className="overflow-hidden border-0 shadow-lg">
+        {/* Header Background */}
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <Grid3X3 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">
+                  Danh sách danh mục
+                </h2>
+                <p className="text-emerald-100 text-sm">
+                  Quản lý và tổ chức các danh mục sản phẩm
+                </p>
+              </div>
+            </div>
 
-          <Button onClick={handleCreate}>
-            <Plus className="w-4 h-4 mr-2" />
-            Thêm danh mục
-          </Button>
+            <Button 
+              onClick={handleCreate}
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Thêm danh mục
+            </Button>
+          </div>
         </div>
 
-        {/* Search */}
-        <div className="flex items-center space-x-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Tìm kiếm danh mục..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          
-          <div className="text-sm text-gray-500">
-            {filteredCategories.length} trên {categories.length} danh mục
+        {/* Search and Stats */}
+        <div className="bg-gradient-to-b from-gray-50 to-white px-6 py-4 border-b">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Search */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo tên hoặc mô tả..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white shadow-sm transition-all"
+              />
+            </div>
+            
+            {/* Stats */}
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4 text-sm">
+                <div className="flex items-center space-x-2 px-3 py-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <Filter className="w-4 h-4 text-emerald-600" />
+                  <span className="text-emerald-700 font-medium">
+                    {filteredCategories.length} / {categories.length}
+                  </span>
+                  <span className="text-emerald-600">danh mục</span>
+                </div>
+                
+                <div className="flex items-center space-x-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                  <Package className="w-4 h-4 text-blue-600" />
+                  <span className="text-blue-700 font-medium">
+                    {categories.filter(c => c.status).length}
+                  </span>
+                  <span className="text-blue-600">hoạt động</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </Card>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { CloudinaryImageUpload } from '../ui/CloudinaryImageUpload';
 import { getUnitsAsOptions } from '../../constants/units';
+import { X } from 'lucide-react';
 
 // Types
 export interface FormField {
@@ -340,22 +341,34 @@ export const GenericInline = <T,>(props: GenericInlineProps<T>) => {
       <div className="bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-3">
-          <div className="flex items-center">
-            {props.headerImageUrl ? (
-              <div className="h-12 w-12 bg-white/10 rounded-lg overflow-hidden border-2 border-white/20 mr-3">
-                <img src={props.headerImageUrl} alt="Header" className="w-full h-full object-cover" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              {props.headerImageUrl ? (
+                <div className="h-12 w-12 bg-white/10 rounded-lg overflow-hidden border-2 border-white/20 mr-3">
+                  <img src={props.headerImageUrl} alt="Header" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center mr-3">
+                  <div className="w-5 h-5 text-white">{props.titleIcon}</div>
+                </div>
+              )}
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white">
+                  {props.mode === 'create' ? props.title : props.title.split(' ').pop()}
+                </h3>
+                {props.description && <p className="text-green-100 text-sm">{props.description}</p>}
               </div>
-            ) : (
-              <div className="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center mr-3">
-                <div className="w-5 h-5 text-white">{props.titleIcon}</div>
-              </div>
-            )}
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-white">
-                {props.mode === 'create' ? props.title : props.title.split(' ').pop()}
-              </h3>
-              {props.description && <p className="text-green-100 text-sm">{props.description}</p>}
             </div>
+            
+            {/* Close button */}
+            <button
+              onClick={handleCancel}
+              className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+              disabled={props.isSubmitting}
+              title="Đóng"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
