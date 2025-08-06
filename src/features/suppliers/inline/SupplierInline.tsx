@@ -167,47 +167,60 @@ export const SupplierInline: React.FC<SupplierInlineProps> = ({
   } : undefined;
 
   return (
-    <GenericInline
-      mode={mode}
-      item={supplier}
-      title={title}
-      description={description}
-      titleIcon={
-        mode === 'create' ? (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-        ) : (
-          <Building2 className="w-5 h-5" />
-        )
-      }
-      fields={supplierFields}
-      initialData={initialData}
-      onSave={handleSave}
-      onDelete={mode === 'edit' && onDelete ? onDelete : (() => Promise.resolve())}
-      onReactivate={onReactivate}
-      onCancel={onCancel}
-      isSubmitting={isSubmitting}
-      getItemId={mode === 'edit' && supplier ? (item: unknown) => (item as Supplier).supplierId : () => 0}
-      canEdit={mode === 'create' ? true : effectiveCanEdit}
-      canDelete={mode === 'create' ? false : effectiveCanDelete}
-      isReadOnly={mode === 'create' ? false : effectiveIsReadOnly}
-      isActive={mode === 'edit' ? (item: unknown) => (item as Supplier).status === 'Active' : undefined}
-      deleteConfirmTitle="Xác nhận xóa nhà cung cấp"
-      deleteConfirmMessage="Bạn có chắc chắn muốn xóa nhà cung cấp này? Hành động này không thể hoàn tác."
-      reactivateButtonText="Kích hoạt lại nhà cung cấp"
-      layout="double"
-      getAdditionalInfo={mode === 'edit' ? (item: unknown) => {
-        const supplierItem = item as Supplier;
-        return [
-          { label: "ID", value: `#${supplierItem.supplierId}` },
-          { label: "Số sản phẩm", value: `${supplierItem.totalProducts} sản phẩm` },
-          { label: "Phiếu nhập", value: `${supplierItem.totalReceipts} phiếu` },
-          { label: "Tổng giá trị", value: supplierItem.totalPurchaseValue ? `${supplierItem.totalPurchaseValue.toLocaleString('vi-VN')} VNĐ` : "Chưa có" },
-          { label: "Ngày tạo", value: supplierItem.createdAt ? new Date(supplierItem.createdAt).toLocaleDateString('vi-VN') : "Chưa có" },
-          { label: "Trạng thái", value: supplierItem.status === 'Active' ? 'Đang hoạt động' : 'Hết hạn' }
-        ];
-      } : undefined}
-    />
+    <>
+      {mode === 'create' ? (
+        <GenericInline
+          mode="create"
+          title={title}
+          description={description}
+          titleIcon={
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          }
+          fields={supplierFields}
+          initialData={initialData}
+          onSave={handleSave}
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+          layout="double"
+        />
+      ) : supplier ? (
+        <GenericInline
+          mode="edit"
+          item={supplier}
+          title={title}
+          description={description}
+          titleIcon={<Building2 className="w-5 h-5" />}
+          fields={supplierFields}
+          initialData={initialData}
+          onSave={handleSave}
+          onDelete={onDelete ? onDelete : (() => Promise.resolve())}
+          onReactivate={onReactivate}
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+          getItemId={(item: Supplier) => item.supplierId}
+          canEdit={effectiveCanEdit}
+          canDelete={effectiveCanDelete}
+          isReadOnly={effectiveIsReadOnly}
+          isActive={(item: Supplier) => item.status === 'Active'}
+          deleteConfirmTitle="Xác nhận xóa nhà cung cấp"
+          deleteConfirmMessage="Bạn có chắc chắn muốn xóa nhà cung cấp này? Hành động này không thể hoàn tác."
+          reactivateButtonText="Kích hoạt lại nhà cung cấp"
+          layout="double"
+          getAdditionalInfo={(item: Supplier) => {
+            const supplierItem = item as Supplier;
+            return [
+              { label: "ID", value: `#${supplierItem.supplierId}` },
+              { label: "Số sản phẩm", value: `${supplierItem.totalProducts} sản phẩm` },
+              { label: "Phiếu nhập", value: `${supplierItem.totalReceipts} phiếu` },
+              { label: "Tổng giá trị", value: supplierItem.totalPurchaseValue ? `${supplierItem.totalPurchaseValue.toLocaleString('vi-VN')} VNĐ` : "Chưa có" },
+              { label: "Ngày tạo", value: supplierItem.createdAt ? new Date(supplierItem.createdAt).toLocaleDateString('vi-VN') : "Chưa có" },
+              { label: "Trạng thái", value: supplierItem.status === 'Active' ? 'Đang hoạt động' : 'Hết hạn' }
+            ];
+          }}
+        />
+      ) : null}
+    </>
   );
 };

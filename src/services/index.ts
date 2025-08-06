@@ -17,5 +17,8 @@ export { expiryService } from './expiry';
 // Tuần 8: Analytics & Dashboard Services
 export { dashboardService } from './dashboard';
 
+// Tuần 9: Goods Receipt Services
+export { goodsReceiptService } from './goodsReceipt';
+
 // Tuần 10: Import/Export Services
 export { exportImportService } from './exportImport';

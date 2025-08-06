@@ -5,7 +5,8 @@ import {
   BuildingStorefrontIcon, 
   ChartBarIcon,
   Cog6ToothIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  ArchiveBoxArrowDownIcon
 } from '@heroicons/react/24/outline';
 import { ROUTES } from '@/constants';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -50,6 +51,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       href: ROUTES.SUPPLIERS.LIST,
       icon: BuildingStorefrontIcon,
       permission: (perms) => perms.suppliers.canView,
+    },
+    {
+      name: 'Nhập kho',
+      href: ROUTES.GOODS_RECEIPTS.LIST,
+      icon: ArchiveBoxArrowDownIcon,
+      permission: (perms) => perms.products.canView, // Assuming same permission as products
     },
     {
       name: 'Báo cáo',

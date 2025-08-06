@@ -65,26 +65,29 @@ export const AuthenticatedHomePage: React.FC = () => {
           </div>
         </Link>
 
-        {/* Inventory Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 opacity-75">
+        {/* Goods Receipt Card */}
+        <Link
+          to={ROUTES.GOODS_RECEIPTS.LIST}
+          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 group"
+        >
           <div className="flex items-center mb-4">
-            <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
               <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
               </svg>
             </div>
-            <h3 className="ml-4 text-lg font-semibold text-gray-900">Quản lý Tồn kho</h3>
+            <h3 className="ml-4 text-lg font-semibold text-gray-900">Quản lý Nhập kho</h3>
           </div>
           <p className="text-gray-600 mb-4">
-            Theo dõi số lượng tồn kho và nhập xuất hàng
+            Tạo phiếu nhập kho và theo dõi hàng hóa nhập về
           </p>
-          <div className="flex items-center text-gray-400 font-medium">
-            Sắp có
+          <div className="flex items-center text-purple-600 font-medium">
+            Xem nhập kho
             <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
             </svg>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Stats Overview */}

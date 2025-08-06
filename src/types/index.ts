@@ -387,3 +387,6 @@ export * from './expiry'
 
 // Export dashboard types
 export * from './dashboard'
+
+// Export goods receipt types
+export * from './goodsReceipt'

@@ -9,6 +9,7 @@ import {
   SuppliersPage, 
   AuthTestPage 
 } from '@/pages';
+import GoodsReceiptsPage from '@/pages/GoodsReceiptsPage';
 import { ROUTES } from '@/constants';
 
 // Protected Route Component - cho user đã login
@@ -61,6 +62,14 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <SuppliersPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path={ROUTES.GOODS_RECEIPTS.LIST} 
+        element={
+          <ProtectedRoute>
+            <GoodsReceiptsPage />
           </ProtectedRoute>
         } 
       />

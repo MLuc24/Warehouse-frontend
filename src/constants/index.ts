@@ -111,6 +111,12 @@ export const ROUTES = {
     EDIT: (id: number) => `/warehouses/${id}/edit`,
     VIEW: (id: number) => `/warehouses/${id}`,
   },
+  GOODS_RECEIPTS: {
+    LIST: '/goods-receipts',
+    CREATE: '/goods-receipts/create',
+    EDIT: (id: number) => `/goods-receipts/${id}/edit`,
+    VIEW: (id: number) => `/goods-receipts/${id}`,
+  },
 } as const;
 
 // User roles
