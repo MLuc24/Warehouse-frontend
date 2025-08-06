@@ -108,8 +108,20 @@ export const StockList: React.FC<StockListProps> = ({
               {/* Product Info */}
               <td className="px-6 py-4">
                 <div className="flex items-center space-x-3">
-                  <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                    <Package className="w-5 h-5 text-white" />
+                  <div className="flex-shrink-0 h-10 w-10">
+                    {stock.imageUrl ? (
+                      <img 
+                        src={stock.imageUrl} 
+                        alt={stock.productName}
+                        className="h-10 w-10 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm">
+                          {stock.productName.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-gray-900">

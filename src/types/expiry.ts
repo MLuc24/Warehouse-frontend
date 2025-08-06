@@ -2,6 +2,7 @@ export interface ProductExpiryDto {
   productId: number
   sku: string
   productName: string
+  imageUrl?: string
   category?: string
   expiryDate?: string
   isPerishable: boolean

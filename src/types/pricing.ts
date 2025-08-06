@@ -2,6 +2,7 @@ export interface ProductPricingDto {
   productId: number
   sku: string
   productName: string
+  imageUrl?: string
   purchasePrice?: number
   sellingPrice?: number
   profitMargin?: number

@@ -247,6 +247,7 @@ export interface ProductStock {
   productId: number;
   sku: string;
   productName: string;
+  imageUrl?: string;
   category?: string;
   currentStock: number;
   minStockLevel?: number;

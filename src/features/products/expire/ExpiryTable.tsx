@@ -210,18 +210,35 @@ export const ExpiryTable: React.FC<ExpiryTableProps> = ({
             {filteredData.map((item) => (
               <tr key={item.productId} className={getRowClassName(item.status)}>
                 <td className="px-4 py-3">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {item.productName}
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-10 w-10 mr-3">
+                      {item.imageUrl ? (
+                        <img 
+                          src={item.imageUrl} 
+                          alt={item.productName}
+                          className="h-10 w-10 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-red-500 to-orange-600 flex items-center justify-center">
+                          <span className="text-white font-semibold text-sm">
+                            {item.productName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-sm text-gray-500">
-                      SKU: {item.sku} | {item.category || 'Chưa phân loại'}
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {item.productName}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        SKU: {item.sku} | {item.category || 'Chưa phân loại'}
+                      </div>
+                      {item.isPerishable && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-800">
+                          Dễ hỏng
+                        </span>
+                      )}
                     </div>
-                    {item.isPerishable && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-800">
-                        Dễ hỏng
-                      </span>
-                    )}
                   </div>
                 </td>
                 
