@@ -68,12 +68,62 @@ export interface PagedGoodsReceiptResult {
 
 export const GoodsReceiptStatus = {
   Draft: 'Draft',
+  AwaitingApproval: 'AwaitingApproval',
   Pending: 'Pending', 
+  SupplierConfirmed: 'SupplierConfirmed',
   Completed: 'Completed',
-  Cancelled: 'Cancelled'
+  Cancelled: 'Cancelled',
+  Rejected: 'Rejected'
 } as const
 
 export type GoodsReceiptStatus = typeof GoodsReceiptStatus[keyof typeof GoodsReceiptStatus]
+
+// Workflow types
+export interface WorkflowStatus {
+  currentStatus: GoodsReceiptStatus
+  availableActions: string[]
+  canEdit: boolean
+  canApprove: boolean
+  canComplete: boolean
+  requiresSupplierConfirmation: boolean
+  approvalInfo?: ApprovalInfo
+  supplierConfirmationInfo?: SupplierConfirmationInfo
+  completionInfo?: CompletionInfo
+}
+
+export interface ApprovalInfo {
+  approvedByUserName?: string
+  approvedDate?: string
+  approvalNotes?: string
+}
+
+export interface SupplierConfirmationInfo {
+  confirmed?: boolean
+  confirmedDate?: string
+  emailSent: boolean
+}
+
+export interface CompletionInfo {
+  completedByUserName?: string
+  completedDate?: string
+}
+
+export interface ApprovalDto {
+  goodsReceiptId: number
+  action: 'Approve' | 'Reject'
+  notes?: string
+}
+
+export interface SupplierConfirmationDto {
+  confirmationToken: string
+  confirmed: boolean
+  notes?: string
+}
+
+export interface CompleteReceiptDto {
+  goodsReceiptId: number
+  notes?: string
+}
 
 export interface CanDeleteResult {
   canDelete: boolean

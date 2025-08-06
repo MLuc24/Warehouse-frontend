@@ -5,7 +5,11 @@ import type {
   UpdateGoodsReceiptDto, 
   GoodsReceiptFilterDto, 
   PagedGoodsReceiptResult,
-  CanDeleteResult
+  CanDeleteResult,
+  WorkflowStatus,
+  ApprovalDto,
+  SupplierConfirmationDto,
+  CompleteReceiptDto
 } from '@/types/goodsReceipt'
 
 class GoodsReceiptService {
@@ -72,6 +76,39 @@ class GoodsReceiptService {
   async canDeleteGoodsReceipt(id: number): Promise<CanDeleteResult> {
     const response = await apiService.get<CanDeleteResult>(`${this.basePath}/${id}/can-delete`)
     return response
+  }
+
+  // === WORKFLOW METHODS ===
+
+  // Lấy trạng thái workflow
+  async getWorkflowStatus(id: number): Promise<WorkflowStatus> {
+    const response = await apiService.get<WorkflowStatus>(`${this.basePath}/${id}/workflow-status`)
+    return response
+  }
+
+  // Admin/Manager phê duyệt hoặc từ chối
+  async approveOrReject(data: ApprovalDto): Promise<void> {
+    await apiService.post(`${this.basePath}/approve-reject`, data)
+  }
+
+  // Nhà cung cấp xác nhận (qua API call trực tiếp)
+  async supplierConfirm(data: SupplierConfirmationDto): Promise<void> {
+    await apiService.post(`${this.basePath}/supplier-confirm`, data)
+  }
+
+  // Hoàn thành phiếu nhập - nhập kho
+  async completeReceipt(id: number, data: CompleteReceiptDto): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/complete`, data)
+  }
+
+  // Gửi lại email xác nhận cho nhà cung cấp
+  async resendSupplierEmail(id: number): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/resend-supplier-email`)
+  }
+
+  // Hủy phiếu nhập
+  async cancelReceipt(id: number): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/cancel`)
   }
 }
 

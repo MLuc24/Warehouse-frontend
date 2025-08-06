@@ -30,7 +30,7 @@ export const getStatusLabel = (status: string): string => {
 }
 
 // Get status color for Badge component
-export const getStatusColor = (status: string): 'gray' | 'yellow' | 'green' | 'red' => {
+export const getStatusColor = (status: string): 'gray' | 'yellow' | 'green' | 'red' | 'blue' | 'orange' => {
   return GOODS_RECEIPT_STATUS_COLORS[status as keyof typeof GOODS_RECEIPT_STATUS_COLORS] || 'gray'
 }
 

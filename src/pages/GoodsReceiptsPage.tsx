@@ -1,17 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Button, Input } from '@/components/ui'
-import { Pagination, DeleteConfirmModal, Notification } from '@/components/common'
+import { Pagination, Notification, DeleteConfirmModal } from '@/components/common'
 import { Layout } from '@/components/layout'
-import { GoodsReceiptTable, GoodsReceiptForm } from '@/features/goodsReceipts'
+import { 
+  GoodsReceiptTable,
+  GoodsReceiptDetailView,
+  UnifiedGoodsReceiptForm
+} from '@/features/goodsReceipts'
 import { useGoodsReceipts, useGoodsReceiptActions } from '@/hooks/useGoodsReceipt'
-import { productService, supplierService } from '@/services'
-import type { GoodsReceipt, GoodsReceiptFilterDto, CreateGoodsReceiptDto, UpdateGoodsReceiptDto, GoodsReceiptStatus } from '@/types'
+import { productService, supplierService, goodsReceiptService } from '@/services'
+import { AuthService } from '@/services/auth'
+import type { GoodsReceipt, GoodsReceiptFilterDto, CreateGoodsReceiptDto, UpdateGoodsReceiptDto, GoodsReceiptStatus, User } from '@/types'
 import { DEFAULT_PAGE_SIZE, SUCCESS_MESSAGES, ERROR_MESSAGES } from '@/constants/goodsReceipt'
+import { Plus, Filter, Search } from 'lucide-react'
 
 interface Product {
   productId: number
   productName: string
   productSku: string
+  unitPrice?: number
+  currentStock?: number
 }
 
 interface Supplier {
@@ -19,7 +27,13 @@ interface Supplier {
   supplierName: string
 }
 
+type ViewMode = 'table' | 'detail' | 'create' | 'edit'
+
 const GoodsReceiptsPage: React.FC = () => {
+  // View Mode State
+  const [viewMode, setViewMode] = useState<ViewMode>('table')
+  const [selectedGoodsReceipt, setSelectedGoodsReceipt] = useState<GoodsReceipt | null>(null)
+  
   // State for filters and pagination
   const [filters, setFilters] = useState<GoodsReceiptFilterDto>({
     pageNumber: 1,
@@ -28,17 +42,13 @@ const GoodsReceiptsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   
-  // State for modals
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  // State for modals (only delete modal now)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedGoodsReceipt, setSelectedGoodsReceipt] = useState<GoodsReceipt | null>(null)
-  const [isEditMode, setIsEditMode] = useState(false)
   
   // State for supporting data
   const [products, setProducts] = useState<Product[]>([])
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
-  const [loadingSuppliers, setLoadingSuppliers] = useState(false)
-  const [loadingProducts, setLoadingProducts] = useState(false)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   
   // State for notifications
   const [notification, setNotification] = useState<{
@@ -47,107 +57,119 @@ const GoodsReceiptsPage: React.FC = () => {
   } | null>(null)
 
   // Hooks
-  const { data: goodsReceiptsData, loading: loadingGoodsReceipts, error, refetch } = useGoodsReceipts(filters)
-  const { 
-    deleting, 
-    createGoodsReceipt, 
-    updateGoodsReceipt, 
+  const {
+    data: goodsReceiptsData,
+    loading: loadingGoodsReceipts,
+    error: goodsReceiptsError,
+    refetch
+  } = useGoodsReceipts(filters)
+
+  const {
+    createGoodsReceipt,
+    updateGoodsReceipt,
     deleteGoodsReceipt,
-    canDelete 
+    canDelete,
+    creating,
+    updating,
+    deleting
   } = useGoodsReceiptActions()
 
-  // Load supporting data
-  const loadSuppliers = useCallback(async () => {
-    setLoadingSuppliers(true)
-    try {
-      const result = await supplierService.getSuppliers({ pageSize: 1000 })
-      setSuppliers(result.items.map(s => ({
-        supplierId: s.supplierId,
-        supplierName: s.supplierName
-      })))
-    } catch (error) {
-      console.error('Error loading suppliers:', error)
-      showNotification('Có lỗi khi tải danh sách nhà cung cấp', 'error')
-    } finally {
-      setLoadingSuppliers(false)
-    }
-  }, [])
-
-  const loadProducts = useCallback(async () => {
-    setLoadingProducts(true)
-    try {
-      const result = await productService.getProducts({ pageSize: 1000 })
-      setProducts(result.items.map(p => ({
-        productId: p.productId,
-        productName: p.productName,
-        productSku: p.sku
-      })))
-    } catch (error) {
-      console.error('Error loading products:', error)
-      showNotification('Có lỗi khi tải danh sách sản phẩm', 'error')
-    } finally {
-      setLoadingProducts(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    loadSuppliers()
-    loadProducts()
-  }, [loadSuppliers, loadProducts])
-
-  // Notification helper
-  const showNotification = (message: string, type: 'success' | 'error') => {
+  // Show notification helper
+  const showNotification = useCallback((message: string, type: 'success' | 'error') => {
     setNotification({ message, type })
     setTimeout(() => setNotification(null), 5000)
-  }
+  }, [])
 
-  // Handle search
-  const handleSearch = () => {
-    setFilters(prev => ({
-      ...prev,
-      receiptNumber: searchTerm,
-      supplierName: searchTerm,
-      pageNumber: 1
-    }))
-  }
+  // Load supporting data
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const authService = AuthService.getInstance()
+        const user = await authService.getCurrentUser()
+        setCurrentUser(user)
+      } catch (error) {
+        console.error('Error loading current user:', error)
+      }
+    }
 
-  const handleClearSearch = () => {
-    setSearchTerm('')
-    setFilters(prev => ({
-      ...prev,
-      receiptNumber: undefined,
-      supplierName: undefined,
-      pageNumber: 1
-    }))
-  }
+    const loadSuppliers = async () => {
+      try {
+        const suppliersData = await supplierService.getSuppliers({})
+        setSuppliers(suppliersData.items || [])
+      } catch (error) {
+        console.error('Error loading suppliers:', error)
+        showNotification('Lỗi khi tải danh sách nhà cung cấp', 'error')
+      }
+    }
 
-  // Handle status filter
-  const handleStatusFilter = (status: string) => {
-    setStatusFilter(status)
-    setFilters(prev => ({
-      ...prev,
-      status: (status as GoodsReceiptStatus) || undefined,
-      pageNumber: 1
-    }))
-  }
+    const loadProducts = async () => {
+      try {
+        const productsData = await productService.getProducts({})
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setProducts(productsData.items.map((p: any) => ({
+          productId: p.productId,
+          productName: p.productName,
+          productSku: p.productSku || p.sku || `SKU-${p.productId}`,
+          unitPrice: p.unitPrice || 0,
+          currentStock: p.currentStock || 0
+        })) || [])
+      } catch (error) {
+        console.error('Error loading products:', error)
+        showNotification('Lỗi khi tải danh sách sản phẩm', 'error')
+      }
+    }
+
+    loadCurrentUser()
+    loadSuppliers()
+    loadProducts()
+  }, [showNotification])
+
+  // Update filters when search or status changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters(prev => ({
+        ...prev,
+        pageNumber: 1,
+        searchTerm: searchTerm || undefined,
+        status: statusFilter as GoodsReceiptStatus || undefined
+      }))
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm, statusFilter])
+
+  // Handle errors
+  useEffect(() => {
+    if (goodsReceiptsError) {
+      showNotification('Lỗi khi tải dữ liệu phiếu nhập', 'error')
+    }
+  }, [goodsReceiptsError, showNotification])
 
   // Handle pagination
   const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, pageNumber: page }))
   }
 
-  // Handle create
+  // Handler functions for view mode changes
   const handleCreate = () => {
     setSelectedGoodsReceipt(null)
-    setIsEditMode(false)
-    setIsFormModalOpen(true)
+    setViewMode('create')
+  }
+
+  const handleRowClick = (goodsReceipt: GoodsReceipt) => {
+    setSelectedGoodsReceipt(goodsReceipt)
+    setViewMode('detail')
+  }
+
+  const handleBackToTable = () => {
+    setSelectedGoodsReceipt(null)
+    setViewMode('table')
   }
 
   // Handle edit
   const handleEdit = (goodsReceipt: GoodsReceipt) => {
     setSelectedGoodsReceipt(goodsReceipt)
-    setIsEditMode(true)
-    setIsFormModalOpen(true)
+    setViewMode('edit')
   }
 
   // Handle delete
@@ -162,25 +184,31 @@ const GoodsReceiptsPage: React.FC = () => {
     setIsDeleteModalOpen(true)
   }
 
+  // Confirm delete
   const confirmDelete = async () => {
-    if (!selectedGoodsReceipt) return
+    if (!selectedGoodsReceipt?.goodsReceiptId) return
 
-    const success = await deleteGoodsReceipt(selectedGoodsReceipt.goodsReceiptId!)
-    if (success) {
-      showNotification(SUCCESS_MESSAGES.DELETE_SUCCESS, 'success')
-      refetch()
-    } else {
+    try {
+      const result = await deleteGoodsReceipt(selectedGoodsReceipt.goodsReceiptId)
+      if (result) {
+        showNotification(SUCCESS_MESSAGES.DELETE_SUCCESS, 'success')
+        setIsDeleteModalOpen(false)
+        setSelectedGoodsReceipt(null)
+        refetch()
+      } else {
+        showNotification(ERROR_MESSAGES.DELETE_ERROR, 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting goods receipt:', error)
       showNotification(ERROR_MESSAGES.DELETE_ERROR, 'error')
     }
-    
-    setIsDeleteModalOpen(false)
-    setSelectedGoodsReceipt(null)
   }
 
   // Handle form submit
   const handleFormSubmit = async (data: CreateGoodsReceiptDto | UpdateGoodsReceiptDto) => {
     try {
-      if (isEditMode && 'goodsReceiptId' in data) {
+      const isEdit = 'goodsReceiptId' in data
+      if (isEdit && 'goodsReceiptId' in data) {
         const result = await updateGoodsReceipt(data.goodsReceiptId, data)
         if (result) {
           showNotification(SUCCESS_MESSAGES.UPDATE_SUCCESS, 'success')
@@ -197,10 +225,67 @@ const GoodsReceiptsPage: React.FC = () => {
           showNotification(ERROR_MESSAGES.CREATE_ERROR, 'error')
         }
       }
+      
+      // Back to table view
+      setViewMode('table')
+      setSelectedGoodsReceipt(null)
     } catch (error) {
       console.error('Error submitting form:', error)
-      const errorMessage = isEditMode ? ERROR_MESSAGES.UPDATE_ERROR : ERROR_MESSAGES.CREATE_ERROR
+      const errorMessage = 'goodsReceiptId' in data ? ERROR_MESSAGES.UPDATE_ERROR : ERROR_MESSAGES.CREATE_ERROR
       showNotification(errorMessage, 'error')
+    }
+  }
+
+  // Workflow handlers
+  const handleApprove = async (goodsReceiptId: number) => {
+    try {
+      await goodsReceiptService.approveOrReject({
+        goodsReceiptId,
+        action: 'Approve'
+      })
+      showNotification('Phiếu nhập đã được phê duyệt', 'success')
+      refetch()
+    } catch (error) {
+      console.error('Error approving goods receipt:', error)
+      showNotification('Lỗi khi phê duyệt phiếu nhập', 'error')
+    }
+  }
+
+  const handleReject = async (goodsReceiptId: number) => {
+    try {
+      await goodsReceiptService.approveOrReject({
+        goodsReceiptId,
+        action: 'Reject',
+        notes: 'Từ chối phiếu nhập'
+      })
+      showNotification('Phiếu nhập đã bị từ chối', 'success')
+      refetch()
+    } catch (error) {
+      console.error('Error rejecting goods receipt:', error)
+      showNotification('Lỗi khi từ chối phiếu nhập', 'error')
+    }
+  }
+
+  const handleComplete = async (goodsReceiptId: number) => {
+    try {
+      await goodsReceiptService.completeReceipt(goodsReceiptId, {
+        goodsReceiptId
+      })
+      showNotification('Phiếu nhập đã được hoàn thành', 'success')
+      refetch()
+    } catch (error) {
+      console.error('Error completing goods receipt:', error)
+      showNotification('Lỗi khi hoàn thành phiếu nhập', 'error')
+    }
+  }
+
+  const handleResendEmail = async (goodsReceiptId: number) => {
+    try {
+      await goodsReceiptService.resendSupplierEmail(goodsReceiptId)
+      showNotification('Email đã được gửi lại cho nhà cung cấp', 'success')
+    } catch (error) {
+      console.error('Error resending email:', error)
+      showNotification('Lỗi khi gửi lại email', 'error')
     }
   }
 
@@ -213,6 +298,7 @@ const GoodsReceiptsPage: React.FC = () => {
     { value: 'Cancelled', label: 'Đã hủy' }
   ]
 
+  // Extract data from API response
   const goodsReceipts = goodsReceiptsData?.items || []
   const totalCount = goodsReceiptsData?.totalCount || 0
   const totalPages = goodsReceiptsData?.totalPages || 1
@@ -220,111 +306,132 @@ const GoodsReceiptsPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="flex justify-between items-center">
-            <div className="text-center flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">Quản lý phiếu nhập kho</h1>
-              <p className="text-sm text-gray-600">Quản lý và theo dõi các phiếu nhập hàng hóa vào kho</p>
-            </div>
-            <Button 
-              onClick={handleCreate}
-              disabled={loadingSuppliers || loadingProducts}
-            >
-              Tạo phiếu nhập
-            </Button>
-          </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[600px]">
+      <div className="min-h-screen bg-gray-50">
+        {/* Conditional Rendering Based on View Mode */}
+        {viewMode === 'table' && (
           <div className="p-6">
-            {/* Filters */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Tìm kiếm theo số phiếu hoặc nhà cung cấp..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                    />
-                    <Button onClick={handleSearch} variant="secondary">
+            <div className="max-w-7xl mx-auto">
+              {/* Header */}
+              <div className="mb-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Quản lý phiếu nhập kho</h1>
+                    <p className="text-gray-600">Tạo và quản lý các phiếu nhập hàng hóa từ nhà cung cấp</p>
+                  </div>
+                  <Button onClick={handleCreate} className="flex items-center">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Tạo phiếu nhập
+                  </Button>
+                </div>
+              </div>
+
+              {/* Filters */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Tìm kiếm
+                    </label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        placeholder="Tìm theo số phiếu, nhà cung cấp..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Trạng thái
+                    </label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {statusOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="flex items-end">
+                    <Button variant="secondary" className="flex items-center">
+                      <Filter className="w-4 h-4 mr-2" />
+                      Lọc
                     </Button>
-                    {searchTerm && (
-                      <Button onClick={handleClearSearch} variant="secondary">
-                        Xóa
-                      </Button>
-                    )}
                   </div>
                 </div>
-                <div>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => handleStatusFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {statusOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
               </div>
-            </div>
 
-            {/* Stats */}
-            <div className="mb-6">
-              <div className="text-sm text-gray-600">
-                Hiển thị {goodsReceipts.length} trong tổng số {totalCount} phiếu nhập
+              {/* Table */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <GoodsReceiptTable
+                  goodsReceipts={goodsReceipts}
+                  loading={loadingGoodsReceipts}
+                  onRowClick={handleRowClick}
+                  currentUserRole={currentUser?.role || ''}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onComplete={handleComplete}
+                  onResendEmail={handleResendEmail}
+                />
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalCount={totalCount}
+                  pageSize={filters.pageSize || DEFAULT_PAGE_SIZE}
+                  onPageChange={handlePageChange}
+                  loading={loadingGoodsReceipts}
+                />
+              )}
             </div>
-
-            {/* Error State */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <div className="text-red-700">{error}</div>
-              </div>
-            )}
-
-            {/* Table */}
-            <div className="mb-6">
-              <GoodsReceiptTable
-                goodsReceipts={goodsReceipts}
-                loading={loadingGoodsReceipts}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalCount={totalCount}
-                pageSize={filters.pageSize || DEFAULT_PAGE_SIZE}
-                onPageChange={handlePageChange}
-                loading={loadingGoodsReceipts}
-              />
-            )}
           </div>
-        </div>
+        )}
 
-        {/* Form Modal */}
-        <GoodsReceiptForm
-          isOpen={isFormModalOpen}
-          onClose={() => setIsFormModalOpen(false)}
-          onSubmit={handleFormSubmit}
-          goodsReceipt={selectedGoodsReceipt}
-          suppliers={suppliers}
-          products={products}
-          isEdit={isEditMode}
-        />
+        {/* Detail View */}
+        {viewMode === 'detail' && selectedGoodsReceipt && (
+          <div className="p-6">
+            <div className="max-w-7xl mx-auto">
+              <GoodsReceiptDetailView
+                goodsReceipt={selectedGoodsReceipt}
+                onEdit={() => handleEdit(selectedGoodsReceipt)}
+                onDelete={() => handleDelete(selectedGoodsReceipt)}
+                onBack={handleBackToTable}
+                onRefresh={refetch}
+                currentUserRole={currentUser?.role || ''}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Create/Edit Form */}
+        {(viewMode === 'create' || viewMode === 'edit') && (
+          <div className="p-6">
+            <div className="max-w-7xl mx-auto">
+              <UnifiedGoodsReceiptForm
+                onSubmit={handleFormSubmit}
+                onCancel={handleBackToTable}
+                goodsReceipt={viewMode === 'edit' ? selectedGoodsReceipt : null}
+                suppliers={suppliers}
+                products={products}
+                isEdit={viewMode === 'edit'}
+                isSubmitting={creating || updating}
+                variant="inline"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Delete Confirmation Modal */}
         <DeleteConfirmModal
@@ -332,7 +439,8 @@ const GoodsReceiptsPage: React.FC = () => {
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={confirmDelete}
           title="Xác nhận xóa phiếu nhập"
-          message={`Bạn có chắc chắn muốn xóa phiếu nhập "${selectedGoodsReceipt?.receiptNumber}"? Hành động này không thể hoàn tác.`}
+          message={`Bạn có chắc chắn muốn xóa phiếu nhập ${selectedGoodsReceipt?.receiptNumber || ''}? Hành động này không thể hoàn tác.`}
+          itemName={selectedGoodsReceipt ? `#${selectedGoodsReceipt.receiptNumber} - ${selectedGoodsReceipt.supplierName}` : ''}
           loading={deleting}
         />
 
