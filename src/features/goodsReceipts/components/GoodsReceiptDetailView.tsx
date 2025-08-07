@@ -1,5 +1,4 @@
 import React from 'react'
-import { Button } from '@/components/ui'
 import type { GoodsReceipt } from '@/types'
 import { X, Package } from 'lucide-react'
 import GoodsReceiptInfo from './display/GoodsReceiptInfo'
