@@ -5,6 +5,8 @@ export interface GoodsReceiptDetail {
   quantity: number
   unitPrice: number
   subtotal?: number
+  unit?: string
+  imageUrl?: string
 }
 
 export interface GoodsReceipt {

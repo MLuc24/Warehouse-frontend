@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui'
 import type { GoodsReceipt } from '@/types'
-import { Edit, Trash2, X, Check, FileX, Package } from 'lucide-react'
+import { Edit, Trash2, X, Check, FileX, Package, Mail } from 'lucide-react'
 import GoodsReceiptInfo from './display/GoodsReceiptInfo'
 import ProductDetailsTable from './display/ProductDetailsTable'
 import { goodsReceiptService } from '@/services'
@@ -44,6 +44,7 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
         goodsReceiptId: goodsReceipt.goodsReceiptId,
         action: 'Approve'
       })
+      // Refresh data after successful action
       onRefresh?.()
     } catch (error) {
       console.error('Error approving goods receipt:', error)
@@ -62,6 +63,7 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
         action: 'Reject',
         notes: 'Từ chối phiếu nhập'
       })
+      // Refresh data after successful action
       onRefresh?.()
     } catch (error) {
       console.error('Error rejecting goods receipt:', error)
@@ -78,9 +80,25 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
       await goodsReceiptService.completeReceipt(goodsReceipt.goodsReceiptId, {
         goodsReceiptId: goodsReceipt.goodsReceiptId
       })
+      // Refresh data after successful action
       onRefresh?.()
     } catch (error) {
       console.error('Error completing goods receipt:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleResendEmail = async () => {
+    if (!goodsReceipt.goodsReceiptId) return
+    
+    setIsLoading(true)
+    try {
+      await goodsReceiptService.resendSupplierEmail(goodsReceipt.goodsReceiptId)
+      // Refresh data after successful action
+      onRefresh?.()
+    } catch (error) {
+      console.error('Error resending email:', error)
     } finally {
       setIsLoading(false)
     }
@@ -92,14 +110,116 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
   const canComplete = goodsReceipt.status === 'SupplierConfirmed' && (currentUserRole === 'Admin' || currentUserRole === 'Manager')
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold text-gray-900">Chi tiết phiếu nhập</h1>
+          <div className="bg-blue-600 p-3 rounded-xl">
+            <Package className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Chi tiết phiếu nhập</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Phiếu số: {goodsReceipt.receiptNumber || 'Đang tạo...'}
+            </p>
+          </div>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-2">
+            {/* Edit and Delete Actions */}
+            {canEdit && (
+              <Button
+                onClick={onEdit}
+                variant="secondary"
+                size="sm"
+                className="flex items-center bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg px-3 py-2 font-medium"
+              >
+                <Edit className="w-4 h-4 mr-1.5" />
+                Sửa
+              </Button>
+            )}
+            
+            {canDelete && (
+              <Button
+                onClick={onDelete}
+                variant="danger"
+                size="sm"
+                className="flex items-center bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg px-3 py-2 font-medium"
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                Xóa
+              </Button>
+            )}
+
+            {/* Workflow Actions */}
+            {canApprove && (
+              <>
+                <Button
+                  onClick={handleApprove}
+                  disabled={isLoading}
+                  className="flex items-center bg-green-600 hover:bg-green-700 text-white border-0 rounded-lg px-3 py-2 font-medium shadow-sm"
+                >
+                  <Check className="w-4 h-4 mr-1.5" />
+                  Duyệt
+                </Button>
+                <Button
+                  onClick={handleReject}
+                  disabled={isLoading}
+                  className="flex items-center bg-red-600 hover:bg-red-700 text-white border-0 rounded-lg px-3 py-2 font-medium shadow-sm"
+                >
+                  <FileX className="w-4 h-4 mr-1.5" />
+                  Từ chối
+                </Button>
+              </>
+            )}
+            
+            {/* Resend Email for Pending status */}
+            {goodsReceipt.status === 'Pending' && (
+              <Button
+                onClick={handleResendEmail}
+                disabled={isLoading}
+                variant="secondary"
+                className="flex items-center bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg px-3 py-2 font-medium"
+              >
+                <Mail className="w-4 h-4 mr-1.5" />
+                Gửi lại
+              </Button>
+            )}
+            
+            {canComplete && (
+              <Button
+                onClick={handleComplete}
+                disabled={isLoading}
+                className="flex items-center bg-purple-600 hover:bg-purple-700 text-white border-0 rounded-lg px-3 py-2 font-medium shadow-sm"
+              >
+                <Package className="w-4 h-4 mr-1.5" />
+                Hoàn thành
+              </Button>
+            )}
+          </div>
+
+          {/* Divider */}
+          {(canEdit || canDelete || canApprove || canComplete) && (
+            <div className="h-6 border-l border-gray-300"></div>
+          )}
+
+          {/* Status Badge */}
+          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+            goodsReceipt.status === 'Completed' ? 'bg-green-100 text-green-800' :
+            goodsReceipt.status === 'AwaitingApproval' ? 'bg-yellow-100 text-yellow-800' :
+            goodsReceipt.status === 'Draft' ? 'bg-gray-100 text-gray-800' :
+            goodsReceipt.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+            'bg-blue-100 text-blue-800'
+          }`}>
+            {goodsReceipt.status === 'Completed' ? 'Hoàn thành' :
+             goodsReceipt.status === 'AwaitingApproval' ? 'Chờ duyệt' :
+             goodsReceipt.status === 'Draft' ? 'Nháp' :
+             goodsReceipt.status === 'Rejected' ? 'Từ chối' :
+             goodsReceipt.status}
+          </span>
+          
           {/* Close Button */}
           <button
             onClick={onBack}
@@ -123,85 +243,6 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
           onDeleteProduct={handleDeleteProduct}
           canEdit={canEdit}
         />
-
-        {/* Action Buttons Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Thao tác</h3>
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Edit and Delete Actions */}
-            {(canEdit || canDelete) && (
-              <>
-                {canEdit && (
-                  <Button
-                    onClick={onEdit}
-                    variant="secondary"
-                    size="sm"
-                    className="flex items-center bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Chỉnh sửa
-                  </Button>
-                )}
-                
-                {canDelete && (
-                  <Button
-                    onClick={onDelete}
-                    variant="danger"
-                    size="sm"
-                    className="flex items-center bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Xóa phiếu
-                  </Button>
-                )}
-                
-                {(canEdit || canDelete) && (canApprove || canComplete) && (
-                  <div className="h-6 border-l border-gray-300 mx-2"></div>
-                )}
-              </>
-            )}
-
-            {/* Workflow Actions */}
-            {canApprove && (
-              <>
-                <Button
-                  onClick={handleApprove}
-                  disabled={isLoading}
-                  className="flex items-center bg-green-600 hover:bg-green-700 text-white border-0"
-                >
-                  <Check className="w-4 h-4 mr-2" />
-                  Phê duyệt
-                </Button>
-                <Button
-                  onClick={handleReject}
-                  disabled={isLoading}
-                  className="flex items-center bg-red-600 hover:bg-red-700 text-white border-0"
-                >
-                  <FileX className="w-4 h-4 mr-2" />
-                  Từ chối
-                </Button>
-              </>
-            )}
-            
-            {canComplete && (
-              <Button
-                onClick={handleComplete}
-                disabled={isLoading}
-                className="flex items-center bg-purple-600 hover:bg-purple-700 text-white border-0"
-              >
-                <Package className="w-4 h-4 mr-2" />
-                Hoàn thành nhập kho
-              </Button>
-            )}
-
-            {/* Show message if no actions available */}
-            {!canEdit && !canDelete && !canApprove && !canComplete && (
-              <div className="text-sm text-gray-500 italic">
-                Không có thao tác khả dụng cho trạng thái hiện tại
-              </div>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   )

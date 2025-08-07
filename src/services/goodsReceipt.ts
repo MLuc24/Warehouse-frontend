@@ -88,7 +88,7 @@ class GoodsReceiptService {
 
   // Admin/Manager phê duyệt hoặc từ chối
   async approveOrReject(data: ApprovalDto): Promise<void> {
-    await apiService.post(`${this.basePath}/approve-reject`, data)
+    await apiService.post(`${this.basePath}/${data.goodsReceiptId}/approve-reject`, data)
   }
 
   // Nhà cung cấp xác nhận (qua API call trực tiếp)

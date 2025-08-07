@@ -391,16 +391,6 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
                 />
               </div>
 
-              {/* Unit */}
-              <div className="md:col-span-1">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Đơn vị
-                </label>
-                <div className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700">
-                  {detail.unit || 'N/A'}
-                </div>
-              </div>
-
               {/* Quantity */}
               <div className="md:col-span-1">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -420,6 +410,16 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
                     {detail.errors.quantity}
                   </p>
                 )}
+              </div>
+
+              {/* Unit */}
+              <div className="md:col-span-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Đơn vị
+                </label>
+                <div className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700">
+                  {detail.unit || 'N/A'}
+                </div>
               </div>
 
               {/* Unit Price */}

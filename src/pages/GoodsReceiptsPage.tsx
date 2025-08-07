@@ -174,6 +174,22 @@ const GoodsReceiptsPage: React.FC = () => {
     setViewMode('table')
   }
 
+  // Refresh function that updates both list and selected item
+  const refreshData = useCallback(async () => {
+    // Refresh the list
+    refetch()
+    
+    // If there's a selected item, refresh its details too
+    if (selectedGoodsReceipt?.goodsReceiptId) {
+      try {
+        const updatedGoodsReceipt = await goodsReceiptService.getGoodsReceiptById(selectedGoodsReceipt.goodsReceiptId)
+        setSelectedGoodsReceipt(updatedGoodsReceipt)
+      } catch (error) {
+        console.error('Error refreshing selected goods receipt:', error)
+      }
+    }
+  }, [refetch, selectedGoodsReceipt?.goodsReceiptId])
+
   // Handle edit
   const handleEdit = (goodsReceipt: GoodsReceipt) => {
     setSelectedGoodsReceipt(goodsReceipt)
@@ -202,7 +218,7 @@ const GoodsReceiptsPage: React.FC = () => {
         showNotification(SUCCESS_MESSAGES.DELETE_SUCCESS, 'success')
         setIsDeleteModalOpen(false)
         setSelectedGoodsReceipt(null)
-        refetch()
+        refreshData()
       } else {
         showNotification(ERROR_MESSAGES.DELETE_ERROR, 'error')
       }
@@ -220,7 +236,7 @@ const GoodsReceiptsPage: React.FC = () => {
         const result = await updateGoodsReceipt(data.goodsReceiptId, data)
         if (result) {
           showNotification(SUCCESS_MESSAGES.UPDATE_SUCCESS, 'success')
-          refetch()
+          refreshData()
         } else {
           showNotification(ERROR_MESSAGES.UPDATE_ERROR, 'error')
         }
@@ -228,7 +244,7 @@ const GoodsReceiptsPage: React.FC = () => {
         const result = await createGoodsReceipt(data as CreateGoodsReceiptDto)
         if (result) {
           showNotification(SUCCESS_MESSAGES.CREATE_SUCCESS, 'success')
-          refetch()
+          refreshData()
         } else {
           showNotification(ERROR_MESSAGES.CREATE_ERROR, 'error')
         }
@@ -252,7 +268,7 @@ const GoodsReceiptsPage: React.FC = () => {
         action: 'Approve'
       })
       showNotification('Phiếu nhập đã được phê duyệt', 'success')
-      refetch()
+      refreshData()
     } catch (error) {
       console.error('Error approving goods receipt:', error)
       showNotification('Lỗi khi phê duyệt phiếu nhập', 'error')
@@ -267,7 +283,7 @@ const GoodsReceiptsPage: React.FC = () => {
         notes: 'Từ chối phiếu nhập'
       })
       showNotification('Phiếu nhập đã bị từ chối', 'success')
-      refetch()
+      refreshData()
     } catch (error) {
       console.error('Error rejecting goods receipt:', error)
       showNotification('Lỗi khi từ chối phiếu nhập', 'error')
@@ -280,7 +296,7 @@ const GoodsReceiptsPage: React.FC = () => {
         goodsReceiptId
       })
       showNotification('Phiếu nhập đã được hoàn thành', 'success')
-      refetch()
+      refreshData()
     } catch (error) {
       console.error('Error completing goods receipt:', error)
       showNotification('Lỗi khi hoàn thành phiếu nhập', 'error')
@@ -416,7 +432,7 @@ const GoodsReceiptsPage: React.FC = () => {
                 onEdit={() => handleEdit(selectedGoodsReceipt)}
                 onDelete={() => handleDelete(selectedGoodsReceipt)}
                 onBack={handleBackToTable}
-                onRefresh={refetch}
+                onRefresh={refreshData}
                 currentUserRole={currentUser?.role || ''}
               />
             </div>
