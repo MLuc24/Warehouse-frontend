@@ -104,6 +104,36 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
     }
   }
 
+  const handleCancel = async () => {
+    if (!goodsReceipt.goodsReceiptId) return
+    
+    setIsLoading(true)
+    try {
+      await goodsReceiptService.cancelReceipt(goodsReceipt.goodsReceiptId)
+      // Refresh data after successful action
+      onRefresh?.()
+    } catch (error) {
+      console.error('Error cancelling goods receipt:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleResubmit = async () => {
+    if (!goodsReceipt.goodsReceiptId) return
+    
+    setIsLoading(true)
+    try {
+      await goodsReceiptService.resubmitReceipt(goodsReceipt.goodsReceiptId)
+      // Refresh data after successful action
+      onRefresh?.()
+    } catch (error) {
+      console.error('Error resubmitting goods receipt:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const canEdit = goodsReceipt.status === 'Draft' || goodsReceipt.status === 'Rejected'
   const canDelete = goodsReceipt.status === 'Draft' || goodsReceipt.status === 'Cancelled'
   const canApprove = goodsReceipt.status === 'AwaitingApproval' && (currentUserRole === 'Admin' || currentUserRole === 'Manager')
@@ -174,18 +204,65 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
                 </Button>
               </>
             )}
-            
-            {/* Resend Email for Pending status */}
-            {goodsReceipt.status === 'Pending' && (
+
+            {/* Cancel for AwaitingApproval (User can cancel their own) */}
+            {goodsReceipt.status === 'AwaitingApproval' && !canApprove && (
               <Button
-                onClick={handleResendEmail}
+                onClick={handleCancel}
                 disabled={isLoading}
-                variant="secondary"
-                className="flex items-center bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg px-3 py-2 font-medium"
+                variant="danger"
+                className="flex items-center bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg px-3 py-2 font-medium"
               >
-                <Mail className="w-4 h-4 mr-1.5" />
-                Gửi lại
+                <X className="w-4 h-4 mr-1.5" />
+                Hủy
               </Button>
+            )}
+            
+            {/* Actions for Pending status */}
+            {goodsReceipt.status === 'Pending' && (
+              <>
+                <Button
+                  onClick={onEdit}
+                  disabled={isLoading}
+                  variant="secondary"
+                  className="flex items-center bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg px-3 py-2 font-medium"
+                >
+                  <Edit className="w-4 h-4 mr-1.5" />
+                  Sửa
+                </Button>
+                <Button
+                  onClick={handleResendEmail}
+                  disabled={isLoading}
+                  variant="secondary"
+                  className="flex items-center bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg px-3 py-2 font-medium"
+                >
+                  <Mail className="w-4 h-4 mr-1.5" />
+                  Gửi lại
+                </Button>
+              </>
+            )}
+
+            {/* Actions for Rejected status */}
+            {goodsReceipt.status === 'Rejected' && (
+              <>
+                <Button
+                  onClick={onEdit}
+                  disabled={isLoading}
+                  variant="secondary"
+                  className="flex items-center bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg px-3 py-2 font-medium"
+                >
+                  <Edit className="w-4 h-4 mr-1.5" />
+                  Sửa
+                </Button>
+                <Button
+                  onClick={handleResubmit}
+                  disabled={isLoading}
+                  className="flex items-center bg-orange-600 hover:bg-orange-700 text-white border-0 rounded-lg px-3 py-2 font-medium shadow-sm"
+                >
+                  <Check className="w-4 h-4 mr-1.5" />
+                  Gửi lại
+                </Button>
+              </>
             )}
             
             {canComplete && (

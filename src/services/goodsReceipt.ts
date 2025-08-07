@@ -110,6 +110,11 @@ class GoodsReceiptService {
   async cancelReceipt(id: number): Promise<void> {
     await apiService.post(`${this.basePath}/${id}/cancel`)
   }
+
+  // Gửi lại phiếu nhập để phê duyệt (sau khi bị từ chối)
+  async resubmitReceipt(id: number): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/resubmit`)
+  }
 }
 
 export const goodsReceiptService = new GoodsReceiptService()

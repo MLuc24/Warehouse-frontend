@@ -12,6 +12,9 @@ interface GoodsReceiptTableProps {
   onReject?: (goodsReceiptId: number) => void
   onComplete?: (goodsReceiptId: number) => void
   onResendEmail?: (goodsReceiptId: number) => void
+  onCancel?: (goodsReceiptId: number) => void
+  onResubmit?: (goodsReceiptId: number) => void
+  onEdit?: (goodsReceipt: GoodsReceipt) => void
   currentUserRole?: string
 }
 
@@ -75,6 +78,9 @@ const GoodsReceiptTable: React.FC<GoodsReceiptTableProps> = ({
   onReject,
   onComplete,
   onResendEmail,
+  onCancel,
+  onResubmit,
+  onEdit,
   currentUserRole = ''
 }) => {
   const [sortField, setSortField] = useState<SortField>('receiptDate')
@@ -275,6 +281,9 @@ const GoodsReceiptTable: React.FC<GoodsReceiptTableProps> = ({
                       onReject={onReject}
                       onComplete={onComplete}
                       onResendEmail={onResendEmail}
+                      onCancel={onCancel}
+                      onResubmit={onResubmit}
+                      onEdit={onEdit}
                     />
                   </div>
                 </td>

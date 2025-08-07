@@ -2,6 +2,7 @@ import React from 'react'
 import { Button } from '@/components/ui'
 import { Check, X, Package, Mail } from 'lucide-react'
 import type { GoodsReceipt } from '@/types'
+import { GoodsReceiptStatus } from '@/types'
 
 interface ActionButtonsProps {
   goodsReceipt: GoodsReceipt
@@ -10,6 +11,9 @@ interface ActionButtonsProps {
   onReject?: (goodsReceiptId: number) => void
   onComplete?: (goodsReceiptId: number) => void
   onResendEmail?: (goodsReceiptId: number) => void
+  onCancel?: (goodsReceiptId: number) => void
+  onResubmit?: (goodsReceiptId: number) => void
+  onEdit?: (goodsReceipt: GoodsReceipt) => void
   disabled?: boolean
 }
 
@@ -20,6 +24,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   onReject,
   onComplete,
   onResendEmail,
+  onCancel,
+  onResubmit,
+  onEdit,
   disabled = false
 }) => {
   const { status } = goodsReceipt
@@ -65,8 +72,37 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     )
   }
 
-  // Nếu phiếu đang chờ supplier và có thể gửi lại email
+  // Nếu user là creator và phiếu đang chờ phê duyệt - có thể hủy
+  if (status === 'AwaitingApproval' && !canApprove) {
+    buttons.push(
+      <Button
+        key="cancel"
+        size="sm"
+        variant="danger"
+        onClick={() => onCancel?.(goodsReceipt.goodsReceiptId!)}
+        disabled={disabled}
+      >
+        <X className="w-3 h-3 mr-1" />
+        Hủy
+      </Button>
+    )
+  }
+
+  // Nếu phiếu đang chờ supplier
   if (status === 'Pending') {
+    buttons.push(
+      <Button
+        key="edit"
+        size="sm"
+        variant="secondary"
+        onClick={() => onEdit?.(goodsReceipt)}
+        disabled={disabled}
+      >
+        <Package className="w-3 h-3 mr-1" />
+        Sửa
+      </Button>
+    )
+    
     buttons.push(
       <Button
         key="resend"
@@ -93,6 +129,35 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       >
         <Package className="w-3 h-3 mr-1" />
         Nhập kho
+      </Button>
+    )
+  }
+
+  // Nếu phiếu bị từ chối - user có thể sửa và gửi lại
+  if (status === (GoodsReceiptStatus.Rejected as GoodsReceiptStatus)) {
+    buttons.push(
+      <Button
+        key="edit"
+        size="sm"
+        variant="secondary"
+        onClick={() => onEdit?.(goodsReceipt)}
+        disabled={disabled}
+      >
+        <Package className="w-3 h-3 mr-1" />
+        Sửa
+      </Button>
+    )
+    
+    buttons.push(
+      <Button
+        key="resubmit"
+        size="sm"
+        onClick={() => onResubmit?.(goodsReceipt.goodsReceiptId!)}
+        disabled={disabled}
+        className="bg-orange-600 hover:bg-orange-700 text-white"
+      >
+        <Check className="w-3 h-3 mr-1" />
+        Gửi lại
       </Button>
     )
   }

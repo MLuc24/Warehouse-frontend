@@ -307,9 +307,32 @@ const GoodsReceiptsPage: React.FC = () => {
     try {
       await goodsReceiptService.resendSupplierEmail(goodsReceiptId)
       showNotification('Email đã được gửi lại cho nhà cung cấp', 'success')
+      refreshData()
     } catch (error) {
       console.error('Error resending email:', error)
       showNotification('Lỗi khi gửi lại email', 'error')
+    }
+  }
+
+  const handleCancel = async (goodsReceiptId: number) => {
+    try {
+      await goodsReceiptService.cancelReceipt(goodsReceiptId)
+      showNotification('Phiếu nhập đã được hủy', 'success')
+      refreshData()
+    } catch (error) {
+      console.error('Error cancelling goods receipt:', error)
+      showNotification('Lỗi khi hủy phiếu nhập', 'error')
+    }
+  }
+
+  const handleResubmit = async (goodsReceiptId: number) => {
+    try {
+      await goodsReceiptService.resubmitReceipt(goodsReceiptId)
+      showNotification('Phiếu nhập đã được gửi lại để phê duyệt', 'success')
+      refreshData()
+    } catch (error) {
+      console.error('Error resubmitting goods receipt:', error)
+      showNotification('Lỗi khi gửi lại phiếu nhập', 'error')
     }
   }
 
@@ -405,6 +428,9 @@ const GoodsReceiptsPage: React.FC = () => {
                   onReject={handleReject}
                   onComplete={handleComplete}
                   onResendEmail={handleResendEmail}
+                  onCancel={handleCancel}
+                  onResubmit={handleResubmit}
+                  onEdit={handleEdit}
                 />
               </div>
 
