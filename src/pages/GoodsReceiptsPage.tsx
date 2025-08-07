@@ -86,17 +86,18 @@ const GoodsReceiptsPage: React.FC = () => {
 
   // Load supporting data
   useEffect(() => {
-    const loadCurrentUser = async () => {
-      try {
-        const authService = AuthService.getInstance()
-        const user = await authService.getCurrentUser()
-        setCurrentUser(user)
-      } catch (error) {
-        console.error('Error loading current user:', error)
-      }
+  const loadCurrentUser = async () => {
+    try {
+      const authService = AuthService.getInstance()
+      const user = await authService.getCurrentUser()
+      console.log('🔍 Current User Loaded:', user) // Debug logging
+      setCurrentUser(user)
+    } catch (error) {
+      console.error('Error loading current user:', error)
     }
+  }
 
-    const loadSuppliers = async () => {
+  const loadSuppliers = async () => {
       try {
         const suppliersData = await supplierService.getSuppliers({})
         setSuppliers(suppliersData.items || [])
@@ -423,14 +424,6 @@ const GoodsReceiptsPage: React.FC = () => {
                   goodsReceipts={goodsReceipts}
                   loading={loadingGoodsReceipts}
                   onRowClick={handleRowClick}
-                  currentUserRole={currentUser?.role || ''}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onComplete={handleComplete}
-                  onResendEmail={handleResendEmail}
-                  onCancel={handleCancel}
-                  onResubmit={handleResubmit}
-                  onEdit={handleEdit}
                 />
               </div>
 
@@ -460,6 +453,13 @@ const GoodsReceiptsPage: React.FC = () => {
                 onBack={handleBackToTable}
                 onRefresh={refreshData}
                 currentUserRole={currentUser?.role || ''}
+                currentUserId={currentUser?.userId}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onComplete={handleComplete}
+                onResendEmail={handleResendEmail}
+                onCancel={handleCancel}
+                onResubmit={handleResubmit}
               />
             </div>
           </div>

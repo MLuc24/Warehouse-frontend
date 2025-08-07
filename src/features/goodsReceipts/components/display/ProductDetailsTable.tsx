@@ -1,21 +1,14 @@
 import React from 'react'
-import { Button } from '@/components/ui'
 import { formatCurrency } from '@/utils'
 import type { GoodsReceipt } from '@/types'
-import { Package, Hash, DollarSign, Edit, Trash2 } from 'lucide-react'
+import { Package, Hash, DollarSign } from 'lucide-react'
 
 interface ProductDetailsTableProps {
   goodsReceipt: GoodsReceipt
-  onEditProduct?: (detail: GoodsReceipt['details'][0]) => void
-  onDeleteProduct?: (detail: GoodsReceipt['details'][0]) => void
-  canEdit?: boolean
 }
 
 const ProductDetailsTable: React.FC<ProductDetailsTableProps> = ({ 
-  goodsReceipt,
-  onEditProduct,
-  onDeleteProduct,
-  canEdit = false
+  goodsReceipt
 }) => {
   const calculateSubtotal = (quantity: number, unitPrice: number) => {
     return quantity * unitPrice
@@ -67,11 +60,6 @@ const ProductDetailsTable: React.FC<ProductDetailsTableProps> = ({
               <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                 Thành tiền
               </th>
-              {canEdit && (
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Thao tác
-                </th>
-              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -139,30 +127,6 @@ const ProductDetailsTable: React.FC<ProductDetailsTableProps> = ({
                       {formatCurrency(subtotal)}
                     </span>
                   </td>
-                  {canEdit && (
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex justify-center space-x-2">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => onEditProduct?.(detail)}
-                          className="flex items-center bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-lg"
-                        >
-                          <Edit className="w-3 h-3 mr-1" />
-                          Sửa
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => onDeleteProduct?.(detail)}
-                          className="flex items-center bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg"
-                        >
-                          <Trash2 className="w-3 h-3 mr-1" />
-                          Xóa
-                        </Button>
-                      </div>
-                    </td>
-                  )}
                 </tr>
               )
             })}
@@ -183,7 +147,6 @@ const ProductDetailsTable: React.FC<ProductDetailsTableProps> = ({
                   {formatCurrency(totalValue)}
                 </span>
               </td>
-              {canEdit && <td className="px-6 py-4"></td>}
             </tr>
           </tfoot>
         </table>

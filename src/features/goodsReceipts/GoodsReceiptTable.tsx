@@ -2,20 +2,11 @@ import React, { useState } from 'react'
 import { formatCurrency, formatDate } from '@/utils'
 import type { GoodsReceipt } from '@/types'
 import { FileText, SortAsc, SortDesc, Package } from 'lucide-react'
-import ActionButtons from './components/ActionButtons'
 
 interface GoodsReceiptTableProps {
   goodsReceipts: GoodsReceipt[]
   loading?: boolean
   onRowClick?: (goodsReceipt: GoodsReceipt) => void
-  onApprove?: (goodsReceiptId: number) => void
-  onReject?: (goodsReceiptId: number) => void
-  onComplete?: (goodsReceiptId: number) => void
-  onResendEmail?: (goodsReceiptId: number) => void
-  onCancel?: (goodsReceiptId: number) => void
-  onResubmit?: (goodsReceiptId: number) => void
-  onEdit?: (goodsReceipt: GoodsReceipt) => void
-  currentUserRole?: string
 }
 
 type SortField = 'receiptNumber' | 'supplierName' | 'receiptDate' | 'totalAmount' | 'status'
@@ -73,15 +64,7 @@ const getStatusDisplay = (status?: string) => {
 const GoodsReceiptTable: React.FC<GoodsReceiptTableProps> = ({
   goodsReceipts,
   loading = false,
-  onRowClick,
-  onApprove,
-  onReject,
-  onComplete,
-  onResendEmail,
-  onCancel,
-  onResubmit,
-  onEdit,
-  currentUserRole = ''
+  onRowClick
 }) => {
   const [sortField, setSortField] = useState<SortField>('receiptDate')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
@@ -225,12 +208,6 @@ const GoodsReceiptTable: React.FC<GoodsReceiptTableProps> = ({
                   {getSortIcon('status')}
                 </div>
               </th>
-              <th 
-                scope="col" 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                <span>Hành động</span>
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -271,21 +248,6 @@ const GoodsReceiptTable: React.FC<GoodsReceiptTableProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {getStatusDisplay(goodsReceipt.status)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <ActionButtons
-                      goodsReceipt={goodsReceipt}
-                      currentUserRole={currentUserRole}
-                      onApprove={onApprove}
-                      onReject={onReject}
-                      onComplete={onComplete}
-                      onResendEmail={onResendEmail}
-                      onCancel={onCancel}
-                      onResubmit={onResubmit}
-                      onEdit={onEdit}
-                    />
-                  </div>
                 </td>
               </tr>
             ))}
