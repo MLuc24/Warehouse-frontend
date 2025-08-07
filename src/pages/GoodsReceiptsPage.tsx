@@ -19,7 +19,11 @@ interface Product {
   productName: string
   productSku: string
   unitPrice?: number
+  purchasePrice?: number
   currentStock?: number
+  unit?: string
+  imageUrl?: string
+  category?: string
 }
 
 interface Supplier {
@@ -104,14 +108,18 @@ const GoodsReceiptsPage: React.FC = () => {
 
     const loadProducts = async () => {
       try {
-        const productsData = await productService.getProducts({})
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setProducts(productsData.items.map((p: any) => ({
+        // Use getActiveProducts for better performance and only active products
+        const productsData = await productService.getActiveProducts()
+        setProducts(productsData.map((p) => ({
           productId: p.productId,
           productName: p.productName,
-          productSku: p.productSku || p.sku || `SKU-${p.productId}`,
-          unitPrice: p.unitPrice || 0,
-          currentStock: p.currentStock || 0
+          productSku: p.sku || `SKU-${p.productId}`,
+          unitPrice: p.sellingPrice || 0,
+          purchasePrice: p.purchasePrice || 0,
+          currentStock: p.currentStock || 0,
+          unit: p.unit,
+          imageUrl: p.imageUrl,
+          category: p.categoryName
         })) || [])
       } catch (error) {
         console.error('Error loading products:', error)

@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Button, Input, Textarea } from '@/components/ui'
-import { formatCurrency } from '@/utils'
+import { Button } from '@/components/ui'
 import type { GoodsReceipt, CreateGoodsReceiptDto, UpdateGoodsReceiptDto, GoodsReceiptDetail } from '@/types'
-import { Plus, Search, Copy, Trash2, Package, X, Save } from 'lucide-react'
+import { FormHeader, BasicInfoSection, ProductDetailsSection, SummarySection } from './components'
 
 interface Product {
   productId: number
@@ -10,7 +9,10 @@ interface Product {
   productSku: string
   currentStock?: number
   unitPrice?: number
+  purchasePrice?: number
   category?: string
+  unit?: string
+  imageUrl?: string
 }
 
 interface Supplier {
@@ -18,6 +20,7 @@ interface Supplier {
   supplierName: string
   email?: string
   phoneNumber?: string
+  address?: string
 }
 
 interface UnifiedGoodsReceiptFormProps {
@@ -33,6 +36,8 @@ interface UnifiedGoodsReceiptFormProps {
 
 interface FormDetail extends GoodsReceiptDetail {
   tempId: string
+  unit?: string
+  subtotal: number
   errors?: {
     productId?: string
     quantity?: string
@@ -89,13 +94,17 @@ const UnifiedGoodsReceiptForm: React.FC<UnifiedGoodsReceiptFormProps> = ({
         supplierId: goodsReceipt.supplierId,
         notes: goodsReceipt.notes || ''
       })
-      setDetails(goodsReceipt.details.map((detail, index) => ({
-        ...detail,
-        tempId: `existing-${index}`,
-        productName: detail.productName || products.find(p => p.productId === detail.productId)?.productName || '',
-        productSku: detail.productSku || products.find(p => p.productId === detail.productId)?.productSku || '',
-        subtotal: detail.quantity * detail.unitPrice
-      })))
+      setDetails(goodsReceipt.details.map((detail, index) => {
+        const product = products.find(p => p.productId === detail.productId)
+        return {
+          ...detail,
+          tempId: `existing-${index}`,
+          productName: detail.productName || product?.productName || '',
+          productSku: detail.productSku || product?.productSku || '',
+          unit: product?.unit,
+          subtotal: detail.quantity * detail.unitPrice
+        }
+      }))
     } else {
       setFormData({ supplierId: 0, notes: '' })
       setDetails([])
@@ -106,20 +115,22 @@ const UnifiedGoodsReceiptForm: React.FC<UnifiedGoodsReceiptFormProps> = ({
 
   const addDetail = (productId?: number) => {
     const product = products.find(p => p.productId === productId)
+    const defaultPrice = product?.purchasePrice || product?.unitPrice || 0
     const newDetail: FormDetail = {
       tempId: `new-${Date.now()}`,
       productId: productId || 0,
       productName: product?.productName || '',
       productSku: product?.productSku || '',
+      unit: product?.unit,
       quantity: 1,
-      unitPrice: product?.unitPrice || 0,
-      subtotal: product?.unitPrice || 0
+      unitPrice: defaultPrice,
+      subtotal: defaultPrice
     }
     setDetails([...details, newDetail])
     setProductSearch('')
   }
 
-  const updateDetail = (tempId: string, field: keyof FormDetail, value: string | number) => {
+  const updateDetail = (tempId: string, field: string, value: string | number) => {
     setDetails(details.map(detail => {
       if (detail.tempId === tempId) {
         const updatedDetail = { ...detail, [field]: value }
@@ -128,8 +139,11 @@ const UnifiedGoodsReceiptForm: React.FC<UnifiedGoodsReceiptFormProps> = ({
           const product = products.find(p => p.productId === value)
           updatedDetail.productName = product?.productName || ''
           updatedDetail.productSku = product?.productSku || ''
-          if (product?.unitPrice && updatedDetail.unitPrice === 0) {
-            updatedDetail.unitPrice = product.unitPrice
+          updatedDetail.unit = product?.unit
+          // Use purchasePrice if available, fallback to unitPrice
+          const defaultPrice = product?.purchasePrice || product?.unitPrice || 0
+          if (updatedDetail.unitPrice === 0 || !updatedDetail.unitPrice) {
+            updatedDetail.unitPrice = defaultPrice
           }
         }
         
@@ -233,283 +247,71 @@ const UnifiedGoodsReceiptForm: React.FC<UnifiedGoodsReceiptFormProps> = ({
 
   const containerClass = variant === 'modal' 
     ? "space-y-6" 
-    : "bg-white rounded-lg shadow-sm border border-gray-200"
+    : "bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden"
 
   const headerContent = variant === 'inline' ? (
-    <div className="border-b border-gray-200 p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {isEdit ? `Sửa phiếu nhập #${goodsReceipt?.receiptNumber}` : 'Tạo phiếu nhập mới'}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {isEdit ? `ID: #${goodsReceipt?.goodsReceiptId}` : 'Điền thông tin để tạo phiếu nhập kho'}
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Button 
-            onClick={handleSubmit} 
-            disabled={isSubmitting}
-            className="flex items-center"
-          >
-            <Save className="w-4 h-4 mr-1" />
-            {isSubmitting ? 'Đang xử lý...' : (isEdit ? 'Cập nhật phiếu' : 'Tạo phiếu nhập')}
-          </Button>
-          <button
-            onClick={onCancel}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-            disabled={isSubmitting}
-            title="Đóng"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    </div>
+    <FormHeader
+      isEdit={isEdit}
+      goodsReceipt={goodsReceipt}
+      onSubmit={handleSubmit}
+      onCancel={onCancel}
+      isSubmitting={isSubmitting}
+      totals={totals}
+    />
   ) : null
 
   const formContent = (
-    <form onSubmit={handleSubmit} className={variant === 'inline' ? "p-6 space-y-6" : "space-y-6"}>
+    <form onSubmit={handleSubmit} className={variant === 'inline' ? "p-8 space-y-8" : "space-y-6"}>
       {/* Basic Information */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-lg font-medium text-blue-900 mb-4">Thông tin cơ bản</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Supplier Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nhà cung cấp *
-            </label>
-            <select
-              value={formData.supplierId}
-              onChange={(e) => setFormData(prev => ({ ...prev, supplierId: Number(e.target.value) }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={0}>Chọn nhà cung cấp</option>
-              {suppliers.map(supplier => (
-                <option key={supplier.supplierId} value={supplier.supplierId}>
-                  {supplier.supplierName}
-                </option>
-              ))}
-            </select>
-            {errors.supplierId && (
-              <p className="mt-1 text-sm text-red-600">{errors.supplierId}</p>
-            )}
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ghi chú
-            </label>
-            <Textarea
-              value={formData.notes}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Nhập ghi chú cho phiếu nhập..."
-              rows={2}
-            />
-          </div>
-        </div>
-      </div>
+      <BasicInfoSection
+        formData={formData}
+        suppliers={suppliers}
+        errors={errors}
+        onChange={(field, value) => {
+          if (field === 'supplierId') {
+            setFormData(prev => ({ ...prev, supplierId: value as number }))
+          } else if (field === 'notes') {
+            setFormData(prev => ({ ...prev, notes: value as string }))
+          }
+        }}
+      />
 
       {/* Product Selection */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-green-900">Chi tiết sản phẩm</h3>
-          <Button 
-            type="button" 
-            onClick={() => addDetail()} 
-            variant="secondary" 
-            size="sm"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Thêm sản phẩm
-          </Button>
-        </div>
-
-        {/* Product Search */}
-        <div className="mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Tìm kiếm sản phẩm theo tên hoặc SKU..."
-              value={productSearch}
-              onChange={(e) => setProductSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          {productSearch && filteredProducts.length > 0 && (
-            <div className="mt-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md bg-white">
-              {filteredProducts.map(product => (
-                <button
-                  key={product.productId}
-                  type="button"
-                  onClick={() => addDetail(product.productId)}
-                  className="w-full px-3 py-2 text-left hover:bg-gray-50 border-b last:border-b-0"
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="font-medium text-sm">{product.productName}</div>
-                      <div className="text-xs text-gray-500">SKU: {product.productSku}</div>
-                    </div>
-                    {product.unitPrice && (
-                      <div className="text-sm font-medium">{formatCurrency(product.unitPrice)}</div>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {errors.details && (
-          <p className="mb-4 text-sm text-red-600">{errors.details}</p>
-        )}
-
-        {/* Product Details List */}
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {details.map((detail, index) => (
-            <div key={detail.tempId} className="border border-gray-200 rounded-lg p-4 bg-white">
-              <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                {/* Product Selection */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Sản phẩm {index + 1}
-                  </label>
-                  <select
-                    value={detail.productId}
-                    onChange={(e) => updateDetail(detail.tempId, 'productId', Number(e.target.value))}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      detail.errors?.productId ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                  >
-                    <option value={0}>Chọn sản phẩm</option>
-                    {products.map(product => (
-                      <option key={product.productId} value={product.productId}>
-                        {product.productName} ({product.productSku})
-                      </option>
-                    ))}
-                  </select>
-                  {detail.errors?.productId && (
-                    <p className="mt-1 text-xs text-red-600">{detail.errors.productId}</p>
-                  )}
-                </div>
-
-                {/* Quantity */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Số lượng
-                  </label>
-                  <Input
-                    type="number"
-                    value={detail.quantity}
-                    onChange={(e) => updateDetail(detail.tempId, 'quantity', Number(e.target.value))}
-                    min="1"
-                    step="1"
-                    className={detail.errors?.quantity ? 'border-red-300' : ''}
-                  />
-                  {detail.errors?.quantity && (
-                    <p className="mt-1 text-xs text-red-600">{detail.errors.quantity}</p>
-                  )}
-                </div>
-
-                {/* Unit Price */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Đơn giá
-                  </label>
-                  <Input
-                    type="number"
-                    value={detail.unitPrice}
-                    onChange={(e) => updateDetail(detail.tempId, 'unitPrice', Number(e.target.value))}
-                    min="0"
-                    step="1000"
-                    className={detail.errors?.unitPrice ? 'border-red-300' : ''}
-                  />
-                  {detail.errors?.unitPrice && (
-                    <p className="mt-1 text-xs text-red-600">{detail.errors.unitPrice}</p>
-                  )}
-                </div>
-
-                {/* Subtotal */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Thành tiền
-                  </label>
-                  <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-medium">
-                    {formatCurrency(detail.subtotal || 0)}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col space-y-1">
-                  <Button
-                    type="button"
-                    onClick={() => duplicateDetail(detail.tempId)}
-                    variant="secondary"
-                    size="sm"
-                    title="Sao chép"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => removeDetail(detail.tempId)}
-                    variant="danger"
-                    size="sm"
-                    title="Xóa"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {details.length === 0 && (
-          <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-            <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500">Chưa có sản phẩm nào. Nhấn "Thêm sản phẩm" để bắt đầu.</p>
-          </div>
-        )}
-      </div>
+      <ProductDetailsSection
+        details={details}
+        products={products}
+        productSearch={productSearch}
+        filteredProducts={filteredProducts}
+        errors={errors}
+        onProductSearchChange={setProductSearch}
+        onAddDetail={addDetail}
+        onUpdateDetail={updateDetail}
+        onRemoveDetail={removeDetail}
+        onDuplicateDetail={duplicateDetail}
+      />
 
       {/* Summary */}
       {details.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Tổng kết</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <div className="text-sm text-blue-600">Số sản phẩm</div>
-              <div className="text-lg font-bold text-blue-900">{totals.uniqueProducts}</div>
-            </div>
-            <div className="bg-green-50 p-3 rounded-lg">
-              <div className="text-sm text-green-600">Tổng số lượng</div>
-              <div className="text-lg font-bold text-green-900">{totals.totalItems}</div>
-            </div>
-            <div className="bg-purple-50 p-3 rounded-lg">
-              <div className="text-sm text-purple-600">Tổng tiền</div>
-              <div className="text-lg font-bold text-purple-900">{formatCurrency(totals.total)}</div>
-            </div>
-          </div>
+        <SummarySection totals={totals} />
+      )}
+
+      {errors.detailsValidation && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <p className="text-sm text-red-700 flex items-center">
+            <span className="w-4 h-4 mr-2">⚠️</span>
+            {errors.detailsValidation}
+          </p>
         </div>
       )}
 
-      {/* Form Actions for Modal variant */}
+      {/* Submit Buttons for Modal variant */}
       {variant === 'modal' && (
         <div className="flex justify-end space-x-3 pt-6 border-t">
-          <Button type="button" onClick={onCancel} variant="secondary">
-            Hủy
+          <Button type="button" onClick={onCancel} variant="secondary" disabled={isSubmitting}>
+            Hủy bỏ
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Đang xử lý...' : (isEdit ? 'Cập nhật phiếu nhập' : 'Tạo phiếu nhập')}
+            {isSubmitting ? 'Đang xử lý...' : (isEdit ? 'Cập nhật phiếu' : 'Tạo phiếu nhập')}
           </Button>
         </div>
       )}
