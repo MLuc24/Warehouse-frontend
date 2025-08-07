@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Button, Input } from '@/components/ui'
 import { formatCurrency } from '@/utils'
-import { Plus, Search, Copy, Trash2, Package, ChevronDown } from 'lucide-react'
+import { Plus, Search, Copy, Trash2, Package, ChevronUp } from 'lucide-react'
 
 interface Product {
   productId: number
@@ -67,8 +67,30 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
     onSelect: (productId: number) => void 
   }) => {
     const [isOpen, setIsOpen] = useState(false)
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 })
     const dropdownRef = useRef<HTMLDivElement>(null)
+    const buttonRef = useRef<HTMLButtonElement>(null)
     const selectedProduct = products.find(p => p.productId === detail.productId)
+
+    // Calculate dropdown position for portal rendering
+    const calculateDropdownPosition = () => {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect()
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY + 8, // 8px gap
+          left: rect.left + window.scrollX,
+          width: rect.width
+        })
+      }
+    }
+
+    // Handle dropdown toggle with position calculation
+    const handleToggle = () => {
+      if (!isOpen) {
+        calculateDropdownPosition()
+      }
+      setIsOpen(!isOpen)
+    }
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -84,16 +106,34 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
       }
     }, [isOpen])
 
+    // Update position on scroll/resize
+    useEffect(() => {
+      if (isOpen) {
+        const handlePositionUpdate = () => {
+          calculateDropdownPosition()
+        }
+        
+        window.addEventListener('scroll', handlePositionUpdate)
+        window.addEventListener('resize', handlePositionUpdate)
+        
+        return () => {
+          window.removeEventListener('scroll', handlePositionUpdate)
+          window.removeEventListener('resize', handlePositionUpdate)
+        }
+      }
+    }, [isOpen])
+
     return (
-      <div className="relative" ref={dropdownRef}>
+      <div className="relative pt-2">
         <label className="block text-sm font-semibold text-gray-700 mb-2">
           Sản phẩm {index + 1}
         </label>
         
         {/* Selected Product Display */}
         <button
+          ref={buttonRef}
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleToggle}
           className={`w-full px-3 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 flex items-center justify-between ${
             detail.errors?.productId ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'
           }`}
@@ -132,80 +172,104 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
           ) : (
             <span className="text-gray-500">Chọn sản phẩm</span>
           )}
-          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronUp className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
-        {/* Dropup Menu */}
-        {isOpen && (
-          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-64 overflow-y-auto">
-            <button
-              type="button"
-              onClick={() => {
-                onSelect(0)
-                setIsOpen(false)
+        {/* Portal Dropdown Menu - Renders outside container constraints */}
+        {isOpen && typeof document !== 'undefined' && (
+          React.createElement(
+            'div',
+            {
+              style: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+                zIndex: 99999
+              }
+            },
+            <div 
+              ref={dropdownRef}
+              className="bg-white border border-gray-200 rounded-xl shadow-xl max-h-64 overflow-y-auto"
+              style={{
+                position: 'absolute',
+                top: dropdownPosition.top,
+                left: dropdownPosition.left,
+                width: Math.max(dropdownPosition.width, 300),
+                pointerEvents: 'auto'
               }}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b text-gray-500 text-sm"
             >
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Package className="w-4 h-4 text-gray-400" />
-                </div>
-                <span>Chọn sản phẩm</span>
-              </div>
-            </button>
-            {products.map(product => (
               <button
-                key={product.productId}
                 type="button"
                 onClick={() => {
-                  onSelect(product.productId)
+                  onSelect(0)
                   setIsOpen(false)
                 }}
-                className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b last:border-b-0 transition-colors duration-200"
+                className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b text-gray-500 text-sm"
               >
                 <div className="flex items-center space-x-3">
-                  {/* Product Image */}
-                  <div className="w-8 h-8 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    {product.imageUrl ? (
-                      <img 
-                        src={product.imageUrl} 
-                        alt={product.productName}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                    ) : null}
-                    <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 ${product.imageUrl ? 'hidden' : ''}`}>
-                      <Package className="w-4 h-4 text-gray-400" />
-                    </div>
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Package className="w-4 h-4 text-gray-400" />
                   </div>
-                  
-                  {/* Product Info - Simplified */}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-gray-900 truncate">
-                      {product.productName}
-                    </div>
-                    <div className="text-xs text-gray-500">SKU: {product.productSku}</div>
-                  </div>
-                  
-                  {/* Price & Stock */}
-                  <div className="text-right flex-shrink-0">
-                    {(product.purchasePrice || product.unitPrice) && (
-                      <div className="text-sm font-semibold text-green-600">
-                        {formatCurrency(product.purchasePrice || product.unitPrice || 0)}
-                      </div>
-                    )}
-                    {product.currentStock !== undefined && (
-                      <div className="text-xs text-gray-500">Tồn: {product.currentStock}</div>
-                    )}
-                  </div>
+                  <span>Chọn sản phẩm</span>
                 </div>
               </button>
-            ))}
-          </div>
+              {products.map(product => (
+                <button
+                  key={product.productId}
+                  type="button"
+                  onClick={() => {
+                    onSelect(product.productId)
+                    setIsOpen(false)
+                  }}
+                  className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b last:border-b-0 transition-colors duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    {/* Product Image */}
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                      {product.imageUrl ? (
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product.productName}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 ${product.imageUrl ? 'hidden' : ''}`}>
+                        <Package className="w-4 h-4 text-gray-400" />
+                      </div>
+                    </div>
+                    
+                    {/* Product Info - Simplified */}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm text-gray-900 truncate">
+                        {product.productName}
+                      </div>
+                      <div className="text-xs text-gray-500">SKU: {product.productSku}</div>
+                    </div>
+                    
+                    {/* Price & Stock */}
+                    <div className="text-right flex-shrink-0">
+                      {(product.purchasePrice || product.unitPrice) && (
+                        <div className="text-sm font-semibold text-green-600">
+                          {formatCurrency(product.purchasePrice || product.unitPrice || 0)}
+                        </div>
+                      )}
+                      {product.currentStock !== undefined && (
+                        <div className="text-xs text-gray-500">Tồn: {product.currentStock}</div>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )
         )}
 
         {detail.errors?.productId && (
@@ -252,7 +316,7 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
         </div>
         
         {productSearch && filteredProducts.length > 0 && (
-          <div className="mt-3 max-h-48 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-lg">
+          <div className="mt-3 max-h-48 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-lg z-[9998] relative">
             {filteredProducts.map(product => (
               <button
                 key={product.productId}
