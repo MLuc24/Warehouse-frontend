@@ -13,7 +13,7 @@ import type {
 } from '@/types/goodsReceipt'
 
 class GoodsReceiptService {
-  private readonly basePath = '/goodsreceipt'
+  private readonly basePath = '/GoodsReceipt'
 
   // Lấy danh sách phiếu nhập với pagination và filter
   async getGoodsReceipts(filters?: GoodsReceiptFilterDto): Promise<PagedGoodsReceiptResult> {

@@ -6,7 +6,8 @@ import { Spinner } from '@/components/ui';
 import { 
   HomePage, 
   ProductsPage, 
-  SuppliersPage, 
+  SuppliersPage,
+  CustomersPage,
   AuthTestPage 
 } from '@/pages';
 import GoodsReceiptsPage from '@/pages/GoodsReceiptsPage';
@@ -62,6 +63,14 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <SuppliersPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path={ROUTES.CUSTOMERS.LIST} 
+        element={
+          <ProtectedRoute>
+            <CustomersPage />
           </ProtectedRoute>
         } 
       />

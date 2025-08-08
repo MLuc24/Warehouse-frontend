@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   CubeIcon, 
   BuildingStorefrontIcon, 
+  UsersIcon,
   ChartBarIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
@@ -51,6 +52,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       href: ROUTES.SUPPLIERS.LIST,
       icon: BuildingStorefrontIcon,
       permission: (perms) => perms.suppliers.canView,
+    },
+    {
+      name: 'Khách hàng',
+      href: ROUTES.CUSTOMERS.LIST,
+      icon: UsersIcon,
+      permission: (perms) => perms.suppliers.canView, // TODO: Add customers permission
     },
     {
       name: 'Nhập kho',

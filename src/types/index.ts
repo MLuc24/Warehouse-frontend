@@ -361,6 +361,74 @@ export interface MonthlyPurchase {
   receipts: number;
 }
 
+// Customer types
+export interface Customer {
+  customerId: number;
+  customerName: string;
+  address?: string;
+  phoneNumber?: string;
+  email?: string;
+  customerType: string; // "Regular" | "VIP" | "Wholesale"
+  status: string; // "Active" | "Inactive"
+  createdAt?: string;
+  totalOrders: number;
+  totalPurchaseValue?: number;
+}
+
+export interface CreateCustomer {
+  customerName: string;
+  address?: string;
+  phoneNumber?: string;
+  email?: string;
+  customerType?: string;
+}
+
+export interface UpdateCustomer {
+  customerName: string;
+  address?: string;
+  phoneNumber?: string;
+  email?: string;
+  customerType: string;
+  status: string;
+}
+
+export interface CustomerSearch {
+  keyword?: string;
+  email?: string;
+  phoneNumber?: string;
+  customerType?: string;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface CustomerListResponse {
+  items: Customer[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface CustomerStats {
+  customerId: number;
+  customerName: string;
+  totalOrders: number;
+  totalPurchaseValue: number;
+  firstOrderDate?: string;
+  lastOrderDate?: string;
+  monthlyOrders: MonthlyOrder[];
+}
+
+export interface MonthlyOrder {
+  month: number;
+  year: number;
+  orderCount: number;
+  totalAmount: number;
+}
+
 // Common types
 export interface ApiResponse<T = unknown> {
   success: boolean;
