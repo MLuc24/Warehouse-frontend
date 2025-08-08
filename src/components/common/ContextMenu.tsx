@@ -83,7 +83,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[140px]"
+      className="fixed z-50 bg-white/95 backdrop-blur-sm border border-gray-200/80 rounded-xl shadow-xl py-2 min-w-[160px] animate-in fade-in-0 zoom-in-95 duration-200"
       style={{
         left: position.x,
         top: position.y,
@@ -92,10 +92,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       {canEdit && (
         <button
           onClick={handleEdit}
-          className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+          className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center space-x-3 transition-all duration-150 group rounded-lg mx-1"
         >
-          <Edit className="w-4 h-4" />
-          <span>Chỉnh sửa</span>
+          <Edit className="w-4 h-4 group-hover:scale-110 transition-transform duration-150" />
+          <span className="font-medium">Chỉnh sửa</span>
         </button>
       )}
       
@@ -104,10 +104,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         canReactivate && (
           <button
             onClick={handleReactivate}
-            className="w-full px-3 py-2 text-left text-sm text-green-600 hover:bg-green-50 flex items-center space-x-2"
+            className="w-full px-4 py-2.5 text-left text-sm text-green-600 hover:bg-green-50 hover:text-green-700 flex items-center space-x-3 transition-all duration-150 group rounded-lg mx-1"
           >
-            <RotateCcw className="w-4 h-4" />
-            <span>Kích hoạt lại</span>
+            <RotateCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
+            <span className="font-medium">Kích hoạt lại</span>
           </button>
         )
       ) : (
@@ -115,10 +115,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         canDelete && (
           <button
             onClick={handleDelete}
-            className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+            className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center space-x-3 transition-all duration-150 group rounded-lg mx-1"
           >
-            <Trash2 className="w-4 h-4" />
-            <span>Xóa</span>
+            <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-150" />
+            <span className="font-medium">Xóa</span>
           </button>
         )
       )}
