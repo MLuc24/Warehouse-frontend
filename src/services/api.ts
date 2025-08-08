@@ -5,7 +5,7 @@ import { API_BASE_URL, STORAGE_KEYS, HTTP_STATUS } from '@/constants';
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Tăng timeout lên 30 giây để xử lý các request phức tạp
   headers: {
     'Content-Type': 'application/json',
   },
@@ -86,6 +86,11 @@ export class ApiService {
           typeof error.response.data === 'object' && 
           'success' in error.response.data && 
           'message' in error.response.data) {
+        // If it's an error response from backend, throw it properly
+        const errorData = error.response.data as { success: boolean; message: string };
+        if (!errorData.success) {
+          throw new Error(errorData.message || 'Unknown error occurred');
+        }
         return error.response.data as T;
       }
       throw this.handleError(error);

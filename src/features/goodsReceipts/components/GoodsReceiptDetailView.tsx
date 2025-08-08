@@ -19,6 +19,8 @@ interface GoodsReceiptDetailViewProps {
   onResendEmail?: (goodsReceiptId: number) => void
   onCancel?: (goodsReceiptId: number) => void
   onResubmit?: (goodsReceiptId: number) => void
+  onExportPDF?: (goodsReceiptId: number) => void
+  onExportReceipt?: () => void
 }
 
 const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
@@ -33,7 +35,9 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
   onComplete,
   onResendEmail,
   onCancel,
-  onResubmit
+  onResubmit,
+  onExportPDF,
+  onExportReceipt
 }) => {
   const canEdit = goodsReceipt.status === 'Draft' || goodsReceipt.status === 'Rejected'
   const canDelete = goodsReceipt.status === 'Draft' || goodsReceipt.status === 'Cancelled'
@@ -65,13 +69,14 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
               currentUserRole={currentUserRole}
               currentUserId={currentUserId}
               onEdit={() => onEdit()}
-              onDelete={onDelete ? (_id) => onDelete() : undefined}
+              onDelete={onDelete ? () => onDelete() : undefined}
               onApprove={onApprove}
               onReject={onReject}
               onCancel={onCancel}
               onResubmit={onResubmit}
               onComplete={onComplete}
               onResendEmail={onResendEmail}
+              onExportPDF={onExportPDF}
               disabled={false}
             />
           </div>
@@ -115,6 +120,7 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
         {/* Product Details */}
         <ProductDetailsTable 
           goodsReceipt={goodsReceipt} 
+          onExportReceipt={onExportReceipt}
         />
       </div>
     </div>

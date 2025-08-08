@@ -101,19 +101,9 @@ class GoodsReceiptService {
     await apiService.post(`${this.basePath}/${id}/complete`, data)
   }
 
-  // Gửi lại email xác nhận cho nhà cung cấp
+  // Gửi lại email xác nhận cho nhà cung cấp (luôn có PDF đính kèm)
   async resendSupplierEmail(id: number): Promise<void> {
     await apiService.post(`${this.basePath}/${id}/resend-supplier-email`)
-  }
-
-  // Hủy phiếu nhập
-  async cancelReceipt(id: number): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/cancel`)
-  }
-
-  // Gửi lại phiếu nhập để phê duyệt (sau khi bị từ chối)
-  async resubmitReceipt(id: number): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/resubmit`)
   }
 }
 

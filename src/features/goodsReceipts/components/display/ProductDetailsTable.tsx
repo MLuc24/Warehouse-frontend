@@ -1,14 +1,17 @@
 import React from 'react'
 import { formatCurrency } from '@/utils'
 import type { GoodsReceipt } from '@/types'
-import { Package, Hash, DollarSign } from 'lucide-react'
+import { Package, Hash, DollarSign, FileText } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 interface ProductDetailsTableProps {
   goodsReceipt: GoodsReceipt
+  onExportReceipt?: () => void
 }
 
 const ProductDetailsTable: React.FC<ProductDetailsTableProps> = ({ 
-  goodsReceipt
+  goodsReceipt,
+  onExportReceipt
 }) => {
   const calculateSubtotal = (quantity: number, unitPrice: number) => {
     return quantity * unitPrice
@@ -24,16 +27,28 @@ const ProductDetailsTable: React.FC<ProductDetailsTableProps> = ({
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
       <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
-        <div className="flex items-center space-x-3">
-          <div className="bg-green-600 p-2 rounded-xl">
-            <Package className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-green-600 p-2 rounded-xl">
+              <Package className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-green-900">Chi tiết sản phẩm</h3>
+              <p className="text-sm text-green-700 mt-1">
+                Danh sách {goodsReceipt.details.length} sản phẩm trong phiếu nhập
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-green-900">Chi tiết sản phẩm</h3>
-            <p className="text-sm text-green-700 mt-1">
-              Danh sách {goodsReceipt.details.length} sản phẩm trong phiếu nhập
-            </p>
-          </div>
+          {onExportReceipt && (
+            <Button
+              onClick={onExportReceipt}
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+              size="sm"
+            >
+              <FileText className="w-4 h-4" />
+              <span>Xuất phiếu</span>
+            </Button>
+          )}
         </div>
       </div>
 

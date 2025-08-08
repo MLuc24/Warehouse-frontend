@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from '@/components/ui'
-import { Check, X, Package, Mail, Trash2, Edit } from 'lucide-react'
+import { Check, X, Package, Mail, Trash2, Edit, FileDown } from 'lucide-react'
 import type { GoodsReceipt } from '@/types'
 
 interface ActionButtonsProps {
@@ -15,6 +15,7 @@ interface ActionButtonsProps {
   onResubmit?: (goodsReceiptId: number) => void
   onEdit?: (goodsReceipt: GoodsReceipt) => void
   onDelete?: (goodsReceiptId: number) => void
+  onExportPDF?: (goodsReceiptId: number) => void
   disabled?: boolean
 }
 
@@ -30,6 +31,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   onResubmit,
   onEdit,
   onDelete,
+  onExportPDF,
   disabled = false
 }) => {
   const { status } = goodsReceipt
@@ -42,24 +44,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   
   // Kiểm tra creator
   const isCreator = currentUserId === goodsReceipt.createdByUserId
-  
-  // Debug logging - TẠM THỜI để kiểm tra dữ liệu
-  console.log('🔍 ActionButtons Debug:', {
-    goodsReceiptId: goodsReceipt.goodsReceiptId,
-    status,
-    currentUserRole,
-    currentUserId,
-    createdByUserId: goodsReceipt.createdByUserId,
-    isCreator,
-    isAdmin,
-    isManager, 
-    isEmployee,
-    canApproveReject
-  })
 
   // Nếu currentUserId chưa có thì chờ load
   if (currentUserId === undefined) {
-    console.log('⏳ Waiting for currentUserId to load...')
     return (
       <div className="flex items-center gap-2 text-gray-500">
         <div className="animate-pulse">Đang tải...</div>
@@ -238,6 +225,23 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     default:
       // Status không xác định → rỗng
       break
+  }
+
+  // Add PDF Export button for all statuses (always available)
+  if (onExportPDF && goodsReceipt.goodsReceiptId) {
+    buttons.push(
+      <Button
+        key="export-pdf"
+        size="sm"
+        variant="secondary"
+        onClick={() => onExportPDF(goodsReceipt.goodsReceiptId!)}
+        disabled={disabled}
+        className="bg-gray-600 hover:bg-gray-700 text-white"
+      >
+        <FileDown className="w-3 h-3 mr-1" />
+        Xuất PDF
+      </Button>
+    )
   }
 
   // Nếu không có button nào thì return null

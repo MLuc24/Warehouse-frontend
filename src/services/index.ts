@@ -20,5 +20,8 @@ export { dashboardService } from './dashboard';
 // Tuần 9: Goods Receipt Services
 export { goodsReceiptService } from './goodsReceipt';
 
+// PDF Service
+export { pdfService } from './pdfService';
+
 // Tuần 10: Import/Export Services
 export { exportImportService } from './exportImport';
