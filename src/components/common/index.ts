@@ -3,6 +3,7 @@ export { DeleteConfirmModal } from './DeleteConfirmModal';
 export { Pagination } from './Pagination';
 export { ExportButtons } from './ExportButtons';
 export { Notification } from './Notification';
+export { ContextMenu } from './ContextMenu';
 
 // Generic Modal Components (for create/update forms)
 export { GenericModal } from './GenericModal';

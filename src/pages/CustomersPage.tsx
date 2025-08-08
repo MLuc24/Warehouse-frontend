@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout';
-import { CustomerList, CustomerInline, CustomerStats } from '@/features/customers';
+import { CustomerList, CustomerModal, CustomerStats } from '@/features/customers';
+import { DeleteConfirmModal } from '@/components/common';
 import { useCustomer } from '@/hooks/useCustomer';
-import { Modal } from '@/components/ui';
 import { Users, Plus, RefreshCw } from 'lucide-react';
 import type { Customer, CreateCustomer, UpdateCustomer } from '@/types';
 
@@ -18,10 +18,13 @@ export const CustomersPage: React.FC = () => {
     loading,
     creating,
     updating,
+    deleting,
     error,
     fetchCustomers,
     createCustomer,
     updateCustomer,
+    deleteCustomer,
+    reactivateCustomer,
     clearError
   } = useCustomer();
 
@@ -29,10 +32,12 @@ export const CustomersPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isStatsVisible, setIsStatsVisible] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedForEdit, setSelectedForEdit] = useState<Customer | null>(null);
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
 
   // Mock pagination data
   const pageSize = 10;
@@ -66,12 +71,50 @@ export const CustomersPage: React.FC = () => {
     setSelectedCustomer(customer);
   };
 
+  // Handle edit customer (from context menu or other triggers)
+  const handleEditCustomer = (customer: Customer) => {
+    setSelectedForEdit(customer);
+    setIsEditModalOpen(true);
+  };
+
+  // Handle delete customer (from context menu or other triggers)  
+  const handleDeleteCustomer = (customer: Customer) => {
+    setCustomerToDelete(customer);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Confirm delete customer
+  const handleConfirmDelete = async () => {
+    if (!customerToDelete) return;
+    
+    try {
+      const success = await deleteCustomer(customerToDelete.customerId);
+      
+      if (success) {
+        setIsDeleteModalOpen(false);
+        setCustomerToDelete(null);
+      }
+    } catch (error) {
+      console.error('Có lỗi xảy ra khi xóa khách hàng:', error);
+    }
+  };
+
+  // Handle customer reactivation
+  const handleReactivateCustomer = async (customer: Customer) => {
+    try {
+      await reactivateCustomer(customer.customerId);
+    } catch (error) {
+      console.error('Có lỗi xảy ra khi kích hoạt lại khách hàng:', error);
+    }
+  };
+
   // Handle customer creation
   const handleCreateCustomer = async (data: CreateCustomer) => {
     try {
-      await createCustomer(data);
-      setIsCreateModalOpen(false);
-      console.log('Thêm khách hàng thành công!');
+      const newCustomer = await createCustomer(data);
+      if (newCustomer) {
+        setIsCreateModalOpen(false);
+      }
     } catch (error) {
       console.error('Có lỗi xảy ra khi thêm khách hàng:', error);
     }
@@ -82,10 +125,11 @@ export const CustomersPage: React.FC = () => {
     if (!selectedForEdit) return;
     
     try {
-      await updateCustomer(selectedForEdit.customerId, data);
-      setIsEditModalOpen(false);
-      setSelectedForEdit(null);
-      console.log('Cập nhật khách hàng thành công!');
+      const updatedCustomer = await updateCustomer(selectedForEdit.customerId, data);
+      if (updatedCustomer) {
+        setIsEditModalOpen(false);
+        setSelectedForEdit(null);
+      }
     } catch (error) {
       console.error('Có lỗi xảy ra khi cập nhật khách hàng:', error);
     }
@@ -122,13 +166,6 @@ export const CustomersPage: React.FC = () => {
   // Handle refresh
   const handleRefresh = () => {
     fetchCustomers();
-    console.log('Dữ liệu đã được cập nhật!');
-  };
-
-  // Handle edit click
-  const handleEditClick = (customer: Customer) => {
-    setSelectedForEdit(customer);
-    setIsEditModalOpen(true);
   };
 
   // Filter customers based on search term
@@ -195,6 +232,9 @@ export const CustomersPage: React.FC = () => {
         selectedCustomer={selectedCustomer}
         onSelectCustomer={handleSelectCustomer}
         onShowCreate={() => setIsCreateModalOpen(true)}
+        onEditCustomer={handleEditCustomer}
+        onDeleteCustomer={handleDeleteCustomer}
+        onReactivateCustomer={handleReactivateCustomer}
         loading={loading}
         // Search props
         searchTerm={searchTerm}
@@ -209,52 +249,43 @@ export const CustomersPage: React.FC = () => {
         // Permission props
         permissions={{
           customers: {
-            canCreate: true // TODO: Get from user permissions
+            canCreate: true, // TODO: Get from user permissions
+            canEdit: true,   // TODO: Get from user permissions
+            canDelete: true, // TODO: Get from user permissions
+            canReactivate: true // TODO: Get from user permissions
           }
         }}
       />
 
       {/* Create Customer Modal */}
-      <Modal
+      <CustomerModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Thêm khách hàng mới"
-      >
-        <CustomerInline
-          onSave={handleCreateCustomer}
-          onCancel={() => setIsCreateModalOpen(false)}
-          isLoading={creating}
-        />
-      </Modal>
+        onSave={handleCreateCustomer}
+        isLoading={creating}
+      />
 
       {/* Edit Customer Modal */}
-      <Modal
+      <CustomerModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Chỉnh sửa khách hàng"
-      >
-        {selectedForEdit && (
-          <CustomerInline
-            customer={selectedForEdit}
-            onSave={handleSaveCustomer}
-            onCancel={() => setIsEditModalOpen(false)}
-            isLoading={updating}
-          />
-        )}
-      </Modal>
+        customer={selectedForEdit || undefined}
+        onSave={handleSaveCustomer}
+        isLoading={updating}
+      />
 
-      {/* Edit Mode Trigger */}
-      {selectedCustomer && (
-        <div className="fixed bottom-6 right-6">
-          <button
-            onClick={() => handleEditClick(selectedCustomer)}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            title="Chỉnh sửa khách hàng"
-          >
-            <Users className="w-6 h-6" />
-          </button>
-        </div>
-      )}
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setCustomerToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Xóa khách hàng"
+        message={customerToDelete ? `Bạn có chắc chắn muốn xóa khách hàng "${customerToDelete.customerName}"? Khách hàng sẽ chuyển về trạng thái không hoạt động.` : ''}
+        loading={deleting}
+      />
       </div>
     </Layout>
   );

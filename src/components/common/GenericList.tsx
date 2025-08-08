@@ -58,6 +58,9 @@ interface GenericListProps<T> {
   // Column interactions
   onColumnHeaderClick?: (column: GenericListColumn<T>) => void;
   
+  // Row interactions
+  onRowRightClick?: (event: React.MouseEvent, item: T) => void;
+  
   // Permissions
   permissions?: {
     canCreate: boolean;
@@ -113,6 +116,9 @@ export const GenericList = <T,>({
   
   // Column interaction props
   onColumnHeaderClick,
+  
+  // Row interaction props
+  onRowRightClick,
   
   // Permission props
   permissions,
@@ -261,6 +267,7 @@ export const GenericList = <T,>({
                     <tr
                       key={getItemKey(item)}
                       onClick={() => onSelectItem(item)}
+                      onContextMenu={onRowRightClick ? (e) => onRowRightClick(e, item) : undefined}
                       className={`cursor-pointer hover:bg-blue-50 transition-colors duration-200 ${
                         isItemSelected(item, selectedItem)
                           ? 'bg-blue-50 border-l-4 border-blue-500 shadow-sm'

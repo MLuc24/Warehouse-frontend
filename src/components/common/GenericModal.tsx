@@ -5,10 +5,11 @@ interface GenericModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
   showCloseButton?: boolean;
   icon?: React.ReactNode;
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
+  maxHeight?: boolean; // Control if modal should use max height
 }
 
 /**
@@ -24,14 +25,16 @@ export const GenericModal: React.FC<GenericModalProps> = ({
   size = 'md',
   showCloseButton = true,
   icon,
-  variant = 'default'
+  variant = 'default',
+  maxHeight = false
 }) => {
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-xl',
-    '2xl': 'max-w-2xl'
+    '2xl': 'max-w-2xl',
+    '3xl': 'max-w-4xl'
   };
 
   const variantClasses = {
@@ -101,39 +104,39 @@ export const GenericModal: React.FC<GenericModalProps> = ({
       />
       
       {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className={`flex min-h-full items-center justify-center p-4 ${maxHeight ? 'py-8' : ''}`}>
         <div 
-          className={`relative w-full ${sizeClasses[size]} transform overflow-hidden rounded-lg bg-white shadow-2xl transition-all`}
+          className={`relative w-full ${sizeClasses[size]} transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all ${maxHeight ? 'max-h-[90vh] flex flex-col' : ''}`}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
         >
-          {/* Header with gradient background */}
-          <div className={`px-6 py-4 ${variantClasses[variant].header}`}>
+          {/* Header with enhanced styling */}
+          <div className={`px-6 py-5 ${variantClasses[variant].header} ${maxHeight ? 'flex-shrink-0' : ''}`}>
             <div className="flex items-center">
-              {/* Icon */}
+              {/* Icon with enhanced styling */}
               {icon && (
-                <div className={`mr-3 flex-shrink-0 ${variantClasses[variant].iconColor}`}>
+                <div className={`mr-3 flex-shrink-0 p-2 rounded-full bg-white/20 backdrop-blur-sm ${variantClasses[variant].iconColor}`}>
                   {icon}
                 </div>
               )}
               
-              {/* Title */}
+              {/* Title with better typography */}
               <h3 
                 id="modal-title"
-                className={`text-lg font-semibold ${variantClasses[variant].titleColor} flex-grow`}
+                className={`text-xl font-bold ${variantClasses[variant].titleColor} flex-grow`}
               >
                 {title}
               </h3>
               
-              {/* Close button */}
+              {/* Close button with enhanced styling */}
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="ml-3 flex-shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-full p-1 transition-colors"
+                  className="ml-3 flex-shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-full p-2 hover:bg-white/20 transition-all duration-200"
                   aria-label="Close modal"
                 >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -141,8 +144,8 @@ export const GenericModal: React.FC<GenericModalProps> = ({
             </div>
           </div>
 
-          {/* Content with better spacing */}
-          <div className="px-6 py-6 bg-white">
+          {/* Content with better spacing and scrolling */}
+          <div className={`px-6 py-6 bg-white ${maxHeight ? 'flex-1 overflow-y-auto' : ''}`}>
             {children}
           </div>
         </div>

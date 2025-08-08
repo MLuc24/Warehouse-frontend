@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { GenericList } from '@/components/common';
+import { GenericList, ContextMenu } from '@/components/common';
 import { Users, Star, Package2, ShieldCheck, Phone, Mail, MapPin } from 'lucide-react';
 import type { Customer } from '@/types';
 
@@ -10,6 +10,9 @@ interface CustomerListProps {
   selectedCustomer: Customer | null;
   onSelectCustomer: (customer: Customer) => void;
   onShowCreate?: () => void;
+  onEditCustomer?: (customer: Customer) => void;
+  onDeleteCustomer?: (customer: Customer) => void;
+  onReactivateCustomer?: (customer: Customer) => void;
   loading: boolean;
   // Search props
   searchTerm: string;
@@ -25,6 +28,9 @@ interface CustomerListProps {
   permissions?: {
     customers: {
       canCreate: boolean;
+      canEdit?: boolean;
+      canDelete?: boolean;
+      canReactivate?: boolean;
     };
   };
 }
@@ -38,6 +44,9 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   selectedCustomer,
   onSelectCustomer,
   onShowCreate,
+  onEditCustomer,
+  onDeleteCustomer,
+  onReactivateCustomer,
   loading,
   // Search props
   searchTerm,
@@ -53,6 +62,59 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   permissions
 }) => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<{
+    isVisible: boolean;
+    position: { x: number; y: number };
+    customer: Customer | null;
+  }>({
+    isVisible: false,
+    position: { x: 0, y: 0 },
+    customer: null
+  });
+
+  // Handle right-click on row to show context menu
+  const handleRowRightClick = (event: React.MouseEvent, customer: Customer) => {
+    event.preventDefault();
+    setContextMenu({
+      isVisible: true,
+      position: { x: event.clientX, y: event.clientY },
+      customer
+    });
+  };
+
+  // Handle context menu close
+  const handleCloseContextMenu = () => {
+    setContextMenu({
+      isVisible: false,
+      position: { x: 0, y: 0 },
+      customer: null
+    });
+  };
+
+  // Handle edit from context menu
+  const handleContextEdit = () => {
+    if (contextMenu.customer && onEditCustomer) {
+      onEditCustomer(contextMenu.customer);
+    }
+  };
+
+  // Handle delete from context menu
+  const handleContextDelete = () => {
+    if (contextMenu.customer && onDeleteCustomer) {
+      onDeleteCustomer(contextMenu.customer);
+    }
+    handleCloseContextMenu();
+  };
+
+  // Handle reactivate from context menu
+  const handleContextReactivate = () => {
+    if (contextMenu.customer && onReactivateCustomer) {
+      onReactivateCustomer(contextMenu.customer);
+    }
+    handleCloseContextMenu();
+  };
 
   // Helper function for customer type display
   const getCustomerTypeDisplay = (type: string) => {
@@ -202,9 +264,8 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   ], []);
 
   // Column header click handler for sorting
-  const handleColumnHeaderClick = (column: { key: string; label: string }) => {
+  const handleColumnHeaderClick = () => {
     // Sorting will be handled by GenericList internally
-    console.log('Column clicked:', column.key);
   };
 
   // Status filter change handler
@@ -261,6 +322,9 @@ export const CustomerList: React.FC<CustomerListProps> = ({
         // Column interactions
         onColumnHeaderClick={handleColumnHeaderClick}
         
+        // Row interactions
+        onRowRightClick={handleRowRightClick}
+        
         // Permission props
         permissions={{
           canCreate: permissions?.customers.canCreate ?? false
@@ -271,6 +335,20 @@ export const CustomerList: React.FC<CustomerListProps> = ({
         emptyStateMessage="Không có khách hàng nào"
         emptySearchMessage={(term) => `Không tìm thấy khách hàng nào với từ khóa "${term}"`}
         emptyFilterMessage={(filter) => `Không có khách hàng nào ${filter === 'Active' ? 'đang hoạt động' : 'không hoạt động'}`}
+      />
+      
+      {/* Context Menu */}
+      <ContextMenu
+        isVisible={contextMenu.isVisible}
+        position={contextMenu.position}
+        onClose={handleCloseContextMenu}
+        onEdit={handleContextEdit}
+        onDelete={handleContextDelete}
+        onReactivate={handleContextReactivate}
+        canEdit={permissions?.customers.canEdit ?? true}
+        canDelete={permissions?.customers.canDelete ?? true}
+        canReactivate={permissions?.customers.canReactivate ?? true}
+        isInactive={contextMenu.customer?.status === 'Inactive'}
       />
     </div>
   );
