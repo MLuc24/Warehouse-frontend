@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from '@/components/ui'
-import { Check, X, Package, Mail, Trash2, Edit, FileDown } from 'lucide-react'
+import { Check, X, Package, Mail, Trash2, Edit } from 'lucide-react'
 import type { GoodsReceipt } from '@/types'
 
 interface ActionButtonsProps {
@@ -15,7 +15,6 @@ interface ActionButtonsProps {
   onResubmit?: (goodsReceiptId: number) => void
   onEdit?: (goodsReceipt: GoodsReceipt) => void
   onDelete?: (goodsReceiptId: number) => void
-  onExportPDF?: (goodsReceiptId: number) => void
   disabled?: boolean
 }
 
@@ -31,7 +30,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   onResubmit,
   onEdit,
   onDelete,
-  onExportPDF,
   disabled = false
 }) => {
   const { status } = goodsReceipt
@@ -225,23 +223,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     default:
       // Status không xác định → rỗng
       break
-  }
-
-  // Add PDF Export button for all statuses (always available)
-  if (onExportPDF && goodsReceipt.goodsReceiptId) {
-    buttons.push(
-      <Button
-        key="export-pdf"
-        size="sm"
-        variant="secondary"
-        onClick={() => onExportPDF(goodsReceipt.goodsReceiptId!)}
-        disabled={disabled}
-        className="bg-gray-600 hover:bg-gray-700 text-white"
-      >
-        <FileDown className="w-3 h-3 mr-1" />
-        Xuất PDF
-      </Button>
-    )
   }
 
   // Nếu không có button nào thì return null

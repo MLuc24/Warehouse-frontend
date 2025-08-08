@@ -19,7 +19,6 @@ interface GoodsReceiptDetailViewProps {
   onResendEmail?: (goodsReceiptId: number) => void
   onCancel?: (goodsReceiptId: number) => void
   onResubmit?: (goodsReceiptId: number) => void
-  onExportPDF?: (goodsReceiptId: number) => void
   onExportReceipt?: () => void
 }
 
@@ -36,7 +35,6 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
   onResendEmail,
   onCancel,
   onResubmit,
-  onExportPDF,
   onExportReceipt
 }) => {
   const canEdit = goodsReceipt.status === 'Draft' || goodsReceipt.status === 'Rejected'
@@ -76,7 +74,6 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
               onResubmit={onResubmit}
               onComplete={onComplete}
               onResendEmail={onResendEmail}
-              onExportPDF={onExportPDF}
               disabled={false}
             />
           </div>

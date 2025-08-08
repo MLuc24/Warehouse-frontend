@@ -127,7 +127,6 @@ const GoodsReceiptsPage: React.FC = () => {
                   await handleResendEmail(selectedGoodsReceipt.goodsReceiptId)
                 }
               }}
-              onExportPDF={handleExportPDF}
             />
           </div>
         </div>
