@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Button, Textarea } from '@/components/ui'
 import { ProductDetailsSection } from '@/components/common'
-import { formatCurrency } from '@/utils'
-import { Package, X, Save, Mail, Phone, MapPin, DollarSign, ShoppingCart, Package2 } from 'lucide-react'
+import { Package, X, Save, Mail, Phone, MapPin } from 'lucide-react'
 import type { GoodsReceipt, CreateGoodsReceiptDto, UpdateGoodsReceiptDto, GoodsReceiptDetail } from '@/types'
 
 interface Product {
@@ -73,21 +72,6 @@ const UnifiedGoodsReceiptForm: React.FC<UnifiedGoodsReceiptFormProps> = ({
       product.productSku.toLowerCase().includes(productSearch.toLowerCase())
     ).slice(0, 5)
   }, [products, productSearch])
-
-  // Calculate totals
-  const totals = useMemo(() => {
-    const subtotal = details.reduce((sum, detail) => sum + (detail.subtotal || 0), 0)
-    const totalItems = details.reduce((sum, detail) => sum + detail.quantity, 0)
-    const uniqueProducts = details.filter(detail => detail.productId > 0).length
-    
-    return {
-      subtotal,
-      totalItems,
-      uniqueProducts,
-      tax: subtotal * 0.1,
-      total: subtotal * 1.1
-    }
-  }, [details])
 
   // Reset form when props change
   useEffect(() => {
@@ -267,35 +251,6 @@ const UnifiedGoodsReceiptForm: React.FC<UnifiedGoodsReceiptFormProps> = ({
       </div>
       
       {/* Stats Bar */}
-      <div className="mt-4 grid grid-cols-3 gap-4">
-        <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-white/50">
-          <div className="flex items-center">
-            <Package2 className="w-5 h-5 text-blue-600 mr-2" />
-            <div>
-              <p className="text-xs font-medium text-gray-600">Sản phẩm</p>
-              <p className="text-lg font-bold text-blue-700">{totals.uniqueProducts}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-white/50">
-          <div className="flex items-center">
-            <ShoppingCart className="w-5 h-5 text-green-600 mr-2" />
-            <div>
-              <p className="text-xs font-medium text-gray-600">Tổng số lượng</p>
-              <p className="text-lg font-bold text-green-700">{totals.totalItems}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-white/50">
-          <div className="flex items-center">
-            <DollarSign className="w-5 h-5 text-purple-600 mr-2" />
-            <div>
-              <p className="text-xs font-medium text-gray-600">Tổng tiền</p>
-              <p className="text-lg font-bold text-purple-700">{formatCurrency(totals.total)}</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 
