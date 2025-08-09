@@ -531,6 +531,56 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
             </div>
           </div>
         ))}
+
+        {/* Summary Row - Integrated at the bottom */}
+        {details.length > 0 && (
+          <div className="border-t-2 border-gray-300 pt-2 mt-2">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-2.5 border">
+              {/* Summary Label */}
+              <div className="md:col-span-4 flex items-center">
+                <div className="flex items-center space-x-1.5">
+                  <div className={`${colors.iconBg} p-1.5 rounded-lg`}>
+                    <Package className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="font-semibold text-sm text-gray-700">Tổng kết</span>
+                </div>
+              </div>
+
+              {/* Total Quantity */}
+              <div className="md:col-span-2 text-center">
+                <div className="text-xs text-gray-500 mb-0.5">Tổng SL</div>
+                <div className="font-bold text-sm text-gray-900">
+                  {details.reduce((sum, detail) => sum + (detail.quantity || 0), 0)}
+                </div>
+              </div>
+
+              {/* Empty space for unit column */}
+              <div className="md:col-span-1"></div>
+
+              {/* Average Price */}
+              <div className="md:col-span-2 text-center">
+                <div className="text-xs text-gray-500 mb-0.5">TB Đơn giá</div>
+                <div className="font-bold text-sm text-gray-900">
+                  {formatCurrency(details.length > 0 ? details.reduce((sum, detail) => sum + (detail.unitPrice || 0), 0) / details.length : 0)}
+                </div>
+              </div>
+
+              {/* Total Amount */}
+              <div className="md:col-span-2 text-center">
+                <div className="text-xs text-gray-500 mb-0.5">Tổng cộng</div>
+                <div className={`font-bold text-sm px-2 py-1 bg-gradient-to-r ${colors.subtotal} rounded-md`}>
+                  {formatCurrency(details.reduce((sum, detail) => sum + (detail.subtotal || 0), 0))}
+                </div>
+              </div>
+
+              {/* Items count */}
+              <div className="md:col-span-1 text-center">
+                <div className="text-xs text-gray-500 mb-0.5">Items</div>
+                <div className="font-bold text-sm text-gray-900">{details.length}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {details.length === 0 && (

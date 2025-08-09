@@ -442,33 +442,6 @@ export const UnifiedGoodsIssueForm: React.FC<UnifiedGoodsIssueFormProps> = ({
     )
   }
 
-  // Summary Section Component (inline)
-  const SummarySection = () => (
-    <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 shadow-sm">
-      <div className="flex items-center space-x-3 mb-4">
-        <div className="bg-green-600 p-2 rounded-xl">
-          <DollarSign className="w-5 h-5 text-white" />
-        </div>
-        <h3 className="text-xl font-semibold text-green-900">Tổng kết</h3>
-      </div>
-      
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-green-100">
-          <p className="text-sm text-gray-600 font-medium">Sản phẩm</p>
-          <p className="text-2xl font-bold text-purple-700">{totals.uniqueProducts}</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-green-100">
-          <p className="text-sm text-gray-600 font-medium">Tổng SL</p>
-          <p className="text-2xl font-bold text-orange-700">{totals.totalItems}</p>
-        </div>
-        <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl p-4 shadow-sm border border-green-200 lg:col-span-1 col-span-2">
-          <p className="text-sm text-green-700 font-semibold">Tổng cộng</p>
-          <p className="text-2xl font-bold text-green-800">{formatCurrency(totals.subtotal)}</p>
-        </div>
-      </div>
-    </div>
-  )
-
   const containerClass = variant === 'modal' 
     ? "space-y-6"
     : "bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden"
@@ -497,9 +470,6 @@ export const UnifiedGoodsIssueForm: React.FC<UnifiedGoodsIssueFormProps> = ({
           subtitle="Thêm sản phẩm xuất"
           colorScheme="purple"
         />
-
-        {/* Summary */}
-        {details.length > 0 && <SummarySection />}
 
         {/* Submit Buttons for Modal variant */}
         {variant === 'modal' && (
