@@ -43,7 +43,6 @@ const GoodsIssuesPage: React.FC = () => {
     handleCancel,
     handleResubmit,
     handleResendEmail,
-    handleExportPDF,
     updateFilters,
     refreshData,
   } = useGoodsIssue()
@@ -291,141 +290,53 @@ const GoodsIssuesPage: React.FC = () => {
           userRole={currentUser?.role}
           onEdit={handleEdit}
           onDelete={async (issue) => {
-            if (confirm(`Bạn có chắc chắn muốn xóa phiếu xuất kho ${issue.issueNumber}?`)) {
-              try {
-                await handleDeleteGoodsIssue(issue.goodsIssueId)
-                setViewMode('table')
-              } catch (error) {
-                alert(`Lỗi khi xóa: ${error}`)
-              }
-            }
+            await handleDeleteGoodsIssue(issue.goodsIssueId)
+            setViewMode('table')
           }}
           onBack={() => setViewMode('table')}
           onSubmitForApproval={async (issue) => {
-            const notes = prompt('Ghi chú khi gửi phê duyệt (tùy chọn):')
-            if (notes !== null) {
-              try {
-                await handleSubmitForApproval(issue.goodsIssueId, notes || undefined)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi gửi phê duyệt: ${error}`)
-              }
-            }
+            await handleSubmitForApproval(issue.goodsIssueId)
+            await refreshData()
           }}
           onApprove={async (issue) => {
-            const notes = prompt('Ghi chú khi phê duyệt (tùy chọn):')
-            if (notes !== null) {
-              try {
-                await handleApprove(issue.goodsIssueId, notes || undefined)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi phê duyệt: ${error}`)
-              }
-            }
+            await handleApprove(issue.goodsIssueId)
+            await refreshData()
           }}
           onReject={async (issue) => {
-            const notes = prompt('Lý do từ chối:')
-            if (notes) {
-              try {
-                await handleReject(issue.goodsIssueId, notes)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi từ chối: ${error}`)
-              }
-            }
+            await handleReject(issue.goodsIssueId, 'Từ chối phiếu xuất')
+            await refreshData()
           }}
           onPrepare={async (issue) => {
-            const notes = prompt('Ghi chú khi chuẩn bị hàng (tùy chọn):')
-            if (notes !== null) {
-              try {
-                await handlePrepare(issue.goodsIssueId, notes || undefined)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi chuẩn bị hàng: ${error}`)
-              }
-            }
+            await handlePrepare(issue.goodsIssueId)
+            await refreshData()
           }}
           onMarkReadyForDelivery={async (issue) => {
-            const notes = prompt('Ghi chú khi đánh dấu sẵn sàng giao hàng (tùy chọn):')
-            if (notes !== null) {
-              try {
-                await handleMarkReadyForDelivery(issue.goodsIssueId, notes || undefined)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi đánh dấu sẵn sàng giao hàng: ${error}`)
-              }
-            }
+            await handleMarkReadyForDelivery(issue.goodsIssueId)
+            await refreshData()
           }}
           onStartDelivery={async (issue) => {
-            const address = issue.deliveryAddress || prompt('Địa chỉ giao hàng:')
-            const notes = prompt('Ghi chú khi bắt đầu giao hàng (tùy chọn):')
-            if (address && notes !== null) {
-              try {
-                await handleStartDelivery(issue.goodsIssueId, address, notes || undefined)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi bắt đầu giao hàng: ${error}`)
-              }
-            }
+            const address = issue.deliveryAddress || 'Địa chỉ mặc định'
+            await handleStartDelivery(issue.goodsIssueId, address)
+            await refreshData()
           }}
           onConfirmDelivery={async (issue) => {
-            const notes = prompt('Ghi chú khi xác nhận giao hàng (tùy chọn):')
-            if (notes !== null) {
-              try {
-                await handleConfirmDelivery(issue.goodsIssueId, notes || undefined)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi xác nhận giao hàng: ${error}`)
-              }
-            }
+            await handleConfirmDelivery(issue.goodsIssueId)
+            await refreshData()
           }}
           onComplete={async (issue) => {
-            const notes = prompt('Ghi chú khi hoàn thành (tùy chọn):')
-            if (notes !== null) {
-              try {
-                await handleComplete(issue.goodsIssueId, notes || undefined)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi hoàn thành: ${error}`)
-              }
-            }
+            await handleComplete(issue.goodsIssueId)
+            await refreshData()
           }}
           onCancel={async (issue) => {
-            const notes = prompt('Lý do hủy phiếu xuất:')
-            if (notes) {
-              try {
-                await handleCancel(issue.goodsIssueId, notes)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi hủy phiếu: ${error}`)
-              }
-            }
+            await handleCancel(issue.goodsIssueId, 'Hủy phiếu xuất')
+            await refreshData()
           }}
           onResubmit={async (issue) => {
-            const notes = prompt('Ghi chú khi gửi lại (tùy chọn):')
-            if (notes !== null) {
-              try {
-                await handleResubmit(issue.goodsIssueId, notes || undefined)
-                await refreshData()
-              } catch (error) {
-                alert(`Lỗi khi gửi lại: ${error}`)
-              }
-            }
+            await handleResubmit(issue.goodsIssueId)
+            await refreshData()
           }}
           onResendEmail={async (issue) => {
-            try {
-              await handleResendEmail(issue.goodsIssueId)
-              alert('Đã gửi email thành công')
-            } catch (error) {
-              alert(`Lỗi khi gửi email: ${error}`)
-            }
-          }}
-          onExportPDF={async (issue) => {
-            try {
-              await handleExportPDF(issue.goodsIssueId)
-            } catch (error) {
-              alert(`Lỗi khi xuất PDF: ${error}`)
-            }
+            await handleResendEmail(issue.goodsIssueId)
           }}
           loading={loading}
         />

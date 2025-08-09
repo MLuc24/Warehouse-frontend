@@ -22,7 +22,6 @@ interface GoodsIssueDetailViewProps {
   onCancel?: (goodsIssue: GoodsIssue) => void
   onResubmit?: (goodsIssue: GoodsIssue) => void
   onResendEmail?: (goodsIssue: GoodsIssue) => void
-  onExportPDF?: (goodsIssue: GoodsIssue) => void
   onBack?: () => void
   loading?: boolean
 }
@@ -44,7 +43,6 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
   onCancel,
   onResubmit,
   onResendEmail,
-  onExportPDF,
   onBack,
   loading = false
 }) => {
@@ -52,6 +50,15 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
   const canDelete = goodsIssue.status === 'Draft' || goodsIssue.status === 'Cancelled'
   const canApprove = goodsIssue.status === 'AwaitingApproval' && (userRole === 'Admin' || userRole === 'Manager')
   const canComplete = goodsIssue.status === 'Delivered' && (userRole === 'Admin' || userRole === 'Manager')
+
+  const handleExportPDF = async () => {
+    try {
+      const { pdfService } = await import('@/services/pdfService')
+      await pdfService.downloadGoodsIssuePDF(goodsIssue)
+    } catch (error) {
+      console.error('Error exporting PDF:', error)
+    }
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 p-6">
@@ -89,7 +96,6 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
               onCancel={onCancel}
               onResubmit={onResubmit}
               onResendEmail={onResendEmail}
-              onExportPDF={onExportPDF}
               loading={loading}
             />
           </div>
@@ -148,6 +154,8 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
           title="Chi tiết sản phẩm"
           subtitle="phiếu xuất"
           colorScheme="purple"
+          onExport={handleExportPDF}
+          exportButtonText="Xuất phiếu"
           totalAmount={goodsIssue.totalAmount}
         />
       </div>

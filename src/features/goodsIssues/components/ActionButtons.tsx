@@ -11,7 +11,6 @@ import {
   XCircle, 
   RefreshCw, 
   Mail,
-  FileDown,
   Edit,
   Eye,
   Trash2
@@ -35,7 +34,6 @@ interface ActionButtonsProps {
   onCancel?: (goodsIssue: GoodsIssue) => void
   onResubmit?: (goodsIssue: GoodsIssue) => void
   onResendEmail?: (goodsIssue: GoodsIssue) => void
-  onExportPDF?: (goodsIssue: GoodsIssue) => void
   loading?: boolean
 }
 
@@ -57,7 +55,6 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onCancel,
   onResubmit,
   onResendEmail,
-  onExportPDF,
   loading = false
 }) => {
   const status = goodsIssue.status as GoodsIssueStatus
@@ -295,20 +292,6 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
 
     // Common actions for completed workflows
     if (['Approved', 'InPreparation', 'ReadyForDelivery', 'InTransit', 'Delivered', 'Completed'].includes(status)) {
-      if (onExportPDF) {
-        actions.push(
-          <Button
-            key="export-pdf"
-            variant="outline"
-            size="sm"
-            onClick={() => onExportPDF(goodsIssue)}
-            disabled={loading}
-          >
-            <FileDown className="w-4 h-4" />
-            PDF
-          </Button>
-        )
-      }
       if (onResendEmail) {
         actions.push(
           <Button
