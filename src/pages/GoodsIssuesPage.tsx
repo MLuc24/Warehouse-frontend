@@ -8,6 +8,24 @@ import { useGoodsIssue } from '@/hooks/useGoodsIssue'
 import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { GoodsIssueStatus } from '@/types/goodsIssue'
 
+const getStatusLabel = (status: GoodsIssueStatus): string => {
+  const statusLabels = {
+    'Draft': 'Nháp',
+    'AwaitingApproval': 'Chờ phê duyệt',
+    'Approved': 'Đã phê duyệt',
+    'Approve': 'Đã phê duyệt',
+    'InPreparation': 'Đang chuẩn bị',
+    'Preparing': 'Đang chuẩn bị',
+    'ReadyForDelivery': 'Sẵn sàng giao hàng',
+    'InTransit': 'Đang vận chuyển',
+    'Delivered': 'Đã giao hàng',
+    'Completed': 'Hoàn thành',
+    'Cancelled': 'Đã hủy',
+    'Rejected': 'Bị từ chối'
+  }
+  return statusLabels[status] || status
+}
+
 const GoodsIssuesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
   
@@ -141,16 +159,16 @@ const GoodsIssuesPage: React.FC = () => {
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
             >
               <option value="">Tất cả trạng thái</option>
-              <option value="Draft">Nháp</option>
-              <option value="AwaitingApproval">Chờ phê duyệt</option>
-              <option value="Approved">Đã phê duyệt</option>
-              <option value="InPreparation">Đang chuẩn bị</option>
-              <option value="ReadyForDelivery">Sẵn sàng giao hàng</option>
-              <option value="InTransit">Đang vận chuyển</option>
-              <option value="Delivered">Đã giao hàng</option>
-              <option value="Completed">Hoàn thành</option>
-              <option value="Cancelled">Đã hủy</option>
-              <option value="Rejected">Bị từ chối</option>
+              <option value="Draft">{getStatusLabel('Draft')}</option>
+              <option value="AwaitingApproval">{getStatusLabel('AwaitingApproval')}</option>
+              <option value="Approved">{getStatusLabel('Approved')}</option>
+              <option value="InPreparation">{getStatusLabel('InPreparation')}</option>
+              <option value="ReadyForDelivery">{getStatusLabel('ReadyForDelivery')}</option>
+              <option value="InTransit">{getStatusLabel('InTransit')}</option>
+              <option value="Delivered">{getStatusLabel('Delivered')}</option>
+              <option value="Completed">{getStatusLabel('Completed')}</option>
+              <option value="Cancelled">{getStatusLabel('Cancelled')}</option>
+              <option value="Rejected">{getStatusLabel('Rejected')}</option>
             </select>
           </div>
 

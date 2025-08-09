@@ -5,7 +5,6 @@ import {
   Check, 
   X, 
   Package, 
-  Truck, 
   CheckCircle, 
   Mail,
   Edit,
@@ -146,7 +145,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       }
       break
 
-    case 'Approved':
+    case 'Approve':  // Backend status
       // Admin/Manager/WarehouseStaff có thể bắt đầu chuẩn bị
       if (canApproveReject || userRole === 'WarehouseStaff') {
         buttons.push(
@@ -164,29 +163,19 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       }
       break
 
-    case 'InPreparation':
-      // Warehouse staff có thể đánh dấu sẵn sàng giao hàng (chuyển sang ReadyForDelivery)
-      // Backend không có endpoint này nên tạm thời bỏ qua
-      break
-
-    case 'ReadyForDelivery':
-      // Delivery staff có thể bắt đầu giao hàng (chuyển sang InTransit)
-      // Backend không có endpoint này nên tạm thời bỏ qua
-      break
-
-    case 'InTransit':
-      // Delivery staff có thể xác nhận đã giao (chuyển sang Delivered)
-      if (canApproveReject || userRole === 'DeliveryStaff') {
+    case 'Preparing':  // Backend status
+      // All roles can mark as delivered
+      if (canApproveReject || userRole === 'WarehouseStaff' || userRole === 'Employee') {
         buttons.push(
           <Button
-            key="confirm-delivery"
+            key="confirmDelivery"
             size="sm"
             onClick={() => onConfirmDelivery?.(goodsIssue)}
             disabled={loading}
             className="bg-teal-600 hover:bg-teal-700 text-white"
           >
-            <Truck className="w-3 h-3 mr-1" />
-            Xác nhận giao
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Xác nhận giao hàng
           </Button>
         )
       }

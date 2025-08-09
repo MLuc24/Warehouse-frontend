@@ -2,7 +2,9 @@ export type GoodsIssueStatus =
   | 'Draft'
   | 'AwaitingApproval'
   | 'Approved'
+  | 'Approve'  // Backend có thể trả về "Approve"
   | 'InPreparation'
+  | 'Preparing'  // Backend có thể trả về "Preparing"
   | 'ReadyForDelivery'
   | 'InTransit'
   | 'Delivered'

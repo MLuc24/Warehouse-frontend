@@ -249,13 +249,19 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
   
   const handlePrepare = useCallback(async (goodsIssueId: number) => {
     try {
+      // Refresh the goods issue data first to ensure we have the latest status
+      const latestGoodsIssue = await goodsIssueService.getGoodsIssueById(goodsIssueId)
+      if (latestGoodsIssue.status !== 'Approved') {
+        throw new Error(`Không thể chuẩn bị phiếu xuất. Trạng thái hiện tại: ${latestGoodsIssue.status}`)
+      }
+      
       await goodsIssueService.prepareGoodsIssue(goodsIssueId)
       
       // Update the specific issue in state immediately for real-time UI update
       setGoodsIssues(prev => 
         prev.map(issue => 
           issue.goodsIssueId === goodsIssueId 
-            ? { ...issue, status: 'InPreparation' }
+            ? { ...issue, status: 'Preparing' }
             : issue
         )
       )
@@ -263,7 +269,7 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
       // Update selected issue if it matches
       setSelectedGoodsIssue(prev => 
         prev?.goodsIssueId === goodsIssueId 
-          ? { ...prev, status: 'InPreparation' }
+          ? { ...prev, status: 'Preparing' }
           : prev
       )
 

@@ -99,25 +99,27 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
           {/* Status Badge */}
           <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
             goodsIssue.status === 'Completed' ? 'bg-green-100 text-green-800' :
-            goodsIssue.status === 'AwaitingApproval' ? 'bg-yellow-100 text-yellow-800' :
+            goodsIssue.status === 'Delivered' ? 'bg-teal-100 text-teal-800' :
+            goodsIssue.status === 'InTransit' ? 'bg-yellow-100 text-yellow-800' :
+            goodsIssue.status === 'ReadyForDelivery' ? 'bg-cyan-100 text-cyan-800' :
+            goodsIssue.status === 'InPreparation' || goodsIssue.status === 'Preparing' ? 'bg-purple-100 text-purple-800' :
+            goodsIssue.status === 'Approved' || goodsIssue.status === 'Approve' ? 'bg-blue-100 text-blue-800' :
+            goodsIssue.status === 'AwaitingApproval' ? 'bg-orange-100 text-orange-800' :
             goodsIssue.status === 'Draft' ? 'bg-gray-100 text-gray-800' :
             goodsIssue.status === 'Rejected' ? 'bg-red-100 text-red-800' :
-            goodsIssue.status === 'Approved' ? 'bg-blue-100 text-blue-800' :
-            goodsIssue.status === 'InPreparation' ? 'bg-purple-100 text-purple-800' :
-            goodsIssue.status === 'ReadyForDelivery' ? 'bg-cyan-100 text-cyan-800' :
-            goodsIssue.status === 'InTransit' ? 'bg-yellow-100 text-yellow-800' :
-            goodsIssue.status === 'Delivered' ? 'bg-teal-100 text-teal-800' :
+            goodsIssue.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
             'bg-gray-100 text-gray-800'
           }`}>
             {goodsIssue.status === 'Completed' ? 'Hoàn thành' :
-             goodsIssue.status === 'AwaitingApproval' ? 'Chờ duyệt' :
+             goodsIssue.status === 'Delivered' ? 'Đã giao hàng' :
+             goodsIssue.status === 'InTransit' ? 'Đang vận chuyển' :
+             goodsIssue.status === 'ReadyForDelivery' ? 'Sẵn sàng giao hàng' :
+             goodsIssue.status === 'InPreparation' || goodsIssue.status === 'Preparing' ? 'Đang chuẩn bị' :
+             goodsIssue.status === 'Approved' || goodsIssue.status === 'Approve' ? 'Đã phê duyệt' :
+             goodsIssue.status === 'AwaitingApproval' ? 'Chờ phê duyệt' :
              goodsIssue.status === 'Draft' ? 'Nháp' :
-             goodsIssue.status === 'Rejected' ? 'Từ chối' :
-             goodsIssue.status === 'Approved' ? 'Đã duyệt' :
-             goodsIssue.status === 'InPreparation' ? 'Đang chuẩn bị' :
-             goodsIssue.status === 'ReadyForDelivery' ? 'Sẵn sàng giao' :
-             goodsIssue.status === 'InTransit' ? 'Đang giao' :
-             goodsIssue.status === 'Delivered' ? 'Đã giao' :
+             goodsIssue.status === 'Rejected' ? 'Bị từ chối' :
+             goodsIssue.status === 'Cancelled' ? 'Đã hủy' :
              goodsIssue.status}
           </span>
           

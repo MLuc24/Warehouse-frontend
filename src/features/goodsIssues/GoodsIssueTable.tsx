@@ -24,10 +24,20 @@ const getStatusDisplay = (status?: string) => {
       className: 'bg-orange-50 text-orange-700 border border-orange-200',
       dot: 'bg-orange-400'
     },
+    'Approve': { 
+      label: 'Đã phê duyệt', 
+      className: 'bg-blue-50 text-blue-700 border border-blue-200',
+      dot: 'bg-blue-400'
+    },
     'Approved': { 
       label: 'Đã phê duyệt', 
       className: 'bg-blue-50 text-blue-700 border border-blue-200',
       dot: 'bg-blue-400'
+    },
+    'Preparing': { 
+      label: 'Đang chuẩn bị', 
+      className: 'bg-purple-50 text-purple-700 border border-purple-200',
+      dot: 'bg-purple-400'
     },
     'InPreparation': { 
       label: 'Đang chuẩn bị', 
@@ -65,14 +75,14 @@ const getStatusDisplay = (status?: string) => {
       dot: 'bg-red-400'
     }
   }
-
-  const config = statusMap[status as keyof typeof statusMap] || statusMap['Draft']
+  
+  const statusInfo = statusMap[status as keyof typeof statusMap] || statusMap['Draft']
   
   return (
-    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.className}`}>
-      <div className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-      {config.label}
-    </div>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.className}`}>
+      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dot}`}></span>
+      {statusInfo.label}
+    </span>
   )
 }
 
