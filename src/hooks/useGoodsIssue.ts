@@ -48,17 +48,14 @@ interface UseGoodsIssueReturn {
   handleDeleteGoodsIssue: (id: number) => Promise<void>
   refreshData: () => Promise<void>
   
-  // Workflow operations
-  handleSubmitForApproval: (goodsIssueId: number, notes?: string) => Promise<void>
+  // Workflow operations  
   handleApprove: (goodsIssueId: number, notes?: string) => Promise<void>
   handleReject: (goodsIssueId: number, notes?: string) => Promise<void>
-  handlePrepare: (goodsIssueId: number, notes?: string) => Promise<void>
-  handleMarkReadyForDelivery: (goodsIssueId: number, notes?: string) => Promise<void>
-  handleStartDelivery: (goodsIssueId: number, deliveryAddress?: string, notes?: string) => Promise<void>
-  handleConfirmDelivery: (goodsIssueId: number, notes?: string) => Promise<void>
+  handlePrepare: (goodsIssueId: number) => Promise<void>
+  handleConfirmDelivery: (goodsIssueId: number, deliveryAddress?: string, notes?: string) => Promise<void>
   handleComplete: (goodsIssueId: number, notes?: string) => Promise<void>
-  handleCancel: (goodsIssueId: number, notes?: string) => Promise<void>
-  handleResubmit: (goodsIssueId: number, notes?: string) => Promise<void>
+  handleCancel: (goodsIssueId: number) => Promise<void>
+  handleResubmit: (goodsIssueId: number) => Promise<void>
   handleResendEmail: (goodsIssueId: number) => Promise<void>
   handleExportPDF: (goodsIssueId: number) => Promise<void>
   handleEdit: (issue: GoodsIssue) => Promise<void>
@@ -194,23 +191,27 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
     await loadGoodsIssues()
   }, [loadGoodsIssues])
   
-  // Workflow operations
-  const handleSubmitForApproval = useCallback(async (goodsIssueId: number, notes?: string) => {
-    try {
-      await goodsIssueService.submitForApproval(goodsIssueId, { 
-        status: 'AwaitingApproval', 
-        notes 
-      })
-      await loadGoodsIssues()
-    } catch (error) {
-      console.error('Error submitting for approval:', error)
-      throw error
-    }
-  }, [loadGoodsIssues])
-  
   const handleApprove = useCallback(async (goodsIssueId: number, notes?: string) => {
     try {
-      await goodsIssueService.approveGoodsIssue(goodsIssueId, { notes })
+      await goodsIssueService.approveGoodsIssue(goodsIssueId, notes)
+      
+      // Update the specific issue in state immediately for real-time UI update
+      setGoodsIssues(prev => 
+        prev.map(issue => 
+          issue.goodsIssueId === goodsIssueId 
+            ? { ...issue, status: 'Approved' }
+            : issue
+        )
+      )
+
+      // Update selected issue if it matches
+      setSelectedGoodsIssue(prev => 
+        prev?.goodsIssueId === goodsIssueId 
+          ? { ...prev, status: 'Approved' }
+          : prev
+      )
+
+      // Refresh data in background to get full updated info
       await loadGoodsIssues()
     } catch (error) {
       console.error('Error approving goods issue:', error)
@@ -220,7 +221,25 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
   
   const handleReject = useCallback(async (goodsIssueId: number, notes?: string) => {
     try {
-      await goodsIssueService.rejectGoodsIssue(goodsIssueId, { notes })
+      await goodsIssueService.rejectGoodsIssue(goodsIssueId, notes)
+      
+      // Update the specific issue in state immediately for real-time UI update
+      setGoodsIssues(prev => 
+        prev.map(issue => 
+          issue.goodsIssueId === goodsIssueId 
+            ? { ...issue, status: 'Rejected' }
+            : issue
+        )
+      )
+
+      // Update selected issue if it matches
+      setSelectedGoodsIssue(prev => 
+        prev?.goodsIssueId === goodsIssueId 
+          ? { ...prev, status: 'Rejected' }
+          : prev
+      )
+
+      // Refresh data in background to get full updated info
       await loadGoodsIssues()
     } catch (error) {
       console.error('Error rejecting goods issue:', error)
@@ -228,9 +247,27 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
     }
   }, [loadGoodsIssues])
   
-  const handlePrepare = useCallback(async (goodsIssueId: number, notes?: string) => {
+  const handlePrepare = useCallback(async (goodsIssueId: number) => {
     try {
-      await goodsIssueService.prepareGoodsIssue(goodsIssueId, { notes })
+      await goodsIssueService.prepareGoodsIssue(goodsIssueId)
+      
+      // Update the specific issue in state immediately for real-time UI update
+      setGoodsIssues(prev => 
+        prev.map(issue => 
+          issue.goodsIssueId === goodsIssueId 
+            ? { ...issue, status: 'InPreparation' }
+            : issue
+        )
+      )
+
+      // Update selected issue if it matches
+      setSelectedGoodsIssue(prev => 
+        prev?.goodsIssueId === goodsIssueId 
+          ? { ...prev, status: 'InPreparation' }
+          : prev
+      )
+
+      // Refresh data in background to get full updated info
       await loadGoodsIssues()
     } catch (error) {
       console.error('Error preparing goods issue:', error)
@@ -238,35 +275,27 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
     }
   }, [loadGoodsIssues])
   
-  const handleMarkReadyForDelivery = useCallback(async (goodsIssueId: number, notes?: string) => {
+  const handleConfirmDelivery = useCallback(async (goodsIssueId: number, deliveryAddress?: string, notes?: string) => {
     try {
-      await goodsIssueService.markReadyForDelivery(goodsIssueId, { 
-        status: 'ReadyForDelivery', 
-        notes 
-      })
-      await loadGoodsIssues()
-    } catch (error) {
-      console.error('Error marking ready for delivery:', error)
-      throw error
-    }
-  }, [loadGoodsIssues])
-  
-  const handleStartDelivery = useCallback(async (goodsIssueId: number, deliveryAddress?: string, notes?: string) => {
-    try {
-      await goodsIssueService.startDelivery(goodsIssueId, { 
-        deliveryAddress, 
-        notes 
-      })
-      await loadGoodsIssues()
-    } catch (error) {
-      console.error('Error starting delivery:', error)
-      throw error
-    }
-  }, [loadGoodsIssues])
-  
-  const handleConfirmDelivery = useCallback(async (goodsIssueId: number, notes?: string) => {
-    try {
-      await goodsIssueService.confirmDelivery(goodsIssueId, { notes })
+      await goodsIssueService.confirmDelivery(goodsIssueId, deliveryAddress, notes)
+      
+      // Update the specific issue in state immediately for real-time UI update
+      setGoodsIssues(prev => 
+        prev.map(issue => 
+          issue.goodsIssueId === goodsIssueId 
+            ? { ...issue, status: 'Delivered', deliveryAddress, deliveryNotes: notes }
+            : issue
+        )
+      )
+
+      // Update selected issue if it matches
+      setSelectedGoodsIssue(prev => 
+        prev?.goodsIssueId === goodsIssueId 
+          ? { ...prev, status: 'Delivered', deliveryAddress, deliveryNotes: notes }
+          : prev
+      )
+
+      // Refresh data in background to get full updated info
       await loadGoodsIssues()
     } catch (error) {
       console.error('Error confirming delivery:', error)
@@ -276,10 +305,25 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
   
   const handleComplete = useCallback(async (goodsIssueId: number, notes?: string) => {
     try {
-      await goodsIssueService.completeGoodsIssue(goodsIssueId, { 
-        status: 'Completed', 
-        notes 
-      })
+      await goodsIssueService.completeGoodsIssue(goodsIssueId, notes)
+      
+      // Update the specific issue in state immediately for real-time UI update
+      setGoodsIssues(prev => 
+        prev.map(issue => 
+          issue.goodsIssueId === goodsIssueId 
+            ? { ...issue, status: 'Completed' }
+            : issue
+        )
+      )
+
+      // Update selected issue if it matches
+      setSelectedGoodsIssue(prev => 
+        prev?.goodsIssueId === goodsIssueId 
+          ? { ...prev, status: 'Completed' }
+          : prev
+      )
+
+      // Refresh data in background to get full updated info
       await loadGoodsIssues()
     } catch (error) {
       console.error('Error completing goods issue:', error)
@@ -287,12 +331,27 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
     }
   }, [loadGoodsIssues])
   
-  const handleCancel = useCallback(async (goodsIssueId: number, notes?: string) => {
+  const handleCancel = useCallback(async (goodsIssueId: number) => {
     try {
-      await goodsIssueService.cancelGoodsIssue(goodsIssueId, { 
-        status: 'Cancelled', 
-        notes 
-      })
+      await goodsIssueService.cancelGoodsIssue(goodsIssueId)
+      
+      // Update the specific issue in state immediately for real-time UI update
+      setGoodsIssues(prev => 
+        prev.map(issue => 
+          issue.goodsIssueId === goodsIssueId 
+            ? { ...issue, status: 'Cancelled' }
+            : issue
+        )
+      )
+
+      // Update selected issue if it matches
+      setSelectedGoodsIssue(prev => 
+        prev?.goodsIssueId === goodsIssueId 
+          ? { ...prev, status: 'Cancelled' }
+          : prev
+      )
+
+      // Refresh data in background to get full updated info
       await loadGoodsIssues()
     } catch (error) {
       console.error('Error cancelling goods issue:', error)
@@ -300,12 +359,27 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
     }
   }, [loadGoodsIssues])
   
-  const handleResubmit = useCallback(async (goodsIssueId: number, notes?: string) => {
+  const handleResubmit = useCallback(async (goodsIssueId: number) => {
     try {
-      await goodsIssueService.resubmitGoodsIssue(goodsIssueId, { 
-        status: 'AwaitingApproval', 
-        notes 
-      })
+      await goodsIssueService.resubmitGoodsIssue(goodsIssueId)
+      
+      // Update the specific issue in state immediately for real-time UI update
+      setGoodsIssues(prev => 
+        prev.map(issue => 
+          issue.goodsIssueId === goodsIssueId 
+            ? { ...issue, status: 'AwaitingApproval' }
+            : issue
+        )
+      )
+
+      // Update selected issue if it matches
+      setSelectedGoodsIssue(prev => 
+        prev?.goodsIssueId === goodsIssueId 
+          ? { ...prev, status: 'AwaitingApproval' }
+          : prev
+      )
+
+      // Refresh data in background to get full updated info
       await loadGoodsIssues()
     } catch (error) {
       console.error('Error resubmitting goods issue:', error)
@@ -410,12 +484,9 @@ export const useGoodsIssue = (): UseGoodsIssueReturn => {
     refreshData,
     
     // Workflow operations
-    handleSubmitForApproval,
     handleApprove,
     handleReject,
     handlePrepare,
-    handleMarkReadyForDelivery,
-    handleStartDelivery,
     handleConfirmDelivery,
     handleComplete,
     handleCancel,

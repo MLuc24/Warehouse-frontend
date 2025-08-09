@@ -32,12 +32,9 @@ const GoodsIssuesPage: React.FC = () => {
     handleEdit,
     handleView,
     handleCreate,
-    handleSubmitForApproval,
     handleApprove,
     handleReject,
     handlePrepare,
-    handleMarkReadyForDelivery,
-    handleStartDelivery,
     handleConfirmDelivery,
     handleComplete,
     handleCancel,
@@ -294,10 +291,6 @@ const GoodsIssuesPage: React.FC = () => {
             setViewMode('table')
           }}
           onBack={() => setViewMode('table')}
-          onSubmitForApproval={async (issue) => {
-            await handleSubmitForApproval(issue.goodsIssueId)
-            await refreshData()
-          }}
           onApprove={async (issue) => {
             await handleApprove(issue.goodsIssueId)
             await refreshData()
@@ -310,17 +303,9 @@ const GoodsIssuesPage: React.FC = () => {
             await handlePrepare(issue.goodsIssueId)
             await refreshData()
           }}
-          onMarkReadyForDelivery={async (issue) => {
-            await handleMarkReadyForDelivery(issue.goodsIssueId)
-            await refreshData()
-          }}
-          onStartDelivery={async (issue) => {
-            const address = issue.deliveryAddress || 'Địa chỉ mặc định'
-            await handleStartDelivery(issue.goodsIssueId, address)
-            await refreshData()
-          }}
           onConfirmDelivery={async (issue) => {
-            await handleConfirmDelivery(issue.goodsIssueId)
+            const address = issue.deliveryAddress || 'Địa chỉ mặc định'
+            await handleConfirmDelivery(issue.goodsIssueId, address)
             await refreshData()
           }}
           onComplete={async (issue) => {
@@ -328,7 +313,7 @@ const GoodsIssuesPage: React.FC = () => {
             await refreshData()
           }}
           onCancel={async (issue) => {
-            await handleCancel(issue.goodsIssueId, 'Hủy phiếu xuất')
+            await handleCancel(issue.goodsIssueId)
             await refreshData()
           }}
           onResubmit={async (issue) => {

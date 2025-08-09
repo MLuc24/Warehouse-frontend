@@ -3,11 +3,7 @@ import type {
   GoodsIssue, 
   CreateUpdateGoodsIssueDto, 
   GoodsIssueFilterDto, 
-  GoodsIssuePagedResult,
-  GoodsIssueWorkflowStatusDto,
-  GoodsIssueApprovalDto,
-  GoodsIssuePreparationDto,
-  GoodsIssueDeliveryDto
+  GoodsIssuePagedResult
 } from '@/types/goodsIssue'
 
 class GoodsIssueService {
@@ -72,54 +68,69 @@ class GoodsIssueService {
 
   // === WORKFLOW OPERATIONS ===
 
-  // Gửi phê duyệt
-  async submitForApproval(id: number, data: GoodsIssueWorkflowStatusDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/submit-approval`, data)
-  }
+  // Gửi phê duyệt - This endpoint doesn't exist in backend, removing
+  // async submitForApproval(id: number, data: GoodsIssueWorkflowStatusDto): Promise<void> {
+  //   await apiService.post(`${this.basePath}/${id}/submit-approval`, data)
+  // }
 
   // Phê duyệt phiếu xuất
-  async approveGoodsIssue(id: number, data: GoodsIssueApprovalDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/approve`, data)
+  async approveGoodsIssue(id: number, notes?: string): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/approve-reject`, {
+      goodsIssueId: id,
+      action: 'Approve',
+      notes
+    })
   }
 
   // Từ chối phê duyệt
-  async rejectGoodsIssue(id: number, data: GoodsIssueApprovalDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/reject`, data)
+  async rejectGoodsIssue(id: number, notes?: string): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/approve-reject`, {
+      goodsIssueId: id,
+      action: 'Reject',
+      notes
+    })
   }
 
   // Chuẩn bị hàng
-  async prepareGoodsIssue(id: number, data: GoodsIssuePreparationDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/prepare`, data)
+  async prepareGoodsIssue(id: number): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/start-preparing`, {})
   }
 
-  // Đánh dấu sẵn sàng giao hàng
-  async markReadyForDelivery(id: number, data: GoodsIssueWorkflowStatusDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/ready-delivery`, data)
-  }
+  // Đánh dấu sẵn sàng giao hàng - This endpoint doesn't exist in backend, removing
+  // async markReadyForDelivery(id: number, data: GoodsIssueWorkflowStatusDto): Promise<void> {
+  //   await apiService.post(`${this.basePath}/${id}/ready-delivery`, data)
+  // }
 
-  // Bắt đầu giao hàng (In Transit)
-  async startDelivery(id: number, data: GoodsIssueDeliveryDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/start-delivery`, data)
-  }
+  // Bắt đầu giao hàng - This endpoint doesn't exist in backend, removing  
+  // async startDelivery(id: number, data: GoodsIssueDeliveryDto): Promise<void> {
+  //   await apiService.post(`${this.basePath}/${id}/start-delivery`, data)
+  // }
 
   // Xác nhận đã giao hàng
-  async confirmDelivery(id: number, data: GoodsIssueDeliveryDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/confirm-delivery`, data)
+  async confirmDelivery(id: number, deliveryAddress?: string, notes?: string): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/mark-delivered`, {
+      goodsIssueId: id,
+      deliveryAddress,
+      notes
+    })
   }
 
   // Hoàn thành phiếu xuất
-  async completeGoodsIssue(id: number, data: GoodsIssueWorkflowStatusDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/complete`, data)
+  async completeGoodsIssue(id: number, notes?: string): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/complete`, {
+      goodsIssueId: id,
+      notes
+    })
   }
 
   // Hủy phiếu xuất
-  async cancelGoodsIssue(id: number, data: GoodsIssueWorkflowStatusDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/cancel`, data)
+  async cancelGoodsIssue(id: number): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/cancel`, {})
   }
 
   // Gửi lại phê duyệt (sau khi bị từ chối)
-  async resubmitGoodsIssue(id: number, data: GoodsIssueWorkflowStatusDto): Promise<void> {
-    await apiService.post(`${this.basePath}/${id}/resubmit`, data)
+  async resubmitGoodsIssue(id: number): Promise<void> {
+    await apiService.post(`${this.basePath}/${id}/resubmit`, {})
   }
 
   // === EXPORT/IMPORT OPERATIONS ===

@@ -11,12 +11,9 @@ interface GoodsIssueDetailViewProps {
   userRole?: string
   onEdit?: (goodsIssue: GoodsIssue) => void
   onDelete?: (goodsIssue: GoodsIssue) => void
-  onSubmitForApproval?: (goodsIssue: GoodsIssue) => void
   onApprove?: (goodsIssue: GoodsIssue) => void
   onReject?: (goodsIssue: GoodsIssue) => void
   onPrepare?: (goodsIssue: GoodsIssue) => void
-  onMarkReadyForDelivery?: (goodsIssue: GoodsIssue) => void
-  onStartDelivery?: (goodsIssue: GoodsIssue) => void
   onConfirmDelivery?: (goodsIssue: GoodsIssue) => void
   onComplete?: (goodsIssue: GoodsIssue) => void
   onCancel?: (goodsIssue: GoodsIssue) => void
@@ -32,12 +29,9 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
   userRole,
   onEdit,
   onDelete,
-  onSubmitForApproval,
   onApprove,
   onReject,
   onPrepare,
-  onMarkReadyForDelivery,
-  onStartDelivery,
   onConfirmDelivery,
   onComplete,
   onCancel,
@@ -85,12 +79,9 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
               userRole={userRole}
               onEdit={onEdit}
               onDelete={onDelete}
-              onSubmitForApproval={onSubmitForApproval}
               onApprove={onApprove}
               onReject={onReject}
               onPrepare={onPrepare}
-              onMarkReadyForDelivery={onMarkReadyForDelivery}
-              onStartDelivery={onStartDelivery}
               onConfirmDelivery={onConfirmDelivery}
               onComplete={onComplete}
               onCancel={onCancel}

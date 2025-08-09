@@ -92,6 +92,8 @@ export interface GoodsIssueWorkflowStatusDto {
 }
 
 export interface GoodsIssueApprovalDto {
+  goodsIssueId: number
+  action: 'Approve' | 'Reject'
   notes?: string
 }
 

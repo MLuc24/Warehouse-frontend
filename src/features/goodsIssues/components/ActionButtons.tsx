@@ -1,18 +1,14 @@
 import React from 'react'
 import { Button } from '@/components/ui/Button'
-import type { GoodsIssue, GoodsIssueStatus } from '@/types'
+import type { GoodsIssue } from '@/types'
 import { 
   Check, 
   X, 
-  Send, 
   Package, 
   Truck, 
   CheckCircle, 
-  XCircle, 
-  RefreshCw, 
   Mail,
   Edit,
-  Eye,
   Trash2
 } from 'lucide-react'
 
@@ -21,14 +17,10 @@ interface ActionButtonsProps {
   currentUserId?: number
   userRole?: string
   onEdit?: (goodsIssue: GoodsIssue) => void
-  onView?: (goodsIssue: GoodsIssue) => void
   onDelete?: (goodsIssue: GoodsIssue) => void
-  onSubmitForApproval?: (goodsIssue: GoodsIssue) => void
   onApprove?: (goodsIssue: GoodsIssue) => void
   onReject?: (goodsIssue: GoodsIssue) => void
   onPrepare?: (goodsIssue: GoodsIssue) => void
-  onMarkReadyForDelivery?: (goodsIssue: GoodsIssue) => void
-  onStartDelivery?: (goodsIssue: GoodsIssue) => void
   onConfirmDelivery?: (goodsIssue: GoodsIssue) => void
   onComplete?: (goodsIssue: GoodsIssue) => void
   onCancel?: (goodsIssue: GoodsIssue) => void
@@ -37,19 +29,15 @@ interface ActionButtonsProps {
   loading?: boolean
 }
 
-export const ActionButtons: React.FC<ActionButtonsProps> = ({
+const ActionButtons: React.FC<ActionButtonsProps> = ({
   goodsIssue,
   currentUserId,
-  userRole = 'User',
+  userRole = '',
   onEdit,
-  onView,
   onDelete,
-  onSubmitForApproval,
   onApprove,
   onReject,
   onPrepare,
-  onMarkReadyForDelivery,
-  onStartDelivery,
   onConfirmDelivery,
   onComplete,
   onCancel,
@@ -57,269 +45,266 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onResendEmail,
   loading = false
 }) => {
-  const status = goodsIssue.status as GoodsIssueStatus
+  const { status } = goodsIssue
+  
+  // Kiểm tra role
+  const isAdmin = userRole === 'Admin'
+  const isManager = userRole === 'Manager'
+  const isEmployee = userRole === 'Employee'
+  const canApproveReject = isAdmin || isManager
+  
+  // Kiểm tra creator
   const isCreator = currentUserId === goodsIssue.createdByUserId
-  const canApprove = userRole === 'Manager' || userRole === 'Admin'
-  const canManageDelivery = userRole === 'Manager' || userRole === 'Admin' || userRole === 'WarehouseStaff'
 
-  const getAvailableActions = () => {
-    const actions: React.ReactElement[] = []
+  // Nếu currentUserId chưa có thì chờ load
+  if (currentUserId === undefined) {
+    return (
+      <div className="flex items-center gap-2 text-gray-500">
+        <div className="animate-pulse">Đang tải...</div>
+      </div>
+    )
+  }
+  
+  const buttons: React.ReactNode[] = []
 
-    // View action - always available
-    if (onView) {
-      actions.push(
-        <Button
-          key="view"
-          variant="outline"
-          size="sm"
-          onClick={() => onView(goodsIssue)}
-          disabled={loading}
-        >
-          <Eye className="w-4 h-4" />
-          Xem
-        </Button>
-      )
-    }
-
-    // Status-specific workflow actions
-    switch (status) {
-      case 'Draft':
-        if (isCreator && onEdit) {
-          actions.push(
-            <Button
-              key="edit"
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(goodsIssue)}
-              disabled={loading}
-            >
-              <Edit className="w-4 h-4" />
-              Sửa
-            </Button>
-          )
-        }
-        if (isCreator && onSubmitForApproval) {
-          actions.push(
-            <Button
-              key="submit-approval"
-              variant="primary"
-              size="sm"
-              onClick={() => onSubmitForApproval(goodsIssue)}
-              disabled={loading}
-            >
-              <Send className="w-4 h-4" />
-              Gửi phê duyệt
-            </Button>
-          )
-        }
-        if (isCreator && onDelete) {
-          actions.push(
-            <Button
-              key="delete"
-              variant="danger"
-              size="sm"
-              onClick={() => onDelete(goodsIssue)}
-              disabled={loading}
-            >
-              <Trash2 className="w-4 h-4" />
-              Xóa
-            </Button>
-          )
-        }
-        break
-
-      case 'AwaitingApproval':
-        if (canApprove && onApprove) {
-          actions.push(
-            <Button
-              key="approve"
-              variant="success"
-              size="sm"
-              onClick={() => onApprove(goodsIssue)}
-              disabled={loading}
-            >
-              <Check className="w-4 h-4" />
-              Phê duyệt
-            </Button>
-          )
-        }
-        if (canApprove && onReject) {
-          actions.push(
-            <Button
-              key="reject"
-              variant="danger"
-              size="sm"
-              onClick={() => onReject(goodsIssue)}
-              disabled={loading}
-            >
-              <X className="w-4 h-4" />
-              Từ chối
-            </Button>
-          )
-        }
-        if (onCancel) {
-          actions.push(
-            <Button
-              key="cancel"
-              variant="outline"
-              size="sm"
-              onClick={() => onCancel(goodsIssue)}
-              disabled={loading}
-            >
-              <XCircle className="w-4 h-4" />
-              Hủy
-            </Button>
-          )
-        }
-        break
-
-      case 'Approved':
-        if (canManageDelivery && onPrepare) {
-          actions.push(
-            <Button
-              key="prepare"
-              variant="primary"
-              size="sm"
-              onClick={() => onPrepare(goodsIssue)}
-              disabled={loading}
-            >
-              <Package className="w-4 h-4" />
-              Chuẩn bị hàng
-            </Button>
-          )
-        }
-        break
-
-      case 'InPreparation':
-        if (canManageDelivery && onMarkReadyForDelivery) {
-          actions.push(
-            <Button
-              key="ready-delivery"
-              variant="primary"
-              size="sm"
-              onClick={() => onMarkReadyForDelivery(goodsIssue)}
-              disabled={loading}
-            >
-              <CheckCircle className="w-4 h-4" />
-              Sẵn sàng giao
-            </Button>
-          )
-        }
-        break
-
-      case 'ReadyForDelivery':
-        if (canManageDelivery && onStartDelivery) {
-          actions.push(
-            <Button
-              key="start-delivery"
-              variant="primary"
-              size="sm"
-              onClick={() => onStartDelivery(goodsIssue)}
-              disabled={loading}
-            >
-              <Truck className="w-4 h-4" />
-              Bắt đầu giao
-            </Button>
-          )
-        }
-        break
-
-      case 'InTransit':
-        if (canManageDelivery && onConfirmDelivery) {
-          actions.push(
-            <Button
-              key="confirm-delivery"
-              variant="success"
-              size="sm"
-              onClick={() => onConfirmDelivery(goodsIssue)}
-              disabled={loading}
-            >
-              <CheckCircle className="w-4 h-4" />
-              Xác nhận giao
-            </Button>
-          )
-        }
-        break
-
-      case 'Delivered':
-        if (canManageDelivery && onComplete) {
-          actions.push(
-            <Button
-              key="complete"
-              variant="success"
-              size="sm"
-              onClick={() => onComplete(goodsIssue)}
-              disabled={loading}
-            >
-              <CheckCircle className="w-4 h-4" />
-              Hoàn thành
-            </Button>
-          )
-        }
-        break
-
-      case 'Rejected':
-        if (isCreator && onEdit) {
-          actions.push(
-            <Button
-              key="edit"
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(goodsIssue)}
-              disabled={loading}
-            >
-              <Edit className="w-4 h-4" />
-              Sửa
-            </Button>
-          )
-        }
-        if (isCreator && onResubmit) {
-          actions.push(
-            <Button
-              key="resubmit"
-              variant="primary"
-              size="sm"
-              onClick={() => onResubmit(goodsIssue)}
-              disabled={loading}
-            >
-              <RefreshCw className="w-4 h-4" />
-              Gửi lại
-            </Button>
-          )
-        }
-        break
-    }
-
-    // Common actions for completed workflows
-    if (['Approved', 'InPreparation', 'ReadyForDelivery', 'InTransit', 'Delivered', 'Completed'].includes(status)) {
-      if (onResendEmail) {
-        actions.push(
+  // Logic theo matrix quyền hạn và status workflow của GoodsIssue:
+  switch (status) {
+    case 'Draft':
+      // Creator có thể sửa và xóa
+      if (isCreator) {
+        buttons.push(
           <Button
-            key="resend-email"
-            variant="outline"
+            key="edit"
             size="sm"
-            onClick={() => onResendEmail(goodsIssue)}
+            variant="secondary"
+            onClick={() => onEdit?.(goodsIssue)}
             disabled={loading}
           >
-            <Mail className="w-4 h-4" />
+            <Edit className="w-3 h-3 mr-1" />
+            Sửa
+          </Button>
+        )
+        
+        buttons.push(
+          <Button
+            key="delete"
+            size="sm"
+            variant="danger"
+            onClick={() => onDelete?.(goodsIssue)}
+            disabled={loading}
+          >
+            <Trash2 className="w-3 h-3 mr-1" />
+            Xóa
+          </Button>
+        )
+      }
+      break
+
+    case 'AwaitingApproval':
+      // Admin/Manager có thể duyệt hoặc từ chối
+      if (canApproveReject) {
+        buttons.push(
+          <Button
+            key="approve"
+            size="sm"
+            onClick={() => onApprove?.(goodsIssue)}
+            disabled={loading}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Check className="w-3 h-3 mr-1" />
+            Duyệt
+          </Button>
+        )
+        
+        buttons.push(
+          <Button
+            key="reject"
+            size="sm"
+            variant="danger"
+            onClick={() => onReject?.(goodsIssue)}
+            disabled={loading}
+          >
+            <X className="w-3 h-3 mr-1" />
+            Từ chối
+          </Button>
+        )
+      }
+      // Employee creator có thể hủy
+      else if (isEmployee && isCreator) {
+        buttons.push(
+          <Button
+            key="cancel"
+            size="sm"
+            variant="danger"
+            onClick={() => onCancel?.(goodsIssue)}
+            disabled={loading}
+          >
+            <X className="w-3 h-3 mr-1" />
+            Hủy
+          </Button>
+        )
+      }
+      break
+
+    case 'Approved':
+      // Admin/Manager/WarehouseStaff có thể bắt đầu chuẩn bị
+      if (canApproveReject || userRole === 'WarehouseStaff') {
+        buttons.push(
+          <Button
+            key="prepare"
+            size="sm"
+            onClick={() => onPrepare?.(goodsIssue)}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Package className="w-3 h-3 mr-1" />
+            Chuẩn bị
+          </Button>
+        )
+      }
+      break
+
+    case 'InPreparation':
+      // Warehouse staff có thể đánh dấu sẵn sàng giao hàng (chuyển sang ReadyForDelivery)
+      // Backend không có endpoint này nên tạm thời bỏ qua
+      break
+
+    case 'ReadyForDelivery':
+      // Delivery staff có thể bắt đầu giao hàng (chuyển sang InTransit)
+      // Backend không có endpoint này nên tạm thời bỏ qua
+      break
+
+    case 'InTransit':
+      // Delivery staff có thể xác nhận đã giao (chuyển sang Delivered)
+      if (canApproveReject || userRole === 'DeliveryStaff') {
+        buttons.push(
+          <Button
+            key="confirm-delivery"
+            size="sm"
+            onClick={() => onConfirmDelivery?.(goodsIssue)}
+            disabled={loading}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            <Truck className="w-3 h-3 mr-1" />
+            Xác nhận giao
+          </Button>
+        )
+      }
+      break
+
+    case 'Delivered':
+      // Admin/Manager có thể hoàn thành
+      if (canApproveReject) {
+        buttons.push(
+          <Button
+            key="complete"
+            size="sm"
+            onClick={() => onComplete?.(goodsIssue)}
+            disabled={loading}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Hoàn thành
+          </Button>
+        )
+      }
+      break
+
+    case 'Rejected':
+      // Employee creator có thể xóa, sửa, gửi lại
+      if (isEmployee && isCreator) {
+        buttons.push(
+          <Button
+            key="delete"
+            size="sm"
+            variant="danger"
+            onClick={() => onDelete?.(goodsIssue)}
+            disabled={loading}
+          >
+            <Trash2 className="w-3 h-3 mr-1" />
+            Xóa
+          </Button>
+        )
+        
+        buttons.push(
+          <Button
+            key="edit"
+            size="sm"
+            variant="secondary"
+            onClick={() => onEdit?.(goodsIssue)}
+            disabled={loading}
+          >
+            <Edit className="w-3 h-3 mr-1" />
+            Sửa
+          </Button>
+        )
+        
+        buttons.push(
+          <Button
+            key="resubmit"
+            size="sm"
+            onClick={() => onResubmit?.(goodsIssue)}
+            disabled={loading}
+            className="bg-orange-600 hover:bg-orange-700 text-white"
+          >
+            <Check className="w-3 h-3 mr-1" />
+            Gửi lại
+          </Button>
+        )
+      }
+      break
+
+    case 'Completed':
+      // Tất cả → rỗng (có thể thêm resend email sau)
+      if (onResendEmail) {
+        buttons.push(
+          <Button
+            key="resend-email"
+            size="sm"
+            variant="outline"
+            onClick={() => onResendEmail?.(goodsIssue)}
+            disabled={loading}
+          >
+            <Mail className="w-3 h-3 mr-1" />
             Gửi email
           </Button>
         )
       }
-    }
+      break
 
-    return actions
+    case 'Cancelled':
+      // Employee creator → xóa
+      if (isEmployee && isCreator) {
+        buttons.push(
+          <Button
+            key="delete"
+            size="sm"
+            variant="danger"
+            onClick={() => onDelete?.(goodsIssue)}
+            disabled={loading}
+          >
+            <Trash2 className="w-3 h-3 mr-1" />
+            Xóa
+          </Button>
+        )
+      }
+      break
+
+    default:
+      // Status không xác định → rỗng
+      break
   }
 
-  const availableActions = getAvailableActions()
-
-  if (availableActions.length === 0) {
+  // Nếu không có button nào thì return null
+  if (buttons.length === 0) {
     return null
   }
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {availableActions}
+    <div className="flex flex-wrap gap-2">
+      {buttons}
     </div>
   )
 }
+
+export { ActionButtons }
