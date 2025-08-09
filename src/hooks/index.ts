@@ -20,3 +20,9 @@ export { useDashboard } from './useDashboard';
 
 // Tuần 10: Performance Monitoring Hooks
 export { usePerformanceMonitor, useMemoryMonitor } from './usePerformance';
+
+// Tuần 9: Goods Receipt Hooks
+export { useGoodsReceipt } from './useGoodsReceipt';
+
+// Tuần 9: Goods Issue Hooks
+export { useGoodsIssue } from './useGoodsIssue';

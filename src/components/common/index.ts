@@ -4,6 +4,7 @@ export { Pagination } from './Pagination';
 export { ExportButtons } from './ExportButtons';
 export { Notification } from './Notification';
 export { ContextMenu } from './ContextMenu';
+export { ProductDetailsTable } from './ProductDetailsTable';
 
 // Generic Modal Components (for create/update forms)
 export { GenericModal } from './GenericModal';
@@ -24,6 +25,7 @@ export { PermissionProtectedRoute } from './PermissionProtectedRoute';
 export { default as EntityStats } from './EntityStats';
 export { default as ConfirmationOverlay } from './ConfirmationOverlay';
 export { default as EmptyState, NoDataFound, NoSearchResults, CreateFirstItem } from './EmptyState';
+export { ProductDetailsSection } from './ProductDetailsSection';
 
 // Export types
 export type { FormField, GenericInlineProps } from './GenericInline';

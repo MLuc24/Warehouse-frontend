@@ -37,6 +37,9 @@ interface ProductDetailsSectionProps {
   productSearch: string
   filteredProducts: Product[]
   errors: Record<string, string>
+  title?: string
+  subtitle?: string
+  colorScheme?: 'green' | 'blue' | 'purple' | 'orange'
   onProductSearchChange: (value: string) => void
   onAddDetail: (productId?: number) => void
   onUpdateDetail: (tempId: string, field: string, value: string | number) => void
@@ -50,12 +53,65 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
   productSearch,
   filteredProducts,
   errors,
+  title = "Chi tiết sản phẩm",
+  subtitle = "Thêm sản phẩm",
+  colorScheme = 'green',
   onProductSearchChange,
   onAddDetail,
   onUpdateDetail,
   onRemoveDetail,
   onDuplicateDetail
 }) => {
+  // Color scheme configurations
+  const colorConfigs = {
+    green: {
+      background: 'bg-gradient-to-br from-green-50 to-emerald-50',
+      border: 'border-green-200',
+      iconBg: 'bg-green-600',
+      titleText: 'text-green-900',
+      button: 'bg-green-600 hover:bg-green-700',
+      searchFocus: 'focus:ring-green-500',
+      searchHover: 'hover:bg-green-50',
+      subtotal: 'from-green-50 to-emerald-50 border-green-200 text-green-700',
+      priceText: 'text-green-600'
+    },
+    blue: {
+      background: 'bg-gradient-to-br from-blue-50 to-cyan-50',
+      border: 'border-blue-200',
+      iconBg: 'bg-blue-600',
+      titleText: 'text-blue-900',
+      button: 'bg-blue-600 hover:bg-blue-700',
+      searchFocus: 'focus:ring-blue-500',
+      searchHover: 'hover:bg-blue-50',
+      subtotal: 'from-blue-50 to-cyan-50 border-blue-200 text-blue-700',
+      priceText: 'text-blue-600'
+    },
+    purple: {
+      background: 'bg-gradient-to-br from-purple-50 to-violet-50',
+      border: 'border-purple-200',
+      iconBg: 'bg-purple-600',
+      titleText: 'text-purple-900',
+      button: 'bg-purple-600 hover:bg-purple-700',
+      searchFocus: 'focus:ring-purple-500',
+      searchHover: 'hover:bg-purple-50',
+      subtotal: 'from-purple-50 to-violet-50 border-purple-200 text-purple-700',
+      priceText: 'text-purple-600'
+    },
+    orange: {
+      background: 'bg-gradient-to-br from-orange-50 to-amber-50',
+      border: 'border-orange-200',
+      iconBg: 'bg-orange-600',
+      titleText: 'text-orange-900',
+      button: 'bg-orange-600 hover:bg-orange-700',
+      searchFocus: 'focus:ring-orange-500',
+      searchHover: 'hover:bg-orange-50',
+      subtotal: 'from-orange-50 to-amber-50 border-orange-200 text-orange-700',
+      priceText: 'text-orange-600'
+    }
+  }
+
+  const colors = colorConfigs[colorScheme]
+
   // Custom Product Selector Component
   const ProductSelector = ({ 
     detail, 
@@ -224,7 +280,7 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
                     onSelect(product.productId)
                     setIsOpen(false)
                   }}
-                  className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b last:border-b-0 transition-colors duration-200"
+                  className={`w-full px-4 py-3 text-left ${colors.searchHover} border-b last:border-b-0 transition-colors duration-200`}
                 >
                   <div className="flex items-center space-x-3">
                     {/* Product Image */}
@@ -257,7 +313,7 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
                     {/* Price & Stock */}
                     <div className="text-right flex-shrink-0">
                       {(product.purchasePrice || product.unitPrice) && (
-                        <div className="text-sm font-semibold text-green-600">
+                        <div className={`text-sm font-semibold ${colors.priceText}`}>
                           {formatCurrency(product.purchasePrice || product.unitPrice || 0)}
                         </div>
                       )}
@@ -283,22 +339,22 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
   }
 
   return (
-    <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 shadow-sm">
+    <div className={`${colors.background} border ${colors.border} rounded-2xl p-6 shadow-sm`}>
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-3">
-          <div className="bg-green-600 p-2 rounded-xl">
+          <div className={`${colors.iconBg} p-2 rounded-xl`}>
             <Package className="w-5 h-5 text-white" />
           </div>
-          <h3 className="text-xl font-semibold text-green-900">Chi tiết sản phẩm</h3>
+          <h3 className={`text-xl font-semibold ${colors.titleText}`}>{title}</h3>
         </div>
         <Button 
           type="button" 
           onClick={() => onAddDetail()} 
-          className="bg-green-600 hover:bg-green-700 border-0 px-6 py-2.5 rounded-xl font-semibold shadow-md transition-all duration-200"
+          className={`${colors.button} border-0 px-6 py-2.5 rounded-xl font-semibold shadow-md transition-all duration-200`}
           size="sm"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Thêm sản phẩm
+          {subtitle}
         </Button>
       </div>
 
@@ -311,7 +367,7 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
             placeholder="Tìm kiếm sản phẩm theo tên hoặc SKU..."
             value={productSearch}
             onChange={(e) => onProductSearchChange(e.target.value)}
-            className="pl-12 py-3 rounded-xl border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
+            className={`pl-12 py-3 rounded-xl border-gray-300 focus:ring-2 ${colors.searchFocus} focus:border-transparent shadow-sm`}
           />
         </div>
         
@@ -322,7 +378,7 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
                 key={product.productId}
                 type="button"
                 onClick={() => onAddDetail(product.productId)}
-                className="w-full px-4 py-3 text-left hover:bg-green-50 border-b last:border-b-0 transition-colors duration-200"
+                className={`w-full px-4 py-3 text-left ${colors.searchHover} border-b last:border-b-0 transition-colors duration-200`}
               >
                 <div className="flex items-center space-x-3">
                   {/* Product Image */}
@@ -353,7 +409,7 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
                   {/* Price & Stock */}
                   <div className="text-right flex-shrink-0">
                     {(product.purchasePrice || product.unitPrice) && (
-                      <div className="text-sm font-semibold text-green-600">
+                      <div className={`text-sm font-semibold ${colors.priceText}`}>
                         {formatCurrency(product.purchasePrice || product.unitPrice || 0)}
                       </div>
                     )}
@@ -448,7 +504,7 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Thành tiền
                 </label>
-                <div className="px-4 py-2.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl text-sm font-bold text-green-700">
+                <div className={`px-4 py-2.5 bg-gradient-to-r ${colors.subtotal} rounded-xl text-sm font-bold`}>
                   {formatCurrency(detail.subtotal || 0)}
                 </div>
               </div>
@@ -485,7 +541,7 @@ export const ProductDetailsSection: React.FC<ProductDetailsSectionProps> = ({
             <Package className="w-8 h-8 text-gray-400" />
           </div>
           <p className="text-gray-500 text-lg font-medium mb-2">Chưa có sản phẩm nào</p>
-          <p className="text-gray-400 text-sm">Nhấn "Thêm sản phẩm" để bắt đầu thêm sản phẩm vào phiếu nhập</p>
+          <p className="text-gray-400 text-sm">Nhấn "{subtitle}" để bắt đầu thêm sản phẩm</p>
         </div>
       )}
     </div>

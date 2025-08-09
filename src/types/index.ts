@@ -458,3 +458,6 @@ export * from './dashboard'
 
 // Export goods receipt types
 export * from './goodsReceipt'
+
+// Export goods issue types
+export * from './goodsIssue'

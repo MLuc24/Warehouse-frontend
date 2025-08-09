@@ -20,6 +20,9 @@ export { dashboardService } from './dashboard';
 // Tuần 9: Goods Receipt Services
 export { goodsReceiptService } from './goodsReceipt';
 
+// Tuần 9: Goods Issue Services
+export { goodsIssueService } from './goodsIssue';
+
 // PDF Service
 export { pdfService } from './pdfService';
 

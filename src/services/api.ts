@@ -145,6 +145,18 @@ export class ApiService {
     }
   }
 
+  // Method to download files/blobs (for PDF exports, etc.)
+  async downloadBlob(endpoint: string): Promise<Blob> {
+    try {
+      const response = await apiClient.get(endpoint, {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   private handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
       // Handle different HTTP status codes

@@ -136,6 +136,12 @@ export const ROUTES = {
     EDIT: (id: number) => `/goods-receipts/${id}/edit`,
     VIEW: (id: number) => `/goods-receipts/${id}`,
   },
+  GOODS_ISSUES: {
+    LIST: '/goods-issues',
+    CREATE: '/goods-issues/create',
+    EDIT: (id: number) => `/goods-issues/${id}/edit`,
+    VIEW: (id: number) => `/goods-issues/${id}`,
+  },
 } as const;
 
 // User roles

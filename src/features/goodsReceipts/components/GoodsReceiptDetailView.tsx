@@ -1,8 +1,8 @@
 import React from 'react'
 import type { GoodsReceipt } from '@/types'
 import { X, Package } from 'lucide-react'
-import GoodsReceiptInfo from './display/GoodsReceiptInfo'
-import ProductDetailsTable from './display/ProductDetailsTable'
+import GoodsReceiptInfo from './GoodsReceiptInfo'
+import { ProductDetailsTable } from '@/components/common'
 import ActionButtons from './ActionButtons'
 
 interface GoodsReceiptDetailViewProps {
@@ -115,9 +115,14 @@ const GoodsReceiptDetailView: React.FC<GoodsReceiptDetailViewProps> = ({
         <GoodsReceiptInfo goodsReceipt={goodsReceipt} />
         
         {/* Product Details */}
-        <ProductDetailsTable 
-          goodsReceipt={goodsReceipt} 
-          onExportReceipt={onExportReceipt}
+        <ProductDetailsTable
+          details={goodsReceipt.details}
+          title="Chi tiết sản phẩm"
+          subtitle="phiếu nhập"
+          colorScheme="green"
+          onExport={onExportReceipt}
+          exportButtonText="Xuất phiếu"
+          totalAmount={goodsReceipt.totalAmount}
         />
       </div>
     </div>
