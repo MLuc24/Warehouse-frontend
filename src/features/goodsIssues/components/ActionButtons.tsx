@@ -145,7 +145,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       }
       break
 
-    case 'Approve':  // Backend status
+    case 'Approved':  // Backend status
       // Admin/Manager/WarehouseStaff có thể bắt đầu chuẩn bị
       if (canApproveReject || userRole === 'WarehouseStaff') {
         buttons.push(

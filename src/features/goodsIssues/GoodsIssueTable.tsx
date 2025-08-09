@@ -24,11 +24,6 @@ const getStatusDisplay = (status?: string) => {
       className: 'bg-orange-50 text-orange-700 border border-orange-200',
       dot: 'bg-orange-400'
     },
-    'Approve': { 
-      label: 'Đã phê duyệt', 
-      className: 'bg-blue-50 text-blue-700 border border-blue-200',
-      dot: 'bg-blue-400'
-    },
     'Approved': { 
       label: 'Đã phê duyệt', 
       className: 'bg-blue-50 text-blue-700 border border-blue-200',
@@ -38,21 +33,6 @@ const getStatusDisplay = (status?: string) => {
       label: 'Đang chuẩn bị', 
       className: 'bg-purple-50 text-purple-700 border border-purple-200',
       dot: 'bg-purple-400'
-    },
-    'InPreparation': { 
-      label: 'Đang chuẩn bị', 
-      className: 'bg-purple-50 text-purple-700 border border-purple-200',
-      dot: 'bg-purple-400'
-    },
-    'ReadyForDelivery': { 
-      label: 'Sẵn sàng giao hàng', 
-      className: 'bg-cyan-50 text-cyan-700 border border-cyan-200',
-      dot: 'bg-cyan-400'
-    },
-    'InTransit': { 
-      label: 'Đang vận chuyển', 
-      className: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
-      dot: 'bg-yellow-400'
     },
     'Delivered': { 
       label: 'Đã giao hàng', 

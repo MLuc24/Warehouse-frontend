@@ -7,10 +7,12 @@ import { ActionButtons } from './ActionButtons'
 
 interface GoodsIssueDetailViewProps {
   goodsIssue: GoodsIssue
-  currentUserId?: number
-  userRole?: string
   onEdit?: (goodsIssue: GoodsIssue) => void
   onDelete?: (goodsIssue: GoodsIssue) => void
+  onBack?: () => void
+  onRefresh?: () => void
+  currentUserId?: number
+  userRole?: string
   onApprove?: (goodsIssue: GoodsIssue) => void
   onReject?: (goodsIssue: GoodsIssue) => void
   onPrepare?: (goodsIssue: GoodsIssue) => void
@@ -19,16 +21,17 @@ interface GoodsIssueDetailViewProps {
   onCancel?: (goodsIssue: GoodsIssue) => void
   onResubmit?: (goodsIssue: GoodsIssue) => void
   onResendEmail?: (goodsIssue: GoodsIssue) => void
-  onBack?: () => void
+  onExportIssue?: () => void
   loading?: boolean
 }
 
 export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
   goodsIssue,
-  currentUserId,
-  userRole,
   onEdit,
   onDelete,
+  onBack,
+  currentUserId,
+  userRole,
   onApprove,
   onReject,
   onPrepare,
@@ -37,7 +40,7 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
   onCancel,
   onResubmit,
   onResendEmail,
-  onBack,
+  onExportIssue,
   loading = false
 }) => {
   const canEdit = goodsIssue.status === 'Draft' || goodsIssue.status === 'Rejected'
@@ -46,11 +49,15 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
   const canComplete = goodsIssue.status === 'Delivered' && (userRole === 'Admin' || userRole === 'Manager')
 
   const handleExportPDF = async () => {
-    try {
-      const { pdfService } = await import('@/services/pdfService')
-      await pdfService.downloadGoodsIssuePDF(goodsIssue)
-    } catch (error) {
-      console.error('Error exporting PDF:', error)
+    if (onExportIssue) {
+      onExportIssue()
+    } else {
+      try {
+        const { pdfService } = await import('@/services/pdfService')
+        await pdfService.downloadGoodsIssuePDF(goodsIssue)
+      } catch (error) {
+        console.error('Error exporting PDF:', error)
+      }
     }
   }
 
@@ -59,7 +66,7 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <div className="flex items-center space-x-4">
-          <div className="bg-purple-600 p-3 rounded-xl">
+          <div className="bg-green-600 p-3 rounded-xl">
             <Package className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -73,20 +80,21 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
         <div className="flex items-center space-x-3">
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
+            {/* Workflow Action Buttons */}
             <ActionButtons
               goodsIssue={goodsIssue}
               currentUserId={currentUserId}
               userRole={userRole}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onApprove={onApprove}
-              onReject={onReject}
-              onPrepare={onPrepare}
-              onConfirmDelivery={onConfirmDelivery}
-              onComplete={onComplete}
-              onCancel={onCancel}
-              onResubmit={onResubmit}
-              onResendEmail={onResendEmail}
+              onEdit={onEdit ? () => onEdit(goodsIssue) : undefined}
+              onDelete={onDelete ? () => onDelete(goodsIssue) : undefined}
+              onApprove={onApprove ? () => onApprove(goodsIssue) : undefined}
+              onReject={onReject ? () => onReject(goodsIssue) : undefined}
+              onPrepare={onPrepare ? () => onPrepare(goodsIssue) : undefined}
+              onConfirmDelivery={onConfirmDelivery ? () => onConfirmDelivery(goodsIssue) : undefined}
+              onComplete={onComplete ? () => onComplete(goodsIssue) : undefined}
+              onCancel={onCancel ? () => onCancel(goodsIssue) : undefined}
+              onResubmit={onResubmit ? () => onResubmit(goodsIssue) : undefined}
+              onResendEmail={onResendEmail ? () => onResendEmail(goodsIssue) : undefined}
               loading={loading}
             />
           </div>
@@ -100,11 +108,9 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
           <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
             goodsIssue.status === 'Completed' ? 'bg-green-100 text-green-800' :
             goodsIssue.status === 'Delivered' ? 'bg-teal-100 text-teal-800' :
-            goodsIssue.status === 'InTransit' ? 'bg-yellow-100 text-yellow-800' :
-            goodsIssue.status === 'ReadyForDelivery' ? 'bg-cyan-100 text-cyan-800' :
-            goodsIssue.status === 'InPreparation' || goodsIssue.status === 'Preparing' ? 'bg-purple-100 text-purple-800' :
-            goodsIssue.status === 'Approved' || goodsIssue.status === 'Approve' ? 'bg-blue-100 text-blue-800' :
-            goodsIssue.status === 'AwaitingApproval' ? 'bg-orange-100 text-orange-800' :
+            goodsIssue.status === 'Preparing' ? 'bg-purple-100 text-purple-800' :
+            goodsIssue.status === 'Approved' ? 'bg-blue-100 text-blue-800' :
+            goodsIssue.status === 'AwaitingApproval' ? 'bg-yellow-100 text-yellow-800' :
             goodsIssue.status === 'Draft' ? 'bg-gray-100 text-gray-800' :
             goodsIssue.status === 'Rejected' ? 'bg-red-100 text-red-800' :
             goodsIssue.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
@@ -112,13 +118,11 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
           }`}>
             {goodsIssue.status === 'Completed' ? 'Hoàn thành' :
              goodsIssue.status === 'Delivered' ? 'Đã giao hàng' :
-             goodsIssue.status === 'InTransit' ? 'Đang vận chuyển' :
-             goodsIssue.status === 'ReadyForDelivery' ? 'Sẵn sàng giao hàng' :
-             goodsIssue.status === 'InPreparation' || goodsIssue.status === 'Preparing' ? 'Đang chuẩn bị' :
-             goodsIssue.status === 'Approved' || goodsIssue.status === 'Approve' ? 'Đã phê duyệt' :
-             goodsIssue.status === 'AwaitingApproval' ? 'Chờ phê duyệt' :
+             goodsIssue.status === 'Preparing' ? 'Đang chuẩn bị' :
+             goodsIssue.status === 'Approved' ? 'Đã phê duyệt' :
+             goodsIssue.status === 'AwaitingApproval' ? 'Chờ duyệt' :
              goodsIssue.status === 'Draft' ? 'Nháp' :
-             goodsIssue.status === 'Rejected' ? 'Bị từ chối' :
+             goodsIssue.status === 'Rejected' ? 'Từ chối' :
              goodsIssue.status === 'Cancelled' ? 'Đã hủy' :
              goodsIssue.status}
           </span>
@@ -146,7 +150,7 @@ export const GoodsIssueDetailView: React.FC<GoodsIssueDetailViewProps> = ({
           details={goodsIssue.details}
           title="Chi tiết sản phẩm"
           subtitle="phiếu xuất"
-          colorScheme="purple"
+          colorScheme="green"
           onExport={handleExportPDF}
           exportButtonText="Xuất phiếu"
           totalAmount={goodsIssue.totalAmount}
